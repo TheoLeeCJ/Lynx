@@ -23,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
-
-		// Load content into webview
 		webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
