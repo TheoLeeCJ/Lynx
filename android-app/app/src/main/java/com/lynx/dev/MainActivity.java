@@ -3,12 +3,12 @@ package com.lynx.dev;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
 import android.webkit.WebView;
-import android.app.Activity;
+import android.content.res.AssetManager;
 
 public class MainActivity extends AppCompatActivity {
 	public WebView webapp = null;
+	public AssetManager assetManager = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,12 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
+
+		// Load content into webview
 		webapp.loadUrl("http://192.168.1.241:3000/");
+
+		// Bind WebAppInterface to the webview
+		webapp.addJavascriptInterface(new WebAppInterface(this), "Android");
 	}
 
 	@Override
@@ -33,9 +38,5 @@ public class MainActivity extends AppCompatActivity {
 		} else {
 			super.onBackPressed();
 		}
-	}
-
-	public void reloadPage(View view) {
-		webapp.loadUrl("http://192.168.1.241:3000/");
 	}
 }
