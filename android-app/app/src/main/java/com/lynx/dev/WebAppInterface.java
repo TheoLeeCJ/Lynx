@@ -1,17 +1,22 @@
 package com.lynx.dev;
 
 import android.content.Context;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 import android.util.Log;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
-import fi.iki.elonen.NanoWSD;
+import org.java_websocket.server.WebSocketServer;
+
+import static android.content.Context.WIFI_SERVICE;
 
 public class WebAppInterface {
 	Context mContext;
-	NanoWSD ws = null;
+	WebSocketServer server = null;
 
 	/** Instantiate the interface and set the context */
 	WebAppInterface(Context c) {
@@ -26,19 +31,12 @@ public class WebAppInterface {
 
 	@JavascriptInterface
 	public void startWebsocketServer() {
-		ws = new DebugWebSocketServer(9090, true);
-		try {
-			ws.start();
-		}
-		catch (Exception e) {
-			Log.d("JAAVAAAAAA", e.toString());
-		}
-		System.out.println("Server started, hit Enter to stop.\n");
+		SimpleServer.main();
+		System.out.println("pressed");
 	}
 
 	@JavascriptInterface
 	public void stopWebsocketServer() {
-		ws.stop();
-		System.out.println("Server stopped.\n");
+
 	}
 }
