@@ -1,5 +1,10 @@
 package com.lynx.dev;
 
+import android.content.Context;
+import android.media.MediaScannerConnection;
+import android.os.Environment;
+
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
@@ -7,9 +12,18 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
 public class SimpleServer extends WebSocketServer implements Runnable {
-	public SimpleServer(InetSocketAddress address) {
+	Context mContext = null;
+
+	public SimpleServer(InetSocketAddress address, Context parentContext) {
 		super(address);
+		mContext = parentContext;
 	}
 
 	@Override
@@ -32,6 +46,23 @@ public class SimpleServer extends WebSocketServer implements Runnable {
 	@Override
 	public void onMessage( WebSocket conn, ByteBuffer message ) {
 		System.out.println("received ByteBuffer from "	+ conn.getRemoteSocketAddress());
+
+		try {
+			File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+			File file = new File(directory, "ouch.png");
+
+			FileOutputStream outputStream = new FileOutputStream(file);
+			outputStream.getChannel().write(message);
+			outputStream.getChannel().close();
+
+			MediaScannerConnection.scanFile(mContext, new String[] {file.getAbsolutePath()}, null, null);
+		}
+		catch (Exception e) {
+			System.out.println("Error occurred during file write " + mContext.getFilesDir().getPath() + ": " + e.toString());
+		}
+
+		System.out.println(mContext.getFilesDir().getPath() + "/data.png");
+		MediaScannerConnection.scanFile(mContext, new String[] {mContext.getFilesDir().getPath() + "/data.png"}, null, null);
 	}
 
 	@Override
@@ -42,21 +73,5 @@ public class SimpleServer extends WebSocketServer implements Runnable {
 	@Override
 	public void onStart() {
 		System.out.println("server started successfully");
-	}
-
-
-	public static void main() {
-		String host = "192.168.1.225";
-		int port = 8887;
-
-		try {
-			WebSocketServer server = new SimpleServer(new InetSocketAddress(host, port));
-			server.start();
-			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-			System.out.println("help?");
-		}
-		catch (Exception e) {
-			System.out.println("DO i care?");
-		}
 	}
 }
