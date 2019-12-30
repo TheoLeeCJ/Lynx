@@ -3,8 +3,6 @@ package com.lynx.dev;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -14,11 +12,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 public class SimpleServer extends WebSocketServer implements Runnable {
 	Context mContext = null;
@@ -30,8 +24,8 @@ public class SimpleServer extends WebSocketServer implements Runnable {
 
 	@Override
 	public void onOpen(WebSocket conn, ClientHandshake handshake) {
-		conn.send("Welcome to the server!"); //This method sends a message to the new client
-		broadcast( "new connection: " + handshake.getResourceDescriptor() ); //This method sends a message to all clients connected
+		conn.send("Welcome to the server!"); // This method sends a message to the new client
+		broadcast( "new connection: " + handshake.getResourceDescriptor() ); // This method sends a message to all clients connected
 		System.out.println("new connection to " + conn.getRemoteSocketAddress());
 	}
 
@@ -42,7 +36,6 @@ public class SimpleServer extends WebSocketServer implements Runnable {
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		System.out.println(message.equals("frame_please"));
 		if (message.equals("frame_please")) {
 			conn.send(MainActivity.base64screen);
 		}

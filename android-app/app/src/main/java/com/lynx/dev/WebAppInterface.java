@@ -1,17 +1,13 @@
 package com.lynx.dev;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.format.Formatter;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
-import android.util.Log;
 
 import java.net.InetSocketAddress;
 
@@ -19,11 +15,10 @@ import org.java_websocket.server.WebSocketServer;
 
 import org.json.JSONObject;
 
-import static android.app.Activity.RESULT_CANCELED;
-
 public class WebAppInterface {
 	Context mContext;
 	WebSocketServer server = null;
+	String host = null;
 
 	private MainActivity mainActivity;
 
@@ -66,6 +61,7 @@ public class WebAppInterface {
 			if (mWifi.isConnected()) {
 				output.put("on_wifi", "true");
 				output.put("ip", Formatter.formatIpAddress(info.getIpAddress()));
+				host = Formatter.formatIpAddress(info.getIpAddress());
 			}
 		}
 		catch (Exception e) {
@@ -77,8 +73,12 @@ public class WebAppInterface {
 
 	@JavascriptInterface
 	public void startWebsocketServer() {
+		if (host == null) {
+			showToast("get wifi info first please");
+			return;
+		}
 		try {
-			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9107), mContext);
+			server = new SimpleServer(new InetSocketAddress(host, 9090), mContext);
 			server.start();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}

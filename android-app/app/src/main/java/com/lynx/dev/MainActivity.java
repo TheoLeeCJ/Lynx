@@ -11,30 +11,23 @@ import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.view.Surface;
 import android.util.Log;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 	public WebView webapp = null;
 	public AssetManager assetManager = null;
+	private WebAppInterface webAppInterface = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +42,11 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
-		webapp.loadUrl("http://192.168.1.241:3000/");
+		webapp.loadUrl("https://lynx-staging.gear.host/");
 
 		// Bind WebAppInterface to the webview
-		webapp.addJavascriptInterface(new WebAppInterface(this, this), "Android");
+		webAppInterface = new WebAppInterface(this, this);
+		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 
 	@Override
@@ -72,9 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
 	private static final String TAG = "ScreenCaptureFragment";
 
-	private static final String STATE_RESULT_CODE = "result_code";
-	private static final String STATE_RESULT_DATA = "result_data";
-
 	private static final int REQUEST_MEDIA_PROJECTION = 1;
 
 	private int mScreenDensity;
@@ -89,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		webAppInterface.stopWebsocketServer();
 		tearDownMediaProjection();
 	}
 
@@ -179,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
 				image.close();
 
-				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
 				byte[] imageBytes = baos.toByteArray();
 				base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 			}

@@ -6,19 +6,23 @@
 </head>
 
 <body>
-	<h2>File Upload</h2>
-	Select file
+	<h2>Lynx Client TEst</h2>
+	<input id="host" placeholder="ip/host:port" />
+	<br>Select file
 	<input type="file" id="filename" />
 	<br>
 	<input type="button" value="Connect" onclick="connectChatServer()" />
 	<br>
-	<input type="button" value="Upload" onclick="sendFile()" />
+	<input type="button" value="transfer file to device" onclick="sendFile()" />
 	<img src="" id="AAA" />
 	<script>
 		var ws;
 
+		if (localStorage.getItem("memorised_host")) document.getElementById("host").value = localStorage.getItem("memorised_host");
+
 		function connectChatServer() {
-			ws = new WebSocket("ws://192.168.1.225:9107");
+			ws = new WebSocket(`ws://${document.getElementById("host").value}`);
+			localStorage.setItem("memorised_host", document.getElementById("host").value);
 			ws.binaryType = "arraybuffer";
 			ws.onopen = function () {
 				alert("Connected.");
@@ -38,7 +42,7 @@
 
 			ws.onerror = function (e) {
 				alert(e.msg);
-			}
+			};
 		}
 
 		function sendFile() {
