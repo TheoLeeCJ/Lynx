@@ -13,18 +13,23 @@
 	<input type="button" value="Connect" onclick="connectChatServer()" />
 	<br>
 	<input type="button" value="Upload" onclick="sendFile()" />
+	<img src="" id="AAA" />
 	<script>
 		var ws;
 
 		function connectChatServer() {
-			ws = new WebSocket("ws://192.168.1.225:9090");
+			ws = new WebSocket("ws://192.168.1.225:9104");
 			ws.binaryType = "arraybuffer";
 			ws.onopen = function () {
-				alert("Connected.")
+				alert("Connected.");
 			};
 
+			setInterval(() => {
+				ws.send("frame_please");
+			}, 20);
+
 			ws.onmessage = function (evt) {
-				alert(evt.msg);
+				document.getElementById("AAA").src = "data:image/png;base64," + evt.data;
 			};
 
 			ws.onclose = function () {

@@ -3,6 +3,8 @@ package com.lynx.dev;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -40,7 +42,10 @@ public class SimpleServer extends WebSocketServer implements Runnable {
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		System.out.println("received message from "	+ conn.getRemoteSocketAddress() + ": " + message);
+		System.out.println(message.equals("frame_please"));
+		if (message.equals("frame_please")) {
+			conn.send(MainActivity.base64screen);
+		}
 	}
 
 	@Override

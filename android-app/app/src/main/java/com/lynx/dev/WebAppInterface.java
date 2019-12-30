@@ -1,10 +1,13 @@
 package com.lynx.dev;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.format.Formatter;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
@@ -16,19 +19,29 @@ import org.java_websocket.server.WebSocketServer;
 
 import org.json.JSONObject;
 
+import static android.app.Activity.RESULT_CANCELED;
+
 public class WebAppInterface {
 	Context mContext;
 	WebSocketServer server = null;
 
+	private MainActivity mainActivity;
+
 	/** Instantiate the interface and set the context */
-	WebAppInterface(Context c) {
+	WebAppInterface(Context c, MainActivity mainActivityLocal) {
 		mContext = c;
+		mainActivity = mainActivityLocal;
 	}
 
 	/** Show a toast from the web page */
 	@JavascriptInterface
 	public void showToast(String toast) {
 		Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show();
+	}
+
+	@JavascriptInterface
+	public void streamTest() {
+		mainActivity.startScreenCapture();
 	}
 
 	@JavascriptInterface
@@ -65,7 +78,7 @@ public class WebAppInterface {
 	@JavascriptInterface
 	public void startWebsocketServer() {
 		try {
-			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9090), mContext);
+			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9104), mContext);
 			server.start();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}
