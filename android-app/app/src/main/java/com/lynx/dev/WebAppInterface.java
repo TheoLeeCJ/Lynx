@@ -78,7 +78,7 @@ public class WebAppInterface {
 	@JavascriptInterface
 	public void startWebsocketServer() {
 		try {
-			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9104), mContext);
+			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9107), mContext);
 			server.start();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}

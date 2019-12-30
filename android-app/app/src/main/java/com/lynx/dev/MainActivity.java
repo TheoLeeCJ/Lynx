@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
 		public void onImageAvailable(ImageReader reader) {
 			final Image image = reader.acquireLatestImage();
 			long now = System.currentTimeMillis();
-			if ((now - lastImageMillis) < (1000 / 8)) {
+			if ((now - lastImageMillis) < (1000 / 30)) {
 				try {
 					image.close();
 				}
@@ -173,18 +173,20 @@ public class MainActivity extends AppCompatActivity {
 			}
 			lastImageMillis = now;
 
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			Bitmap niceCleanBitmap = cleanBitmap(image);
 			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				Bitmap niceCleanBitmap = cleanBitmap(image);
+
 				image.close();
+
+				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+				byte[] imageBytes = baos.toByteArray();
+				base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 			}
 			catch (Exception e) {
+				base64screen = "";
 				// keep going...
 			}
-
-			niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 5, baos);
-			byte[] imageBytes = baos.toByteArray();
-			base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 		}
 	}
 
