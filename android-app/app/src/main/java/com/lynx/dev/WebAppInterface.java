@@ -88,6 +88,11 @@ public class WebAppInterface {
 	}
 
 	@JavascriptInterface
+	public void setHost(String inputHost) {
+		host = inputHost;
+	}
+
+	@JavascriptInterface
 	public void stopWebsocketServer() {
 		try {
 			server.stop();

@@ -57,6 +57,7 @@
 				<button onclick="Android.streamTest();" class="button green margin">screen cap test</button>
 
 				<textarea onclick="this.innerHTML = JSON.parse(Android.getWifi()).ip + ':9090';">Get WiFI Info</textarea>
+				<textarea placeholder="manually set host" onkeyup="Android.setHost(this.innerHTML);"></textarea>
 			</div>
 		</div>
 
