@@ -62,6 +62,17 @@ public class WebAppInterface {
 	}
 
 	@JavascriptInterface
+	public boolean writeSettings(String string) {
+		return Utility.writeSettings(mContext, string);
+	}
+
+	@JavascriptInterface
+	public String readSettings() {
+		try { return Utility.readSettings(mContext).toString(2); }
+		catch (Exception e) { return ""; }
+	}
+
+	@JavascriptInterface
 	public String getWifi() {
 		// All the setup to get network info
 		ConnectivityManager connManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);

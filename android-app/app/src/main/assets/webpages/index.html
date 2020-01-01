@@ -39,7 +39,7 @@
 					</table>
 				</div>-->
 			
-				<div onclick="config_page();" class="card padding margin animate-opacity">
+				<div onclick="configPage();" class="card padding margin animate-opacity">
 					<table style="width: 100%;">
 						<tr>
 							<td><b class="xlarge">Import / Export</b></td>
@@ -69,11 +69,9 @@
 			</div>
 
 			<div class="padding" style="height: calc(100vh - 60px); overflow-y: scroll;">
-				Paste Configuration JSON:
-				<textarea class="margin-top" style="width: 100%; padding: 10px; height: 200px;"></textarea>
-
-				This Lynx Install's Configuration JSON:
-				<textarea class="margin-top" style="width: 100%; padding: 10px; height: 200px;"></textarea>
+				Edit Configuration JSON:
+				<textarea id="Page-Import-Edit" class="margin-top" style="font-family: 'monospace'; width: 100%; padding: 10px; height: 200px;"></textarea>
+				<button onclick="saveConfig();">Save Configuration</button>
 			</div>
 		</div>
 
@@ -95,11 +93,18 @@
 				}
 			});
 
-			function config_page() {
+			function configPage() {
 				history.pushState({ page: "home" }, "Lynx | Home", "/");
 				previous = "home";
 				document.getElementById("Page-Import").style.display = "block";
+				document.getElementById("Page-Import-Edit").value = Android.readSettings();
+
 				setTimeout(() => { document.getElementById("Page-Home").style.display = "none"; }, 250);
+			}
+
+			function saveConfig() {
+				console.log(document.getElementById("Page-Import-Edit").value);
+				Android.writeSettings(document.getElementById("Page-Import-Edit").value);
 			}
 
 			function explainPrompt() {

@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
-		webapp.loadUrl("https://lynx-staging.gear.host/");
-		// webapp.loadUrl("http://192.168.1.241:3000/");
+//		webapp.loadUrl("https://lynx-staging.gear.host/");
+		 webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
 		webAppInterface = new WebAppInterface(this, this, webapp);
@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 	// STORAGE PERMISSIONS
 	//
 	// ==============================================
+
 	public void storagePermission() {
 		if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 			// Permission is not granted
@@ -96,14 +97,11 @@ public class MainActivity extends AppCompatActivity {
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		switch (requestCode) {
 			case 888: {
-				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-					// permission was granted, yay! Do the
-					// contacts-related task you need to do.
+					// permission was granted
 					System.out.println("Allowed");
 				} else {
-					// permission denied, boo! Disable the
-					// functionality that depends on this permission.
+					// permission denied
 					System.out.println("User doesn't want to use storage");
 					if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 						// Show an explanation to the user
@@ -113,8 +111,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}
 
-			// other 'case' lines to check for other
-			// permissions this app might request.
+			// other 'case' lines to check for other permissions this app might request.
 		}
 	}
 
