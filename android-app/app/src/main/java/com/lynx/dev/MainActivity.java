@@ -1,10 +1,14 @@
 package com.lynx.dev;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
@@ -28,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 	public WebView webapp = null;
 	public AssetManager assetManager = null;
 	private WebAppInterface webAppInterface = null;
+	public MainActivity mainActivity = this;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +48,10 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
 		webapp.loadUrl("https://lynx-staging.gear.host/");
+		// webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
-		webAppInterface = new WebAppInterface(this, this);
+		webAppInterface = new WebAppInterface(this, this, webapp);
 		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 
@@ -60,7 +66,61 @@ public class MainActivity extends AppCompatActivity {
 
 	// ==============================================
 	//
-	// SCREEN STREAM CODE
+	// STORAGE PERMISSIONS
+	//
+	// ==============================================
+	public void storagePermission() {
+		if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+			// Permission is not granted
+			// Should we show an explanation?
+			if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+				// Show an explanation to the user
+				webAppInterface.explainPrompt();
+				System.out.println("A");
+			} else {
+				// No explanation needed; request the permission
+				System.out.println("B");
+				requestPermission();
+			}
+		} else {
+			// Permission has already been granted
+			System.out.println("C");
+		}
+	}
+
+	public void requestPermission() {
+		ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 888);
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		switch (requestCode) {
+			case 888: {
+				// If request is cancelled, the result arrays are empty.
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					// permission was granted, yay! Do the
+					// contacts-related task you need to do.
+					System.out.println("Allowed");
+				} else {
+					// permission denied, boo! Disable the
+					// functionality that depends on this permission.
+					System.out.println("User doesn't want to use storage");
+					if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+						// Show an explanation to the user
+						webAppInterface.explainPrompt();
+						System.out.println("A");
+					}
+				}
+			}
+
+			// other 'case' lines to check for other
+			// permissions this app might request.
+		}
+	}
+
+	// ==============================================
+	//
+	// SCREEN STREAMING CODE
 	//
 	// ==============================================
 

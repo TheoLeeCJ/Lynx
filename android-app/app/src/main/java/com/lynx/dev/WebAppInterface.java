@@ -7,6 +7,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import java.net.InetSocketAddress;
@@ -19,13 +20,15 @@ public class WebAppInterface {
 	Context mContext;
 	WebSocketServer server = null;
 	String host = null;
+	WebView webView = null;
 
 	private MainActivity mainActivity;
 
 	/** Instantiate the interface and set the context */
-	WebAppInterface(Context c, MainActivity mainActivityLocal) {
+	WebAppInterface(Context c, MainActivity mainActivityLocal, WebView webViewLocal) {
 		mContext = c;
 		mainActivity = mainActivityLocal;
+		webView = webViewLocal;
 	}
 
 	/** Show a toast from the web page */
@@ -37,6 +40,25 @@ public class WebAppInterface {
 	@JavascriptInterface
 	public void streamTest() {
 		mainActivity.startScreenCapture();
+	}
+
+	@JavascriptInterface
+	public void storagePermission() {
+		mainActivity.storagePermission();
+	}
+
+	@JavascriptInterface
+	public void requestPermission() {
+		mainActivity.requestPermission();
+	}
+
+	public void explainPrompt() {
+		webView.post(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl("javascript:explainPrompt();");
+			}
+		});
 	}
 
 	@JavascriptInterface

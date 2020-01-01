@@ -55,6 +55,7 @@
 				<button onclick="Android.startWebsocketServer();" class="button green margin">start ws server</button>
 				<button onclick="Android.stopWebsocketServer();" class="button green margin">stop ws server</button>
 				<button onclick="Android.streamTest();" class="button green margin">screen cap test</button>
+				<button onclick="Android.storagePermission();" class="button green margin">check storage permissions!</button>
 
 				<textarea onclick="this.innerHTML = JSON.parse(Android.getWifi()).ip + ':9090';">Get WiFI Info</textarea>
 				<textarea placeholder="manually set host" onkeyup="Android.setHost(this.innerHTML);"></textarea>
@@ -76,6 +77,14 @@
 			</div>
 		</div>
 
+		<div id="Dialog-Permission" class="modal animate-opacity">
+			<div class="modal-content animate-top">
+				You need to grant Lynx permission to access your phone's storage in order to use features such as Smart Backup and File Transfer.\nIf you do not grant these permissions, these features simply can't be used as Lynx won't be able to interact with files on your device.
+				<button onclick="Android.requestPermission();">OK, let me accept</button>
+				<button onclick="this.parentElement.parentElement.style.display = 'none';">No u</button>
+			</div>
+		</div>
+
 		<script>
 			let previous = "";
 
@@ -91,6 +100,10 @@
 				previous = "home";
 				document.getElementById("Page-Import").style.display = "block";
 				setTimeout(() => { document.getElementById("Page-Home").style.display = "none"; }, 250);
+			}
+
+			function explainPrompt() {
+				document.getElementById("Dialog-Permission").style.display = "block";
 			}
 		</script>
 	</body>
