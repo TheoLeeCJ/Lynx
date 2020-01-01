@@ -83,6 +83,8 @@
 			</div>
 		</div>
 
+		<a href="aaa.html">EEE</a>
+
 		<script>
 			let previous = "";
 
@@ -97,7 +99,6 @@
 				history.pushState({ page: "home" }, "Lynx | Home", "/");
 				previous = "home";
 				document.getElementById("Page-Import").style.display = "block";
-				document.getElementById("Page-Import-Edit").value = Android.readSettings();
 
 				setTimeout(() => { document.getElementById("Page-Home").style.display = "none"; }, 250);
 			}

@@ -1,0 +1,67 @@
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Upload Files</title>
+</head>
+
+<body>
+	<h2>Lynx Client TEst</h2>
+	<input id="host" placeholder="ip/host:port" />
+	<input type="button" value="Connect" onclick="connectChatServer()" />
+	<input type="button" value="KEK" onclick="ping()" />
+	<div id="AAA"></div>
+	<img src="" id="EEE" />
+	<script>
+		var ws;
+		let time = 0;
+
+		function ping() {
+			time = performance.now();
+			ws.send("frame_please");
+		}
+
+		function connectChatServer() {
+			ws = new WebSocket(`ws://${document.getElementById("host").value}`);
+			ws.binaryType = "arraybuffer";
+			
+			ws.onopen = function () {
+				document.getElementById("AAA").innerText = "Connected.";
+			};
+
+			ws.onmessage = function (evt) {
+				document.getElementById("AAA").innerText = `(${performance.now() - time} ms)`;
+				if (evt.data.length < 500) document.getElementById("AAA").innerText = evt.data + `(${performance.now() - time} ms)`;
+				document.getElementById("EEE").src = "data:image/png;base64," + evt.data;
+			};
+
+			ws.onclose = function () {
+				alert("Connection is closed...");
+			};
+
+			ws.onerror = function (e) {
+				alert(e.msg);
+			};
+		}
+
+		function sendFile() {
+			var file = document.getElementById('filename').files[0];
+			var reader = new FileReader();
+			var rawData = new ArrayBuffer();
+
+			reader.loadend = function () {
+
+			}
+
+			reader.onload = function (e) {
+				rawData = e.target.result;
+				ws.send(rawData);
+				alert("the File has been transferred.")
+			}
+
+			reader.readAsArrayBuffer(file);
+		}
+	</script>
+</body>
+
+</html>

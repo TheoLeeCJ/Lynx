@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
-//		webapp.loadUrl("https://lynx-staging.gear.host/");
-		 webapp.loadUrl("http://192.168.1.241:3000/");
+		webapp.loadUrl("file:///android_asset/webpages/index.html");
+//		webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
 		webAppInterface = new WebAppInterface(this, this, webapp);
