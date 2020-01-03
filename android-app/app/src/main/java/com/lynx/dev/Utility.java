@@ -14,6 +14,13 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class Utility {
+	public static JSONObject settings = null;
+
+	public static String getSetting(String key) {
+		try { return settings.get(key).toString(); }
+		catch (JSONException e) { return ""; }
+	}
+
 	public static JSONObject readSettings(Context context) {
 		FileInputStream fis;
 		String contents;

@@ -56,6 +56,7 @@
 				<button onclick="Android.stopWebsocketServer();" class="button green margin">stop ws server</button>
 				<button onclick="Android.streamTest();" class="button green margin">screen cap test</button>
 				<button onclick="Android.storagePermission();" class="button green margin">check storage permissions!</button>
+				<button onclick="Android.backgroundServiceTest();" class="button green margin">background service!</button>
 
 				<textarea onclick="this.innerHTML = JSON.parse(Android.getWifi()).ip + ':9090';">Get WiFI Info</textarea>
 				<textarea placeholder="manually set host" onkeyup="Android.setHost(this.innerHTML);"></textarea>

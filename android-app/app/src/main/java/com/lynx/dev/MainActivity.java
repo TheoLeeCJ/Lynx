@@ -17,11 +17,15 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
@@ -37,22 +41,23 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_main);
 
-		// Hide the big bar
-		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
-		getSupportActionBar().hide();
-
-		// Set up the webview
-		webapp = new WebView(this.getApplicationContext());
-		setContentView(webapp);
-		webapp.getSettings().setJavaScriptEnabled(true);
-		webapp.loadUrl("file:///android_asset/webpages/index.html");
+//		// Hide the big bar
+//		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
+//		getSupportActionBar().hide();
+//
+//		// Set up the webview
+//		webapp = new WebView(this.getApplicationContext());
+//		setContentView(webapp);
+//		webapp.getSettings().setJavaScriptEnabled(true);
+//		webapp.loadUrl("http://lynx.gear.host/android.html");
+//		webapp.loadUrl("file:///android_asset/webpages/index.html");
 //		webapp.loadUrl("http://192.168.1.241:3000/");
-
-		// Bind WebAppInterface to the webview
-		webAppInterface = new WebAppInterface(this, this, webapp);
-		webapp.addJavascriptInterface(webAppInterface, "Android");
+//
+//		// Bind WebAppInterface to the webview
+//		webAppInterface = new WebAppInterface(this, this, webapp);
+//		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 
 	@Override
@@ -61,6 +66,19 @@ public class MainActivity extends AppCompatActivity {
 			webapp.goBack();
 		} else {
 			super.onBackPressed();
+		}
+	}
+
+	// Background Service
+	private boolean askedForOverlayPermission = false;
+	public void startBackgroundService(View view) {
+		if (!Settings.canDrawOverlays(this)) {
+			askedForOverlayPermission = true;
+			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+			startActivityForResult(intent, 889);
+		}
+		else {
+			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
 		}
 	}
 
@@ -77,15 +95,12 @@ public class MainActivity extends AppCompatActivity {
 			if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 				// Show an explanation to the user
 				webAppInterface.explainPrompt();
-				System.out.println("A");
 			} else {
 				// No explanation needed; request the permission
-				System.out.println("B");
 				requestPermission();
 			}
 		} else {
 			// Permission has already been granted
-			System.out.println("C");
 		}
 	}
 
@@ -109,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
 						System.out.println("A");
 					}
 				}
+			}
+			case 889: {
+				startService(new Intent(this, BackgroundService.class));
 			}
 
 			// other 'case' lines to check for other permissions this app might request.

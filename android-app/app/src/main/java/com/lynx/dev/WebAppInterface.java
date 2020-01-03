@@ -1,6 +1,7 @@
 package com.lynx.dev;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -118,6 +119,11 @@ public class WebAppInterface {
 		catch (Exception e) {
 			System.out.println("An unimportant exception occurred. This should not impact the operation of the app.");
 		}
+	}
+
+	@JavascriptInterface
+	public void backgroundServiceTest() {
+//		mainActivity.startBackgroundService();
 	}
 
 	@JavascriptInterface
