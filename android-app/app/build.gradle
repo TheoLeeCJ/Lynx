@@ -29,6 +29,4 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation "org.java-websocket:Java-WebSocket:1.4.0"
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-    implementation 'com.google.android.gms:play-services-vision:15.0.2'
-    implementation project(path: ':barcode-reader')
 }

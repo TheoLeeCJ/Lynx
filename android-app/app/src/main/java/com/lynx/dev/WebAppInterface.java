@@ -18,13 +18,12 @@ import org.java_websocket.server.WebSocketServer;
 
 import org.json.JSONObject;
 
-import com.notbytes.barcode_reader.BarcodeReaderActivity;
-
 public class WebAppInterface {
 	Context mContext;
 	public static WebSocketServer server = null;
 	String host = null;
 	WebView webView = null;
+	View a;
 
 	private MainActivity mainActivity;
 
@@ -33,11 +32,6 @@ public class WebAppInterface {
 		mContext = c;
 		mainActivity = mainActivityLocal;
 		webView = webViewLocal;
-	}
-
-	@JavascriptInterface
-	public void openQRScanner() {
-		mainActivity.openQRScanner();
 	}
 
 	/** Show a toast from the web page */
