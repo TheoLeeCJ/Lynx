@@ -3,6 +3,7 @@ package com.lynx.dev;
 import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -24,20 +25,16 @@ public class BackgroundService extends AccessibilityService {
 		globalX += 5; globalY += 10;
 		cursorImageView.setLayoutParams(lp);
 
-		intervalHandler.postDelayed(this, 1000);
+		intervalHandler.postDelayed(this, 500);
 		}
 	};
 
 	private View cursorView;
-	private int a;
 	private WindowManager.LayoutParams cursorLayout;
 	private WindowManager windowManager;
 	private ImageView cursorImageView;
-	private LinearLayout.LayoutParams offsetLayoutParams;
 	public static int globalX = 0;
 	public static int globalY = 0;
-
-	public WebSocketServer server;
 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {}
@@ -48,16 +45,6 @@ public class BackgroundService extends AccessibilityService {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-
-		// start WebSocket server (?)
-		try {
-//			server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9090), getBaseContext());
-//			server.start();
-//			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-		}
-		catch (Exception e) {
-
-		}
 	}
 
 	@Override
@@ -71,26 +58,35 @@ public class BackgroundService extends AccessibilityService {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		// start WebSocket server (?)
+		try {
+			WebAppInterface.server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9090), getBaseContext());
+			WebAppInterface.server.start();
+			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+		}
+		catch (Exception e) {
+
+		}
+
 		// show cursor
 		cursorView = View.inflate(getBaseContext(), R.layout.cursor, null);
 		cursorImageView = cursorView.findViewById(R.id.imageView);
 
 		cursorLayout = new WindowManager.LayoutParams();
-		cursorLayout.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) cursorLayout.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+		else cursorLayout.type = WindowManager.LayoutParams.TYPE_TOAST;
+
 		cursorLayout.flags = WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 		cursorLayout.format = PixelFormat.TRANSLUCENT;
 		cursorLayout.gravity = Gravity.TOP | Gravity.LEFT;
-		cursorLayout.x = 0;
-		cursorLayout.y = 800;
 
 		windowManager = (WindowManager) getBaseContext().getSystemService(WINDOW_SERVICE);
 
 		intervalHandler.postDelayed(intervalThread, 0);
 
-		// oooooooo
-		System.out.println(getBaseContext());
-		System.out.println(cursorLayout.token);
 		windowManager.addView(cursorView, cursorLayout);
+
 		return START_STICKY;
 	}
 }

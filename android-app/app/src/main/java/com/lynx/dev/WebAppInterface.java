@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -17,9 +18,11 @@ import org.java_websocket.server.WebSocketServer;
 
 import org.json.JSONObject;
 
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
+
 public class WebAppInterface {
 	Context mContext;
-	WebSocketServer server = null;
+	public static WebSocketServer server = null;
 	String host = null;
 	WebView webView = null;
 
@@ -30,6 +33,11 @@ public class WebAppInterface {
 		mContext = c;
 		mainActivity = mainActivityLocal;
 		webView = webViewLocal;
+	}
+
+	@JavascriptInterface
+	public void openQRScanner() {
+		mainActivity.openQRScanner();
 	}
 
 	/** Show a toast from the web page */
@@ -123,7 +131,7 @@ public class WebAppInterface {
 
 	@JavascriptInterface
 	public void backgroundServiceTest() {
-//		mainActivity.startBackgroundService();
+		mainActivity.startBackgroundService(new View(mContext));
 	}
 
 	@JavascriptInterface

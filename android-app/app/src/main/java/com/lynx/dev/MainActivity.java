@@ -29,6 +29,10 @@ import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.barcode.Barcode;
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
 
 import java.io.ByteArrayOutputStream;
 
@@ -41,23 +45,23 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+//		setContentView(R.layout.activity_main);
 
-//		// Hide the big bar
-//		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
-//		getSupportActionBar().hide();
-//
-//		// Set up the webview
-//		webapp = new WebView(this.getApplicationContext());
-//		setContentView(webapp);
-//		webapp.getSettings().setJavaScriptEnabled(true);
+		// Hide the big bar
+		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
+		getSupportActionBar().hide();
+
+		// Set up the webview
+		webapp = new WebView(this.getApplicationContext());
+		setContentView(webapp);
+		webapp.getSettings().setJavaScriptEnabled(true);
 //		webapp.loadUrl("http://lynx.gear.host/android.html");
-//		webapp.loadUrl("file:///android_asset/webpages/index.html");
+		webapp.loadUrl("file:///android_asset/webpages/index.html");
 //		webapp.loadUrl("http://192.168.1.241:3000/");
-//
-//		// Bind WebAppInterface to the webview
-//		webAppInterface = new WebAppInterface(this, this, webapp);
-//		webapp.addJavascriptInterface(webAppInterface, "Android");
+
+		// Bind WebAppInterface to the webview
+		webAppInterface = new WebAppInterface(this, this, webapp);
+		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 
 	@Override
@@ -80,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
 		else {
 			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
 		}
+	}
+
+	// QR Code Scanner
+	public void openQRScanner() {
+		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
+		startActivityForResult(launchIntent, 890);
 	}
 
 	// ==============================================
@@ -189,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult( requestCode, resultCode, data);
 		if (requestCode == REQUEST_MEDIA_PROJECTION) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.i(TAG, "User cancelled");
@@ -199,6 +210,10 @@ public class MainActivity extends AppCompatActivity {
 			mResultData = data;
 			setUpMediaProjection();
 			setUpVirtualDisplay();
+		}
+		else if (requestCode == 890 && data != null) {
+			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
+			Toast.makeText(this, barcode.rawValue, Toast.LENGTH_SHORT).show();
 		}
 	}
 
