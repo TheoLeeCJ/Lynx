@@ -1,12 +1,15 @@
 package com.lynx.dev;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
+import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import java.net.InetSocketAddress;
@@ -15,17 +18,26 @@ import org.java_websocket.server.WebSocketServer;
 
 import org.json.JSONObject;
 
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
+
 public class WebAppInterface {
 	Context mContext;
-	WebSocketServer server = null;
+	public static WebSocketServer server = null;
 	String host = null;
+	WebView webView = null;
 
 	private MainActivity mainActivity;
 
 	/** Instantiate the interface and set the context */
-	WebAppInterface(Context c, MainActivity mainActivityLocal) {
+	WebAppInterface(Context c, MainActivity mainActivityLocal, WebView webViewLocal) {
 		mContext = c;
 		mainActivity = mainActivityLocal;
+		webView = webViewLocal;
+	}
+
+	@JavascriptInterface
+	public void openQRScanner() {
+		mainActivity.openQRScanner();
 	}
 
 	/** Show a toast from the web page */
@@ -37,6 +49,36 @@ public class WebAppInterface {
 	@JavascriptInterface
 	public void streamTest() {
 		mainActivity.startScreenCapture();
+	}
+
+	@JavascriptInterface
+	public void storagePermission() {
+		mainActivity.storagePermission();
+	}
+
+	@JavascriptInterface
+	public void requestPermission() {
+		mainActivity.requestPermission();
+	}
+
+	public void explainPrompt() {
+		webView.post(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl("javascript:explainPrompt();");
+			}
+		});
+	}
+
+	@JavascriptInterface
+	public boolean writeSettings(String string) {
+		return Utility.writeSettings(mContext, string);
+	}
+
+	@JavascriptInterface
+	public String readSettings() {
+		try { return Utility.readSettings(mContext).toString(2); }
+		catch (Exception e) { return ""; }
 	}
 
 	@JavascriptInterface
@@ -85,6 +127,16 @@ public class WebAppInterface {
 		catch (Exception e) {
 			System.out.println("An unimportant exception occurred. This should not impact the operation of the app.");
 		}
+	}
+
+	@JavascriptInterface
+	public void backgroundServiceTest() {
+		mainActivity.startBackgroundService(new View(mContext));
+	}
+
+	@JavascriptInterface
+	public void setHost(String inputHost) {
+		host = inputHost;
 	}
 
 	@JavascriptInterface

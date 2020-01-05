@@ -39,7 +39,7 @@
 					</table>
 				</div>-->
 			
-				<div onclick="config_page();" class="card padding margin animate-opacity">
+				<div onclick="configPage();" class="card padding margin animate-opacity">
 					<table style="width: 100%;">
 						<tr>
 							<td><b class="xlarge">Import / Export</b></td>
@@ -55,8 +55,12 @@
 				<button onclick="Android.startWebsocketServer();" class="button green margin">start ws server</button>
 				<button onclick="Android.stopWebsocketServer();" class="button green margin">stop ws server</button>
 				<button onclick="Android.streamTest();" class="button green margin">screen cap test</button>
+				<button onclick="Android.storagePermission();" class="button green margin">check storage permissions!</button>
+				<button onclick="Android.backgroundServiceTest();" class="button green margin">background service!</button>
+				<button onclick="Android.openQRScanner();" class="button green margin">qr code</button>
 
 				<textarea onclick="this.innerHTML = JSON.parse(Android.getWifi()).ip + ':9090';">Get WiFI Info</textarea>
+				<textarea placeholder="manually set host" onkeyup="Android.setHost(this.innerHTML);"></textarea>
 			</div>
 		</div>
 
@@ -67,13 +71,21 @@
 			</div>
 
 			<div class="padding" style="height: calc(100vh - 60px); overflow-y: scroll;">
-				Paste Configuration JSON:
-				<textarea class="margin-top" style="width: 100%; padding: 10px; height: 200px;"></textarea>
-
-				This Lynx Install's Configuration JSON:
-				<textarea class="margin-top" style="width: 100%; padding: 10px; height: 200px;"></textarea>
+				Edit Configuration JSON:
+				<textarea id="Page-Import-Edit" class="margin-top" style="font-family: 'monospace'; width: 100%; padding: 10px; height: 200px;"></textarea>
+				<button onclick="saveConfig();">Save Configuration</button>
 			</div>
 		</div>
+
+		<div id="Dialog-Permission" class="modal animate-opacity">
+			<div class="modal-content animate-top">
+				You need to grant Lynx permission to access your phone's storage in order to use features such as Smart Backup and File Transfer.\nIf you do not grant these permissions, these features simply can't be used as Lynx won't be able to interact with files on your device.
+				<button onclick="Android.requestPermission();">OK, let me accept</button>
+				<button onclick="this.parentElement.parentElement.style.display = 'none';">No u</button>
+			</div>
+		</div>
+
+		<a href="aaa.html">EEE</a>
 
 		<script>
 			let previous = "";
@@ -85,11 +97,21 @@
 				}
 			});
 
-			function config_page() {
+			function configPage() {
 				history.pushState({ page: "home" }, "Lynx | Home", "/");
 				previous = "home";
 				document.getElementById("Page-Import").style.display = "block";
+
 				setTimeout(() => { document.getElementById("Page-Home").style.display = "none"; }, 250);
+			}
+
+			function saveConfig() {
+				console.log(document.getElementById("Page-Import-Edit").value);
+				Android.writeSettings(document.getElementById("Page-Import-Edit").value);
+			}
+
+			function explainPrompt() {
+				document.getElementById("Dialog-Permission").style.display = "block";
 			}
 		</script>
 	</body>

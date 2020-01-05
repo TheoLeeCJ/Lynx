@@ -1,10 +1,14 @@
 package com.lynx.dev;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
@@ -13,14 +17,22 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.barcode.Barcode;
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
 
 import java.io.ByteArrayOutputStream;
 
@@ -28,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 	public WebView webapp = null;
 	public AssetManager assetManager = null;
 	private WebAppInterface webAppInterface = null;
+	public MainActivity mainActivity = this;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +55,12 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
-		webapp.loadUrl("https://lynx-staging.gear.host/");
+//		webapp.loadUrl("http://lynx.gear.host/android.html");
+		webapp.loadUrl("file:///android_asset/webpages/index.html");
+//		webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
-		webAppInterface = new WebAppInterface(this, this);
+		webAppInterface = new WebAppInterface(this, this, webapp);
 		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 
@@ -58,9 +73,79 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+	// Background Service
+	private boolean askedForOverlayPermission = false;
+	public void startBackgroundService(View view) {
+		if (!Settings.canDrawOverlays(this)) {
+			askedForOverlayPermission = true;
+			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+			startActivityForResult(intent, 889);
+		}
+		else {
+			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
+		}
+	}
+
+	// QR Code Scanner
+	public void openQRScanner() {
+		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
+		startActivityForResult(launchIntent, 890);
+	}
+
 	// ==============================================
 	//
-	// SCREEN STREAM CODE
+	// STORAGE PERMISSIONS
+	//
+	// ==============================================
+
+	public void storagePermission() {
+		if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+			// Permission is not granted
+			// Should we show an explanation?
+			if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+				// Show an explanation to the user
+				webAppInterface.explainPrompt();
+			} else {
+				// No explanation needed; request the permission
+				requestPermission();
+			}
+		} else {
+			// Permission has already been granted
+		}
+	}
+
+	public void requestPermission() {
+		ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 888);
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		switch (requestCode) {
+			case 888: {
+				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					// permission was granted
+					System.out.println("Allowed");
+				} else {
+					// permission denied
+					System.out.println("User doesn't want to use storage");
+					if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+						// Show an explanation to the user
+						webAppInterface.explainPrompt();
+						System.out.println("A");
+					}
+				}
+			}
+			case 889: {
+				startService(new Intent(this, BackgroundService.class));
+			}
+
+			// other 'case' lines to check for other permissions this app might request.
+		}
+	}
+
+	// ==============================================
+	//
+	// SCREEN STREAMING CODE
 	//
 	// ==============================================
 
@@ -114,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult( requestCode, resultCode, data);
 		if (requestCode == REQUEST_MEDIA_PROJECTION) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.i(TAG, "User cancelled");
@@ -124,6 +210,10 @@ public class MainActivity extends AppCompatActivity {
 			mResultData = data;
 			setUpMediaProjection();
 			setUpVirtualDisplay();
+		}
+		else if (requestCode == 890 && data != null) {
+			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
+			Toast.makeText(this, barcode.rawValue, Toast.LENGTH_SHORT).show();
 		}
 	}
 
