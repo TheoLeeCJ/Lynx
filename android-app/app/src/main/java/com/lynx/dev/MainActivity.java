@@ -28,6 +28,10 @@ import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
+import android.widget.Toast;
+
+import com.google.android.gms.vision.barcode.Barcode;
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
 
 import java.io.ByteArrayOutputStream;
 
@@ -79,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
 		else {
 			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
 		}
+	}
+
+	// QR Code
+	public void qrCode() {
+		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
+		startActivityForResult(launchIntent, 199);
 	}
 
 	// ==============================================
@@ -200,6 +210,11 @@ public class MainActivity extends AppCompatActivity {
 			setUpMediaProjection();
 			setUpVirtualDisplay();
 		}
+		if (requestCode == 199 && data != null) {
+			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
+			Toast.makeText(this, barcode.rawValue, Toast.LENGTH_SHORT).show();
+		}
+
 	}
 
 	ImageReader imageReader = null;

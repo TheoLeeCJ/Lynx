@@ -45,6 +45,9 @@ public class WebAppInterface {
 	}
 
 	@JavascriptInterface
+	public void qrCode() { mainActivity.qrCode(); }
+
+	@JavascriptInterface
 	public void storagePermission() {
 		mainActivity.storagePermission();
 	}
