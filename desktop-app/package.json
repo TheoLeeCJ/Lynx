@@ -1,0 +1,23 @@
+{
+  "name": "lynx-desktop-app",
+  "version": "1.0.0",
+  "description": "A quick solution for tighter integration of Android devices and Windows PCs.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheoLeeCJ/Lynx.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheoLeeCJ/Lynx/issues"
+  },
+  "homepage": "https://github.com/TheoLeeCJ/Lynx#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
