@@ -10,9 +10,6 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-
-import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 

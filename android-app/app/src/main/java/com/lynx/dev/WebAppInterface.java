@@ -23,7 +23,6 @@ public class WebAppInterface {
 	public static WebSocketServer server = null;
 	String host = null;
 	WebView webView = null;
-	View a;
 
 	private MainActivity mainActivity;
 
