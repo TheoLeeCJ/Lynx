@@ -22,7 +22,10 @@ Initial Authentication Process
 ### Message sent from server (PC)
 ```
 {
-	"type": "initial_auth_accept"
+	"type": "initial_auth_response",
+	"data": {
+		"success": true // or false
+	}
 }
 ```
 
