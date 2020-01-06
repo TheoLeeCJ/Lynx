@@ -4,7 +4,8 @@
   "description": "A quick solution for tighter integration of Android devices and Windows PCs.",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
@@ -17,10 +18,16 @@
   },
   "homepage": "https://github.com/TheoLeeCJ/Lynx#readme",
   "devDependencies": {
+    "electron": "^7.1.7",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0"
   },
   "dependencies": {
+    "@types/ws": "^6.0.4",
     "ws": "^7.2.1"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
