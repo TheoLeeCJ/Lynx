@@ -38,7 +38,7 @@ import java.io.ByteArrayOutputStream;
 public class MainActivity extends AppCompatActivity {
 	public WebView webapp = null;
 	public AssetManager assetManager = null;
-	private WebAppInterface webAppInterface = null;
+	private WebAppInterfaceV2 webAppInterface = null;
 	public MainActivity mainActivity = this;
 
 	@Override
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 //		webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
-		webAppInterface = new WebAppInterface(this, this, webapp);
+		webAppInterface = new WebAppInterfaceV2(this, this, webapp);
 		webapp.addJavascriptInterface(webAppInterface, "Android");
 	}
 

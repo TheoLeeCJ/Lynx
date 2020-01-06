@@ -1,118 +1,50 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Lynx | Home</title>
+		<title>Lynx Dev</title>
 		<link href="w3.css" rel="stylesheet" />
 		<style>
 			body { font-family: "Roboto", sans-serif !important; }
 		</style>
 		<meta charset="utf8" />
 	</head>
-	<body>
-		<div id="Page-Home" class="animate-opacity">
-			<div style="text-align: center;">
-				<h1 class="xxxlarge">Lynx <span class="small">dev</span></h1>
+
+	<body class="animate-opacity">
+		<div class="padding">
+			<h2>Lynx Testing</h2>
+			<p>Using: Java Websocket Client Backend</p>
+
+			<b>Lynx Server:</b>
+			<br>
+			<input class="padding margin-top margin-bottom" id="host" style="width: calc(100% - 98px);" value="ws://192.168.1.1:8080" placeholder="ws://ip or hostname:port" />
+			<button onclick="connectWS();" class="padding">Connect</button>
+
+			<br>
+			<b>Debug Commands</b>
+			<div class="light-grey padding margin-top margin-bottom">
+				<button onclick="Android.startBackgroundService();">Start BG Service</button>
+				<button onclick="Android.qrCodeReader();">QR Code Reader</button>
+				<button onclick="sendWS();">Send WS Text</button>
+				<a href="ouch.html">Page</a>
 			</div>
 			
-			<div style="height: calc(100vh - 100px); overflow-y: scroll;">
-				<!--<div class="card padding margin animate-opacity">
-					<table style="width: 100%;">
-						<tr>
-							<td><b class="xlarge">Start Lynx</b></td>
-							<td rowspan="2" class="xxxlarge" style="width: 50px;">➜</td>
-						</tr>
-						<tr>
-							<td>Starts Lynx service with default options (file transfer, backup)</td>
-						</tr>
-					</table>
-				</div>
-			
-				<div class="card padding margin animate-opacity">
-					<table style="width: 100%;">
-						<tr>
-							<td><b class="xlarge">Configure Lynx</b></td>
-							<td rowspan="2" class="xxxlarge" style="width: 50px;">⚙</td>
-						</tr>
-						<tr>
-							<td>Configure Lynx's behaviour</td>
-						</tr>
-					</table>
-				</div>-->
-			
-				<div onclick="configPage();" class="card padding margin animate-opacity">
-					<table style="width: 100%;">
-						<tr>
-							<td><b class="xlarge">Import / Export</b></td>
-							<td rowspan="2" class="xxxlarge" style="width: 50px;">🚢</td>
-						</tr>
-						<tr>
-							<td>Import or export a JSON configuration for Lynx</td>
-						</tr>
-					</table>
-				</div>
-				
-				<button onclick="Android.showToast('[debug] refreshing'); window.location.reload();" class="button green margin">[debug] refresh</button>
-				<button onclick="Android.startWebsocketServer();" class="button green margin">start ws server</button>
-				<button onclick="Android.stopWebsocketServer();" class="button green margin">stop ws server</button>
-				<button onclick="Android.streamTest();" class="button green margin">screen cap test</button>
-				<button onclick="Android.storagePermission();" class="button green margin">check storage permissions!</button>
-				<button onclick="Android.backgroundServiceTest();" class="button green margin">background service!</button>
-				<button onclick="Android.qrCode();" class="button green margin">qr code scanner</button>
-
-				<textarea onclick="this.innerHTML = JSON.parse(Android.getWifi()).ip + ':9090';">Get WiFI Info</textarea>
-				<textarea placeholder="manually set host" onkeyup="Android.setHost(this.innerHTML);"></textarea>
-			</div>
+			<b>Log</b>
+			<pre class="padding margin-top margin-bottom light-grey" style="height: calc(100vh - 370px); overflow: scroll;" id="log"></pre class="padding margin-top margin-bottom">
 		</div>
-
-		<div id="Page-Import" class="animate-left animate-opacity white" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
-			<div class="green padding">
-				<span onclick="window.history.back();" style="position: relative; left: 5px; top: 2px; margin-right: 10px;" class="xlarge">&lt;</span>
-				<b class="large padding" style="display: inline-block;">Import Configuration</b>
-			</div>
-
-			<div class="padding" style="height: calc(100vh - 60px); overflow-y: scroll;">
-				Edit Configuration JSON:
-				<textarea id="Page-Import-Edit" class="margin-top" style="font-family: 'monospace'; width: 100%; padding: 10px; height: 200px;"></textarea>
-				<button onclick="saveConfig();">Save Configuration</button>
-			</div>
-		</div>
-
-		<div id="Dialog-Permission" class="modal animate-opacity">
-			<div class="modal-content animate-top">
-				You need to grant Lynx permission to access your phone's storage in order to use features such as Smart Backup and File Transfer.\nIf you do not grant these permissions, these features simply can't be used as Lynx won't be able to interact with files on your device.
-				<button onclick="Android.requestPermission();">OK, let me accept</button>
-				<button onclick="this.parentElement.parentElement.style.display = 'none';">No u</button>
-			</div>
-		</div>
-
-		<a href="aaa.html">EEE</a>
-		<a href="qr-test.html">EEE</a>
 
 		<script>
-			let previous = "";
+			let state = {};
+			const hostInput = document.getElementById("host"); hostInput.focus();
+			const log = document.getElementById("log");
 
-			window.addEventListener('popstate', function (event) {
-				if (previous == "home") {
-					document.getElementById("Page-Import").style.display = "none";
-					document.getElementById("Page-Home").style.display = "block";
-				}
-			});
-
-			function configPage() {
-				history.pushState({ page: "home" }, "Lynx | Home", "/");
-				previous = "home";
-				document.getElementById("Page-Import").style.display = "block";
-
-				setTimeout(() => { document.getElementById("Page-Home").style.display = "none"; }, 250);
+			function connectWS() {
+				let a = Android.connectWS(hostInput.value);
+				log.innerText += "\n" + a;
 			}
 
-			function saveConfig() {
-				console.log(document.getElementById("Page-Import-Edit").value);
-				Android.writeSettings(document.getElementById("Page-Import-Edit").value);
-			}
-
-			function explainPrompt() {
-				document.getElementById("Dialog-Permission").style.display = "block";
+			function sendWS() {
+				let a = Android.sendWS('Android Client here');
+				log.innerText += "\n" + a;
 			}
 		</script>
 	</body>
