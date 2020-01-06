@@ -26,6 +26,9 @@
       connection.addEventListener("message", (messageEvent) => {
         console.log("Received message from server:", messageEvent.data);
       });
+      connection.addEventListener("close", () => {
+        document.getElementById("send-message-button").disabled = true;
+      });
       document.getElementById("send-message-button").disabled = false;
     };
 
