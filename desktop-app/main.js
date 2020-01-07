@@ -1,6 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
+
+/* ---------------------- APP INIT ---------------------- */
 
 let win;
 
@@ -25,3 +27,10 @@ const createWindow = () => {
 app.on("ready", createWindow);
 
 startWebSocketServer();
+
+
+/* ---------------------- IPC LISTENERS ---------------------- */
+
+ipcMain.once("get-connection-uuid", (_, connectionUuid) => {
+  module.exports.correctUuid = connectionUuid;
+});

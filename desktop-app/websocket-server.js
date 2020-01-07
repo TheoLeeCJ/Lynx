@@ -7,6 +7,11 @@ const startWebSocketServer = () => {
   server.on("connection", (ws, req) => {
     ws.on("message", (message) => {
       console.log(`Received message from ${req.socket.remoteAddress}: ${message}`);
+      message = JSON.parse(message);
+      const { correctUuid } = require("./main.js");
+      if (message.type === "initial_auth" && message.data.uuid === correctUuid) {
+        console.log("Correct UUID:", correctUuid);
+      }
     });
     ws.on("close", (code, reason) => {
       console.log(`Closed connection to ${req.socket.remoteAddress} with code ${code}. Reason: ${reason}`);
