@@ -14,6 +14,8 @@ public class SimpleClient extends WebSocketClient {
 		super(serverURI);
 	}
 
+	public WebAppInterfaceV2 webAppInterface;
+
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		send("Hello, it is me. Mario :)");
@@ -31,6 +33,7 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
+		webAppInterface.htmlLog("[ WS ] " + message);
 		System.out.println("received message: " + message);
 	}
 

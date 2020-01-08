@@ -36,6 +36,7 @@
 			let state = {};
 			const hostInput = document.getElementById("host"); hostInput.focus();
 			const log = document.getElementById("log");
+			let uuid;
 
 			function connectWS() {
 				let a = Android.connectWS(hostInput.value);
@@ -43,8 +44,29 @@
 			}
 
 			function sendWS() {
-				let a = Android.sendWS('Android Client here');
+				let a = Android.sendWS(JSON.stringify({
+					type: "initial_auth",
+					data: {
+						token: uuid
+					}
+				}));
 				log.innerText += "\n" + a;
+			}
+			
+			function htmlLog(a) {
+				log.innerText += "\n" + a;
+			}
+
+			function updateIP(qrInfo) {
+				try { qrInfo = JSON.parse(qrInfo); }
+				catch (e) {
+					log.innerText += "\nError in QR code JSON";
+					return;
+				}
+
+				log.innerText += "\n" + JSON.stringify(qrInfo, null, 2);
+				hostInput.value = "ws://" + qrInfo.ip + ":57531";
+				uuid = qrInfo.connectionToken;
 			}
 		</script>
 	</body>
