@@ -35,13 +35,33 @@ public class WebAppInterfaceV2 {
 	public String connectWS(String host) {
 		try {
 			client = new SimpleClient(new URI(host));
+			client.webAppInterface = this;
 			client.connect();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-			return "Successfully connected to " + host;
+			return "OK, Successfully connected to " + host;
 		}
 		catch (Exception e) {
 			return "Could not connect to " + host + ", error is " + e.toString();
 		}
+	}
+
+	public void updateDisplayedIP(final String json) {
+		webView.post(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl("javascript:updateIP('" + json + "');");
+				htmlLog("AAAAAAAAAAA");
+			}
+		});
+	}
+
+	public void htmlLog(final String logText) {
+		webView.post(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl("javascript:htmlLog('" + logText + "');");
+			}
+		});
 	}
 
 	@JavascriptInterface

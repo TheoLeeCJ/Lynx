@@ -212,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 		if (requestCode == 199 && data != null) {
 			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
+			webAppInterface.updateDisplayedIP(barcode.rawValue);
 			Toast.makeText(this, barcode.rawValue, Toast.LENGTH_SHORT).show();
 		}
 
