@@ -31,6 +31,6 @@ startWebSocketServer();
 
 /* ---------------------- IPC LISTENERS ---------------------- */
 
-ipcMain.once("get-connection-uuid", (_, connectionUuid) => {
-  module.exports.correctUuid = connectionUuid;
+ipcMain.once("get-connection-token", (_, connectionToken) => {
+  module.exports.correctToken = connectionToken;
 });
