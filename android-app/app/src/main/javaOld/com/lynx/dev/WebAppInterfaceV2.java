@@ -31,39 +31,6 @@ public class WebAppInterfaceV2 {
 		webView = w;
 	}
 
-	// Android.readSettings() - passthrough to Utility.readSettings()
-	@JavascriptInterface
-	public String readSettings() { return Utility.readSettings(mainContext).toString(); }
-
-	// Android.writeSettings() - passthrough to Utility.writeSettings()
-	@JavascriptInterface
-	public String writeSettings(String string) { return Utility.writeSettings(mainContext, string).toString(); }
-
-	// Android.startScreenCapture() - passthrough to MainActivity.startScreenCapture()
-	@JavascriptInterface
-	public void startScreenCapture() { mainActivity.startScreenCapture(); }
-
-	// Android.qrCodeReader() - passthrough to MainActivity.qrCode()
-	@JavascriptInterface
-	public void qrCodeReader() { mainActivity.qrCode(); }
-
-	// ===============================================================================================
-
-	// WebAppInterfaceV2.loadJS() - execute JavaScript
-	private void loadJS(final String js) {
-		webView.post(new Runnable() {
-			@Override
-			public void run() { webView.loadUrl("javascript:" + js); }
-		});
-	}
-
-	// WebAppInterfaceV2.qrCodeResult() - pass the QR code scan result to the webpage
-	public void qrCodeResult(String data) {
-		loadJS("qrCodeResult('" + data.replace("'", "\\'") + "');");
-	}
-
-	// ===============================================================================================
-
 	@JavascriptInterface
 	public String connectWS(String host) {
 		try {
@@ -83,6 +50,7 @@ public class WebAppInterfaceV2 {
 			@Override
 			public void run() {
 				webView.loadUrl("javascript:updateIP('" + json + "');");
+				htmlLog("AAAAAAAAAAA");
 			}
 		});
 	}
@@ -103,13 +71,14 @@ public class WebAppInterfaceV2 {
 	}
 
 	@JavascriptInterface
-	public void startBackgroundService() {
-		mainActivity.startBackgroundService(new View(mainContext));
+	public String qrCodeReader() {
+		mainActivity.qrCode();
+		return "Started QR Code Reader Activity";
 	}
 
 	@JavascriptInterface
-	public void accessibilityServiceTest() {
-		BackgroundService.command = "home";
+	public String startBackgroundService() {
+		return "A";
 	}
 
 	@JavascriptInterface

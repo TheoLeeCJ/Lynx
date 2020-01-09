@@ -54,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
 		webapp = new WebView(this.getApplicationContext());
 		setContentView(webapp);
 		webapp.getSettings().setJavaScriptEnabled(true);
+//		webapp.loadUrl("http://lynx.gear.host/android.html");
 		webapp.loadUrl("file:///android_asset/webpages/index.html");
+//		webapp.loadUrl("http://192.168.1.241:3000/");
 
 		// Bind WebAppInterface to the webview
 		webAppInterface = new WebAppInterfaceV2(this, this, webapp);
@@ -73,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
 	// Background Service
 	private boolean askedForOverlayPermission = false;
 	public void startBackgroundService(View view) {
-		System.out.println(isAccessServiceEnabled(this, BackgroundService.class));
 		if (!Settings.canDrawOverlays(this)) {
 			askedForOverlayPermission = true;
 			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
@@ -82,12 +83,6 @@ public class MainActivity extends AppCompatActivity {
 		else {
 			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
 		}
-	}
-
-	public boolean isAccessServiceEnabled(Context context, Class accessibilityServiceClass)
-	{
-		String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-		return prefString!= null && prefString.contains(context.getPackageName() + "/" + accessibilityServiceClass.getName());
 	}
 
 	// QR Code
@@ -186,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
 
 	public void startScreenCapture() {
 		mMediaProjectionManager = (MediaProjectionManager) this.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+		System.out.println("ATTEMPTING TO START SCREEN CAP");
 
 		if (mMediaProjection != null) {
 			setUpVirtualDisplay();
@@ -216,8 +212,10 @@ public class MainActivity extends AppCompatActivity {
 		}
 		if (requestCode == 199 && data != null) {
 			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
-			webAppInterface.qrCodeResult(barcode.rawValue);
+			webAppInterface.updateDisplayedIP(barcode.rawValue);
+			Toast.makeText(this, barcode.rawValue, Toast.LENGTH_SHORT).show();
 		}
+
 	}
 
 	ImageReader imageReader = null;

@@ -14,6 +14,13 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class Utility {
+	public static JSONObject settings = null;
+
+	public static String getSetting(String key) {
+		try { return settings.get(key).toString(); }
+		catch (JSONException e) { return ""; }
+	}
+
 	public static JSONObject readSettings(Context context) {
 		FileInputStream fis;
 		String contents;
@@ -40,7 +47,7 @@ public class Utility {
 		catch (JSONException e) { return new JSONObject(); }
 	}
 
-	public static Boolean writeSettings(Context context, String settings) {
+	public static boolean writeSettings(Context context, String settings) {
 		try (FileOutputStream fos = context.openFileOutput("config.json", Context.MODE_PRIVATE)) {
 			fos.write(settings.getBytes());
 			return true;

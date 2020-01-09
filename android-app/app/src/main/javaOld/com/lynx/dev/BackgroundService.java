@@ -17,20 +17,15 @@ public class BackgroundService extends AccessibilityService {
 	android.os.Handler intervalHandler = new android.os.Handler();
 	private Runnable intervalThread = new Runnable() {
 		public void run() {
-//		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-//		lp.setMargins(globalX, globalY, 0, 0);
-//		globalX += 5; globalY += 10;
-//		cursorImageView.setLayoutParams(lp);
-		if (command == "home") {
-			System.out.println(performGlobalAction(GLOBAL_ACTION_HOME));
-			command = "";
-		}
+		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+		lp.setMargins(globalX, globalY, 0, 0);
+		globalX += 5; globalY += 10;
+		cursorImageView.setLayoutParams(lp);
 
 		intervalHandler.postDelayed(this, 500);
 		}
 	};
 
-	public static String command;
 	private View cursorView;
 	private WindowManager.LayoutParams cursorLayout;
 	private WindowManager windowManager;
@@ -62,7 +57,9 @@ public class BackgroundService extends AccessibilityService {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// start WebSocket server (?)
 		try {
-
+			WebAppInterface.server = new SimpleServer(new InetSocketAddress("192.168.1.225", 9090), getBaseContext());
+			WebAppInterface.server.start();
+			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}
 		catch (Exception e) {
 
