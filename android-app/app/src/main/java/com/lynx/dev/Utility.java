@@ -14,6 +14,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 public class Utility {
+	// Constants
+	public static int PERMISSION_STORAGE = 4096;
+	public static int PERMISSION_SCREENCAST = 4097;
+	public static int PERMISSION_DISPLAYOVEROTHERAPPS = 4098;
+	public static int MISAKA_MIKOTO = 4099;
+
 	public static JSONObject readSettings(Context context) {
 		FileInputStream fis;
 		String contents;

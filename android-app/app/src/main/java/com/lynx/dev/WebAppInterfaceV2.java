@@ -24,6 +24,10 @@ public class WebAppInterfaceV2 {
 	MainActivity mainActivity;
 	WebView webView;
 	SimpleClient client;
+	public static WebAppInterfaceV2 webAppInterface;
+
+	public static String ip;
+	public static String connectionToken;
 
 	public WebAppInterfaceV2 (Context c, MainActivity m, WebView w) {
 		mainContext = c;
@@ -47,6 +51,42 @@ public class WebAppInterfaceV2 {
 	@JavascriptInterface
 	public void qrCodeReader() { mainActivity.qrCode(); }
 
+	// Android.startWSClient()
+	@JavascriptInterface
+	public String startWSClient(String ip_local, String token) {
+		try {
+			webAppInterface = this;
+			ip = ip_local;
+			connectionToken = token;
+			mainActivity.startBackgroundService(new View(mainContext));
+
+			return "OK, Successfully connected to " + ip_local;
+		}
+		catch (Exception e) {
+			return "Could not connect to " + ip_local + ", error is " + e.toString();
+		}
+	}
+
+	// Android.sendWSText()
+	@JavascriptInterface
+	public String sendWSText(String message) {
+		BackgroundService.client.sendText(message);
+		return "Sent " + message;
+	}
+
+	// Android.stopWSClient()
+	@JavascriptInterface
+	public String stopWSClient() {
+		BackgroundService.client.close();
+		return "OK, Successfully closed websocket connection.";
+	}
+
+	// Android.startScreenStream()
+	@JavascriptInterface
+	public void startScreenStream() {
+		mainActivity.startScreenCapture();
+	}
+
 	// ===============================================================================================
 
 	// WebAppInterfaceV2.loadJS() - execute JavaScript
@@ -60,6 +100,16 @@ public class WebAppInterfaceV2 {
 	// WebAppInterfaceV2.qrCodeResult() - pass the QR code scan result to the webpage
 	public void qrCodeResult(String data) {
 		loadJS("qrCodeResult('" + data.replace("'", "\\'") + "');");
+	}
+
+	// WebAppInterfaceV2.htmlLog() - log to webpage
+	public void htmlLog(final String logText) {
+		webView.post(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl("javascript:htmlLog('" + logText + "');");
+			}
+		});
 	}
 
 	// ===============================================================================================
@@ -87,24 +137,10 @@ public class WebAppInterfaceV2 {
 		});
 	}
 
-	public void htmlLog(final String logText) {
-		webView.post(new Runnable() {
-			@Override
-			public void run() {
-				webView.loadUrl("javascript:htmlLog('" + logText + "');");
-			}
-		});
-	}
-
 	@JavascriptInterface
 	public String sendWS(String text) {
 		client.sendText(text);
 		return "Sent " + text;
-	}
-
-	@JavascriptInterface
-	public void startBackgroundService() {
-		mainActivity.startBackgroundService(new View(mainContext));
 	}
 
 	@JavascriptInterface

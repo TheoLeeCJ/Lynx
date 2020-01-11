@@ -8,6 +8,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONObject;
 
 public class SimpleClient extends WebSocketClient {
 	public SimpleClient(URI serverURI) {
@@ -15,9 +16,21 @@ public class SimpleClient extends WebSocketClient {
 	}
 
 	public WebAppInterfaceV2 webAppInterface;
+	public String connectionToken;
 
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
+		try {
+			JSONObject json = new JSONObject();
+			json.put("type", "initial_auth");
+			JSONObject messageData = new JSONObject();
+			messageData.put("token", connectionToken);
+			json.put("data", messageData);
+			send(json.toString());
+		}
+		catch (Exception e) {
+			System.out.println("AAAA ouch");
+		}
 		System.out.println("new connection opened");
 	}
 
@@ -32,7 +45,7 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
-		webAppInterface.htmlLog("[ WS ] " + message);
+		webAppInterface.htmlLog("[ WS Server Message ] " + message);
 		System.out.println("received message: " + message);
 	}
 

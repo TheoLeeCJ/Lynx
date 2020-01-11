@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 
 public class BackgroundService extends AccessibilityService {
 	android.os.Handler intervalHandler = new android.os.Handler();
@@ -58,14 +59,21 @@ public class BackgroundService extends AccessibilityService {
 //		}
 	}
 
+	public static SimpleClient client;
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		// start WebSocket server (?)
+		// start WebSocket client (?)
 		try {
-
+			System.out.println("ws://" + WebAppInterfaceV2.ip);
+			client = new SimpleClient(new URI("ws://" + WebAppInterfaceV2.ip));
+			client.webAppInterface = WebAppInterfaceV2.webAppInterface;
+			client.connectionToken = WebAppInterfaceV2.connectionToken;
+			client.connect();
+			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}
 		catch (Exception e) {
-
+			System.out.println("websocket client error: " + e.toString());
 		}
 
 		// show cursor
@@ -83,9 +91,8 @@ public class BackgroundService extends AccessibilityService {
 
 		windowManager = (WindowManager) getBaseContext().getSystemService(WINDOW_SERVICE);
 
-		intervalHandler.postDelayed(intervalThread, 0);
-
-		windowManager.addView(cursorView, cursorLayout);
+		intervalHandler.postDelayed(intervalThread, 0); // comment out when the window isn't required...
+		windowManager.addView(cursorView, cursorLayout); // comment out when the window isn't required...
 
 		return START_STICKY;
 	}

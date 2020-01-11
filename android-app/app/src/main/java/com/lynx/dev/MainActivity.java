@@ -33,6 +33,8 @@ import android.widget.Toast;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.notbytes.barcode_reader.BarcodeReaderActivity;
 
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -266,7 +268,17 @@ public class MainActivity extends AppCompatActivity {
 
 				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
 				byte[] imageBytes = baos.toByteArray();
+
 				base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+				JSONObject message = new JSONObject();
+				message.put("type", "screenstream_frame");
+				JSONObject data = new JSONObject();
+				data.put("frame", base64screen);
+				message.put("data", data);
+
+//				BackgroundService.client.sendText(base64screen);
+				BackgroundService.client.sendText(message.toString());
 			}
 			catch (Exception e) {
 				base64screen = "";

@@ -17,6 +17,10 @@
 			<div id="device-info">
 			</div>
 
+			<button onclick="log.innerText += '\n' + Android.stopWSClient();">Close Connection</button>
+			<button onclick="log.innerText += '\n' + Android.sendWSText('MISAKA');">ONEE-SAMA~!</button>
+			<button onclick="Android.startScreenStream();">Start Screen Streaming</button>
+
 			<pre class="padding margin-top margin-bottom light-grey" style="height: calc(100vh - 370px); overflow: scroll;" id="log"></pre class="padding margin-top margin-bottom">
 		</div>
 
@@ -62,8 +66,12 @@
 					<b>Device IP: </b> ${data.ip}<br>
 					<b>Token: </b> ${data.connectionToken}`;
 
-				document.getElementById("device-setup").style.display = "block";
+				log.innerText += "\n" + Android.startWSClient(data.ip + ":57531", data.connectionToken);
+				// log.innerText += "\n" + "Requesting permissions...";
+				// log.innerText += "\n" + Android.checkPermissions();
 			}
+
+			function htmlLog(data) { log.innerText += "\n" + data; }
 
 			onload();
 		</script>
