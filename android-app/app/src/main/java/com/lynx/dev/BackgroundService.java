@@ -1,7 +1,14 @@
 package com.lynx.dev;
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.view.Gravity;
@@ -10,6 +17,8 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import androidx.annotation.RequiresApi;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -45,9 +54,37 @@ public class BackgroundService extends AccessibilityService {
 	@Override
 	public void onInterrupt() {}
 
+	@RequiresApi(Build.VERSION_CODES.O)
+	private String createNotificationChannel(String channelId , String channelName) {
+		NotificationChannel chan = new NotificationChannel(channelId,
+			channelName, NotificationManager.IMPORTANCE_NONE);
+		chan.setLightColor(Color.BLUE);
+		NotificationManager aaa = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		aaa.createNotificationChannel(chan);
+		return channelId;
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			createNotificationChannel("AAAAA", "LYNX");
+			Intent notificationIntent = new Intent(this, BackgroundService.class);
+			PendingIntent pendingIntent =
+				PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+			Notification notification =
+				new Notification.Builder(this, "AAAAA")
+					.setContentTitle("AAAAAAAAAAA LYNX")
+					.setContentText("WHY ARE WE STILL HERE")
+					.setSmallIcon(R.drawable.common_google_signin_btn_text_dark)
+					.setContentIntent(pendingIntent)
+					.setTicker("ticker")
+					.build();
+
+			startForeground(8, notification);
+		}
 	}
 
 	@Override

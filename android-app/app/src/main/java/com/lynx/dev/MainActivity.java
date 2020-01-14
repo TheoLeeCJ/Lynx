@@ -5,7 +5,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +21,7 @@ import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -82,7 +86,14 @@ public class MainActivity extends AppCompatActivity {
 			startActivityForResult(intent, 889);
 		}
 		else {
-			if (!this.isFinishing()) startService(new Intent(this, BackgroundService.class));
+			if (!this.isFinishing()) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					startForegroundService(new Intent(this, BackgroundService.class));
+				}
+				else {
+					Toast.makeText(mainActivity, "Unfortunately, I have not implemented support for versions below Android Oreo.", Toast.LENGTH_SHORT).show();
+				}
+			}
 		}
 	}
 
