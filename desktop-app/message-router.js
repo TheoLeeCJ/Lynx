@@ -32,8 +32,12 @@ const routeMessage = (message, ws) => {
         }, ws);
       }
       break;
-    default:
-      // .
+
+    default: // matched no message types - invalid
+      sendJsonMessage({
+        type: responseTypes.INITIAL_AUTH_REPLY,
+        ...BAD_REQUEST,
+      }, ws);
   }
 };
 
