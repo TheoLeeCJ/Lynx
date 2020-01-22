@@ -22,10 +22,13 @@ const createWindow = () => {
   win.on("closed", () => {
     win = null;
   });
+
+  module.exports.win = win;
 };
 
 app.on("ready", createWindow);
 
+global.deviceAuthenticated = false;
 startWebSocketServer();
 
 
