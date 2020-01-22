@@ -46,7 +46,8 @@ const routeMessage = (message, ws) => {
         if (win === null) {
           console.log("Could not access window object - win is null. Window possibly closed.");
         } else if (typeof win === "undefined") {
-          console.log("Could not access window object - win is undefined.");
+          console.log("Could not access window object - win is undefined. " +
+                      "Window object probably not present in exports from main.js (createWindow did not run).");
         }
 
         win.webContents.send("update-screenstream-frame", message.data.frame);
