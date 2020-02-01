@@ -1,13 +1,13 @@
 package com.lynx.dev;
 
+import android.util.Log;
+
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SimpleClient extends WebSocketClient {
@@ -47,6 +47,11 @@ public class SimpleClient extends WebSocketClient {
 	public void onMessage(String message) {
 		webAppInterface.htmlLog("[ WS Server Message ] " + message);
 		System.out.println("received message: " + message);
+		try {
+			MessageHandler.handleMessage(new JSONObject(message));
+		} catch (JSONException e) {
+			Log.e("JSONObject constructor", "JSON parse exception occurred", e);
+		}
 	}
 
 	@Override
