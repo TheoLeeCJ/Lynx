@@ -48,8 +48,8 @@ public class WebAppInterfaceV2 {
 	public void startScreenCapture() { mainActivity.startScreenCapture(); }
 
 	// Android.qrCodeReader() - passthrough to MainActivity.qrCode()
-	@JavascriptInterface
-	public void qrCodeReader() { mainActivity.qrCode(); }
+//	@JavascriptInterface
+//	public void qrCodeReader() { mainActivity.qrCode(); }
 
 	// Android.startWSClient()
 	@JavascriptInterface
@@ -118,7 +118,7 @@ public class WebAppInterfaceV2 {
 	public String connectWS(String host) {
 		try {
 			client = new SimpleClient(new URI(host));
-			client.webAppInterface = this;
+//			client.webAppInterface = this;
 			client.connect();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 			return "OK, Successfully connected to " + host;

@@ -20,6 +20,8 @@ import android.widget.ImageView;
 
 import androidx.annotation.RequiresApi;
 
+import org.slf4j.helpers.Util;
+
 import java.net.InetSocketAddress;
 import java.net.URI;
 
@@ -69,16 +71,16 @@ public class BackgroundService extends AccessibilityService {
 		super.onCreate();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			createNotificationChannel("AAAAA", "LYNX");
+			createNotificationChannel("AAAAA", "Lynx Dev");
 			Intent notificationIntent = new Intent(this, BackgroundService.class);
 			PendingIntent pendingIntent =
 				PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
 			Notification notification =
 				new Notification.Builder(this, "AAAAA")
-					.setContentTitle("AAAAAAAAAAA LYNX")
-					.setContentText("WHY ARE WE STILL HERE")
-					.setSmallIcon(R.drawable.common_google_signin_btn_text_dark)
+					.setContentTitle("Lynx Dev")
+					.setContentText("Lynx is currently connected to 1 PC.")
+					.setSmallIcon(R.drawable.common_full_open_on_phone)
 					.setContentIntent(pendingIntent)
 					.setTicker("ticker")
 					.build();
@@ -102,10 +104,9 @@ public class BackgroundService extends AccessibilityService {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// start WebSocket client (?)
 		try {
-			System.out.println("ws://" + WebAppInterfaceV2.ip);
-			client = new SimpleClient(new URI("ws://" + WebAppInterfaceV2.ip));
-			client.webAppInterface = WebAppInterfaceV2.webAppInterface;
-			client.connectionToken = WebAppInterfaceV2.connectionToken;
+			System.out.println("ws://" + Utility.IP_ADDR);
+			client = new SimpleClient(new URI("ws://" + Utility.IP_ADDR + ":" + Utility.WEBSOCKET_PORT));
+			client.connectionToken = Utility.CONNECTION_TOKEN;
 			client.connect();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 		}
@@ -128,8 +129,8 @@ public class BackgroundService extends AccessibilityService {
 
 		windowManager = (WindowManager) getBaseContext().getSystemService(WINDOW_SERVICE);
 
-		intervalHandler.postDelayed(intervalThread, 0); // comment out when the window isn't required...
-		windowManager.addView(cursorView, cursorLayout); // comment out when the window isn't required...
+//		intervalHandler.postDelayed(intervalThread, 0); // comment out when the window isn't required...
+//		windowManager.addView(cursorView, cursorLayout); // comment out when the window isn't required...
 
 		return START_STICKY;
 	}

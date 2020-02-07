@@ -15,7 +15,6 @@ public class SimpleClient extends WebSocketClient {
 		super(serverURI);
 	}
 
-	public WebAppInterfaceV2 webAppInterface;
 	public String connectionToken;
 
 	@Override
@@ -45,7 +44,6 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String message) {
-		webAppInterface.htmlLog("[ WS Server Message ] " + message);
 		System.out.println("received message: " + message);
 		try {
 			MessageHandler.handleMessage(new JSONObject(message));

@@ -3,13 +3,16 @@ package com.lynx.dev;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -32,48 +35,105 @@ import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.barcode.Barcode;
 import com.notbytes.barcode_reader.BarcodeReaderActivity;
 
 import org.json.JSONObject;
+import org.slf4j.helpers.Util;
 
 import java.io.ByteArrayOutputStream;
 
 public class MainActivity extends AppCompatActivity {
-	public WebView webapp = null;
+//	public WebView webapp = null;
 	public AssetManager assetManager = null;
-	private WebAppInterfaceV2 webAppInterface = null;
+//	private WebAppInterfaceV2 webAppInterface = null;
 	public MainActivity mainActivity = this;
+	static MainActivity mainActivityStatic;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		setContentView(R.layout.activity_main);
 
 		// Hide the big bar
 		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
 		getSupportActionBar().hide();
 
-		// Set up the webview
-		webapp = new WebView(this.getApplicationContext());
-		setContentView(webapp);
-		webapp.getSettings().setJavaScriptEnabled(true);
-		webapp.loadUrl("file:///android_asset/webpages/index.html");
-
-		// Bind WebAppInterface to the webview
-		webAppInterface = new WebAppInterfaceV2(this, this, webapp);
-		webapp.addJavascriptInterface(webAppInterface, "Android");
+		setContentView(R.layout.activity_main);
 	}
 
-	@Override
-	public void onBackPressed() {
-		if (webapp.canGoBack()) {
-			webapp.goBack();
-		} else {
-			super.onBackPressed();
+	// UI - Start QR Code Scanner Activity
+	public void addDevice(View view) {
+		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
+		startActivityForResult(launchIntent, Utility.ACTIVITY_RESULT_QRCODE);
+	}
+
+	// UI - Indicate that we're trying to connect
+	public void alterHomeMesage(final int homeMessage) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (homeMessage == Utility.HOMEMESSAGE_CONNECTING) {
+					findViewById(R.id.HomeStatus_Initial).setVisibility(ListView.GONE);
+					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.VISIBLE);
+					((TextView) findViewById(R.id.ConnectingText)).setText("Connecting to " + Utility.IP_ADDR);
+				}
+				else if (homeMessage == Utility.HOMEMESSAGE_CONNECTED) {
+					System.out.println("messing with lstiviews");
+					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.VISIBLE);
+					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.GONE);
+					((TextView) findViewById(R.id.HomeStatus_Big)).setText("Connected to " + Utility.IP_ADDR);
+				}
+			}
+		});
+	}
+
+	// Functions - Connect
+	public void openConnection() {
+		if (!this.isFinishing()) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				mainActivityStatic = this;
+				startForegroundService(new Intent(this, BackgroundService.class));
+			}
+			else {
+				Toast.makeText(mainActivity, "Unfortunately, I have not implemented support for versions below Android Oreo.", Toast.LENGTH_SHORT).show();
+			}
 		}
+	}
+
+	// UI - Open Settings
+	public void settingsMenu(View view) {
+		Intent intent = new Intent(this, SettingsActivity.class);
+		startActivity(intent);
+	}
+
+	// UI - Show Confirmation Dialog when adding New Device
+	public void confirmAddDevice(String deviceData) {
+		// Parse JSON
+		String ipAddr = "";
+		String uuid = "";
+		try {
+			JSONObject deviceDataJSON = new JSONObject(deviceData);
+			ipAddr = deviceDataJSON.getString("ip");
+			uuid = deviceDataJSON.getString("connectionToken");
+		}
+		catch (Exception e) {
+			Toast.makeText(mainActivity,
+				"You seem to have scanned an invalid QR code. Please try again.\n(couldn't parse QR code JSON)",
+				Toast.LENGTH_LONG).show();
+			return;
+		}
+
+		// Prepare Dialog
+		Bundle bundle = new Bundle();
+		bundle.putString("ipAddress", ipAddr);
+		bundle.putString("uuid", uuid);
+		DialogFragment newFragment = new ConfirmAddDevice();
+		newFragment.setArguments(bundle);
+		newFragment.show(getSupportFragmentManager(), "ConfirmAddDevice");
 	}
 
 	// Background Service
@@ -103,33 +163,27 @@ public class MainActivity extends AppCompatActivity {
 		return prefString!= null && prefString.contains(context.getPackageName() + "/" + accessibilityServiceClass.getName());
 	}
 
-	// QR Code
-	public void qrCode() {
-		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
-		startActivityForResult(launchIntent, 199);
-	}
-
 	// ==============================================
 	//
 	// STORAGE PERMISSIONS
 	//
 	// ==============================================
 
-	public void storagePermission() {
-		if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-			// Permission is not granted
-			// Should we show an explanation?
-			if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-				// Show an explanation to the user
-				webAppInterface.explainPrompt();
-			} else {
-				// No explanation needed; request the permission
-				requestPermission();
-			}
-		} else {
-			// Permission has already been granted
-		}
-	}
+//	public void storagePermission() {
+//		if (ContextCompat.checkSelfPermission(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//			// Permission is not granted
+//			// Should we show an explanation?
+//			if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//				// Show an explanation to the user
+//				webAppInterface.explainPrompt();
+//			} else {
+//				// No explanation needed; request the permission
+//				requestPermission();
+//			}
+//		} else {
+//			// Permission has already been granted
+//		}
+//	}
 
 	public void requestPermission() {
 		ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 888);
@@ -147,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 					System.out.println("User doesn't want to use storage");
 					if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 						// Show an explanation to the user
-						webAppInterface.explainPrompt();
+//						webAppInterface.explainPrompt();
 						System.out.println("A");
 					}
 				}
@@ -182,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		webAppInterface.stopWebsocketServer();
 		tearDownMediaProjection();
 	}
 
@@ -195,6 +248,10 @@ public class MainActivity extends AppCompatActivity {
 			mMediaProjection.stop();
 			mMediaProjection = null;
 		}
+	}
+
+	public void UIcall_startScreenCapture(View view) {
+		startScreenCapture();
 	}
 
 	public void startScreenCapture() {
@@ -227,9 +284,10 @@ public class MainActivity extends AppCompatActivity {
 			setUpMediaProjection();
 			setUpVirtualDisplay();
 		}
-		if (requestCode == 199 && data != null) {
+		// Scanned QR Code
+		if (requestCode == Utility.ACTIVITY_RESULT_QRCODE && data != null) {
 			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
-			webAppInterface.qrCodeResult(barcode.rawValue);
+			confirmAddDevice(barcode.rawValue);
 		}
 	}
 
@@ -241,14 +299,14 @@ public class MainActivity extends AppCompatActivity {
 		mScreenDensity = metrics.densityDpi;
 
 		Log.i(TAG, "Setting up a VirtualDisplay: " +
-			480 + "x" + 854 +
+			720 + "x" + 1280 +
 			" (" + mScreenDensity + ")");
 
-		imageReader = ImageReader.newInstance(480, 854, PixelFormat.RGBA_8888, 3);
+		imageReader = ImageReader.newInstance(720, 1280, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
-			480, 854, mScreenDensity,
+			720, 1280, mScreenDensity,
 			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 			imageReader.getSurface(), null, null);
 	}
@@ -277,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
 
 				image.close();
 
-				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
+				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
 				byte[] imageBytes = baos.toByteArray();
 
 				base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);

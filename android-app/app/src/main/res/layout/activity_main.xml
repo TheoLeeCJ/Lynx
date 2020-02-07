@@ -1,7 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	tools:context=".MainActivity"/>
+	android:background="#000000"
+	tools:context=".MainActivity" >
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_marginStart="8dp"
+			android:layout_marginEnd="8dp"
+			android:orientation="vertical"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent">
+
+			<TextView
+				android:id="@+id/BigTitle"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="24dp"
+				android:text="@string/app_name"
+				android:textAlignment="center"
+				android:textAllCaps="false"
+				android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+				android:textColor="#FFFFFFFF" />
+
+			<Space
+				android:layout_width="match_parent"
+				android:layout_height="16dp" />
+
+			<LinearLayout
+				android:id="@+id/HomeStatus"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_margin="2dp"
+				android:background="@android:drawable/editbox_dropdown_dark_frame"
+				android:orientation="vertical">
+
+				<LinearLayout
+					android:id="@+id/HomeStatus_Connected"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="16dp"
+					android:orientation="vertical"
+					android:visibility="gone">
+
+					<TextView
+						android:id="@+id/HomeStatus_Big"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:text="Connected to 192.168.1.1"
+						android:textColor="#FFFFFF"
+						android:textStyle="bold" />
+
+					<LinearLayout
+						android:id="@+id/HomeStatus_Actions"
+						android:layout_width="wrap_content"
+						android:layout_height="match_parent"
+						android:layout_marginTop="8dp"
+						android:orientation="horizontal">
+
+						<Button
+							android:id="@+id/HomeStatus_ScreenMirror"
+							style="@style/Widget.AppCompat.Button"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:onClick="UIcall_startScreenCapture"
+							android:text="Screen Mirror"
+							android:textSize="12sp" />
+
+						<Button
+							android:id="@+id/HomeStatus_RemoteControl"
+							style="@style/Widget.AppCompat.Button"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:text="Remote Control"
+							android:textSize="12sp" />
+					</LinearLayout>
+
+				</LinearLayout>
+
+				<TextView
+					android:id="@+id/HomeStatus_Initial"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:padding="16dp"
+					android:text='No PCs connected.\nTap "Add Device" to connect to a PC.'
+					android:textColor="#FFFFFF"
+					android:visibility="visible" />
+
+				<LinearLayout
+					android:id="@+id/HomeStatus_Connecting"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:layout_margin="8dp"
+					android:orientation="horizontal"
+					android:visibility="gone">
+
+					<ProgressBar
+						android:id="@+id/ConnectingLoader"
+						style="?android:attr/progressBarStyle"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content" />
+
+					<TextView
+						android:id="@+id/ConnectingText"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_margin="14dp"
+						android:layout_weight="1"
+						android:text="Trying to connect to 192.168.1.1"
+						android:textColor="#FFFFFF" />
+				</LinearLayout>
+
+			</LinearLayout>
+
+			<Space
+				android:layout_width="match_parent"
+				android:layout_height="8dp" />
+
+			<Button
+				android:id="@+id/AddDevice"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:backgroundTint="#585858"
+				android:drawableStart="@android:drawable/ic_menu_add"
+				android:drawablePadding="16dp"
+				android:includeFontPadding="false"
+				android:onClick="addDevice"
+				android:padding="16dp"
+				android:text="Add Device by QR Code"
+				android:textAlignment="textStart"
+				android:textColor="#FFFFFF"
+				android:textSize="18sp" />
+
+			<Button
+				android:id="@+id/SharedFolders"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:backgroundTint="#585858"
+				android:drawableStart="@android:drawable/stat_notify_sdcard"
+				android:drawablePadding="20dp"
+				android:includeFontPadding="false"
+				android:padding="18dp"
+				android:paddingStart="20dp"
+				android:text="Browse Shared Folder(s)"
+				android:textAlignment="textStart"
+				android:textColor="#FFFFFF"
+				android:textSize="18sp" />
+
+			<Button
+				android:id="@+id/Settings"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:backgroundTint="#585858"
+				android:drawableStart="@android:drawable/ic_menu_preferences"
+				android:drawablePadding="16dp"
+				android:includeFontPadding="false"
+				android:onClick="settingsMenu"
+				android:padding="18dp"
+				android:paddingStart="16dp"
+				android:text="Settings"
+				android:textAlignment="textStart"
+				android:textColor="#FFFFFF"
+				android:textSize="18sp" />
+
+			<Button
+				android:id="@+id/Debug0"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:onClick="startBackgroundService"
+				android:text="[Debug] Start Background Service" />
+		</LinearLayout>
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
