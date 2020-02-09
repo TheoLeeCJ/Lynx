@@ -35,6 +35,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
 		getSupportActionBar().hide();
 
 		setContentView(R.layout.activity_main);
+
+		// Try and check Service State
+		if (BackgroundService.serviceState.get("connectStatus") == "connected") {
+			alterHomeMesage(Utility.HOMEMESSAGE_CONNECTED);
+		}
+		((TextView) findViewById(R.id.ServiceState)).setText("SERVICE STATE: " + BackgroundService.serviceState.get("connectStatus"));
 	}
 
 	// UI - Start QR Code Scanner Activity
@@ -79,12 +86,14 @@ public class MainActivity extends AppCompatActivity {
 				if (homeMessage == Utility.HOMEMESSAGE_CONNECTING) {
 					findViewById(R.id.HomeStatus_Initial).setVisibility(ListView.GONE);
 					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.VISIBLE);
+					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.GONE);
 					((TextView) findViewById(R.id.ConnectingText)).setText("Connecting to " + Utility.IP_ADDR);
 				}
 				else if (homeMessage == Utility.HOMEMESSAGE_CONNECTED) {
 					System.out.println("messing with lstiviews");
-					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.VISIBLE);
+					findViewById(R.id.HomeStatus_Initial).setVisibility(ListView.GONE);
 					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.GONE);
+					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.VISIBLE);
 					((TextView) findViewById(R.id.HomeStatus_Big)).setText("Connected to " + Utility.IP_ADDR);
 				}
 			}
@@ -108,6 +117,26 @@ public class MainActivity extends AppCompatActivity {
 	public void settingsMenu(View view) {
 		Intent intent = new Intent(this, SettingsActivity.class);
 		startActivity(intent);
+	}
+
+	// UI - Open Accessibility Settings
+	public void androidAccessibiitySettings(View view) {
+		startActivityForResult(new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS), 0);
+	}
+
+	// UI - Simulate tap
+	public void simulateTap(View view) {
+		JSONObject reply = new JSONObject();
+		try {
+			reply.put("type", "remotecontrol_tap");
+			reply.put("x", 200);
+			reply.put("y", 400);
+		}
+		catch (Exception e) {
+			Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while generating JSON!", Toast.LENGTH_SHORT);
+			return;
+		}
+		MessageHandler.handleMessage(reply);
 	}
 
 	// UI - Show Confirmation Dialog when adding New Device
@@ -134,6 +163,23 @@ public class MainActivity extends AppCompatActivity {
 		DialogFragment newFragment = new ConfirmAddDevice();
 		newFragment.setArguments(bundle);
 		newFragment.show(getSupportFragmentManager(), "ConfirmAddDevice");
+	}
+
+	// Debug - Send message to MessageHandler
+	public void debugSendToMessageHandler(View view) {
+		// Parse JSON
+		try {
+			String text = ((EditText) findViewById(R.id.JSONMessage)).getText().toString();
+			System.out.println(text);
+			JSONObject messageJSON = new JSONObject(text);
+			MessageHandler.handleMessage(messageJSON);
+		}
+		catch (Exception e) {
+			Toast.makeText(mainActivity,
+				"Message isn't valid JSON!",
+				Toast.LENGTH_LONG).show();
+			return;
+		}
 	}
 
 	// Background Service
@@ -233,6 +279,8 @@ public class MainActivity extends AppCompatActivity {
 	private VirtualDisplay mVirtualDisplay;
 	private MediaProjectionManager mMediaProjectionManager;
 
+	public static Boolean screenStreamApprovedByPC = false;
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -278,6 +326,18 @@ public class MainActivity extends AppCompatActivity {
 				Log.i(TAG, "User cancelled");
 				return;
 			}
+			// SEND REQUEST TO PC
+			JSONObject reply = new JSONObject();
+			try {
+				reply.put("type", "screenstream_request");
+			}
+			catch (Exception e) {
+				Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while making screenstream_request!", Toast.LENGTH_SHORT);
+				return;
+			}
+			SimpleClient.simpleClientStatic.sendText(reply.toString());
+			// END
+
 			Log.i(TAG, "Starting screen capture");
 			mResultCode = resultCode;
 			mResultData = data;
@@ -299,14 +359,14 @@ public class MainActivity extends AppCompatActivity {
 		mScreenDensity = metrics.densityDpi;
 
 		Log.i(TAG, "Setting up a VirtualDisplay: " +
-			720 + "x" + 1280 +
+			480 + "x" + 854 +
 			" (" + mScreenDensity + ")");
 
-		imageReader = ImageReader.newInstance(720, 1280, PixelFormat.RGBA_8888, 3);
+		imageReader = ImageReader.newInstance(480, 854, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
-			720, 1280, mScreenDensity,
+			480, 854, mScreenDensity,
 			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 			imageReader.getSurface(), null, null);
 	}
@@ -332,22 +392,23 @@ public class MainActivity extends AppCompatActivity {
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				Bitmap niceCleanBitmap = cleanBitmap(image);
-
 				image.close();
 
-				niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
-				byte[] imageBytes = baos.toByteArray();
+				if (screenStreamApprovedByPC) {
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
+					byte[] imageBytes = baos.toByteArray();
 
-				base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-				JSONObject message = new JSONObject();
-				message.put("type", "screenstream_frame");
-				JSONObject data = new JSONObject();
-				data.put("frame", base64screen);
-				message.put("data", data);
+					JSONObject message = new JSONObject();
+					message.put("type", "screenstream_frame");
+					JSONObject data = new JSONObject();
+					data.put("frame", base64screen);
+					message.put("data", data);
 
 //				BackgroundService.client.sendText(base64screen);
-				BackgroundService.client.sendText(message.toString());
+					BackgroundService.client.sendText(message.toString());
+				}
 			}
 			catch (Exception e) {
 				base64screen = "";

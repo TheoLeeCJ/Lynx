@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SimpleClient extends WebSocketClient {
+	static SimpleClient simpleClientStatic;
 	public SimpleClient(URI serverURI) {
 		super(serverURI);
 	}
@@ -19,6 +20,7 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
+		simpleClientStatic = this;
 		try {
 			JSONObject json = new JSONObject();
 			json.put("type", "initial_auth");

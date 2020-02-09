@@ -28,7 +28,7 @@
 		<EditTextPreference
 			android:defaultValue="Default value"
 			android:icon="@android:drawable/ic_menu_gallery"
-			android:key="edit_text_preference_1"
+			android:key="stream_res"
 			android:selectAllOnFocus="true"
 			android:singleLine="false"
 			android:summary="Current: 720 by 1280\n\nLarger number automatically corresponds to longer side of the screen, in any orientation."
@@ -36,7 +36,7 @@
 		<EditTextPreference
 			android:defaultValue="40"
 			android:icon="@android:drawable/ic_menu_compass"
-			android:key="edit_text_preference_1"
+			android:key="stream_compression"
 			android:selectAllOnFocus="true"
 			android:singleLine="true"
 			android:summary="Higher values result in a better-looking screen mirror, but may increase instability and lag."

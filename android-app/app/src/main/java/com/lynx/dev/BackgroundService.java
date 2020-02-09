@@ -1,6 +1,7 @@
 package com.lynx.dev;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.GestureDescription;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,7 +9,9 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.view.Gravity;
@@ -24,6 +27,10 @@ import org.slf4j.helpers.Util;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BackgroundService extends AccessibilityService {
 	android.os.Handler intervalHandler = new android.os.Handler();
@@ -49,6 +56,9 @@ public class BackgroundService extends AccessibilityService {
 	private ImageView cursorImageView;
 	public static int globalX = 0;
 	public static int globalY = 0;
+	public static BackgroundService backgroundServiceStatic;
+
+	public static Map<String, String> serviceState = new HashMap<String, String>();
 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {}
@@ -66,9 +76,48 @@ public class BackgroundService extends AccessibilityService {
 		return channelId;
 	}
 
+	public static int getScreenWidth() {
+		return Resources.getSystem().getDisplayMetrics().widthPixels;
+	}
+
+	public static int getScreenHeight() {
+		return Resources.getSystem().getDisplayMetrics().heightPixels;
+	}
+
+	// (x, y) in screen coordinates
+	private static GestureDescription createClick(float x, float y) {
+		// for a single tap a duration of 1 ms is enough
+		final int DURATION = 1;
+
+		Path clickPath = new Path();
+		clickPath.moveTo(x, y);
+		GestureDescription.StrokeDescription clickStroke = new GestureDescription.StrokeDescription(clickPath, 0, DURATION);
+		GestureDescription.Builder clickBuilder = new GestureDescription.Builder();
+		clickBuilder.addStroke(clickStroke);
+
+		return clickBuilder.build();
+	}
+
+	public void click(float x, float y) {
+		GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+			@Override
+			public void onCompleted(GestureDescription gestureDescription) {
+				super.onCompleted(gestureDescription);
+			}
+
+			@Override
+			public void onCancelled(GestureDescription gestureDescription) {
+				super.onCancelled(gestureDescription);
+			}
+		};
+
+		boolean result = dispatchGesture(createClick(x, y), callback, null);
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		backgroundServiceStatic = this;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			createNotificationChannel("AAAAA", "Lynx Dev");

@@ -46,6 +46,14 @@
 				android:background="@android:drawable/editbox_dropdown_dark_frame"
 				android:orientation="vertical">
 
+				<TextView
+					android:id="@+id/ServiceState"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="16dp"
+					android:text="TextView"
+					android:textColor="#FFFFFF" />
+
 				<LinearLayout
 					android:id="@+id/HomeStatus_Connected"
 					android:layout_width="match_parent"
@@ -181,6 +189,44 @@
 				android:layout_height="wrap_content"
 				android:onClick="startBackgroundService"
 				android:text="[Debug] Start Background Service" />
+
+			<Button
+				android:id="@+id/Debug1"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:onClick="simulateTap"
+				android:text="[Debug] Simulate Tap at 200, 400, MUST BE CONNECTED TO PC, AccessibilityService must be enabled in Settings" />
+
+			<Button
+				android:id="@+id/Debug2"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:onClick="androidAccessibiitySettings"
+				android:text="Open Accessibility Settings" />
+
+			<EditText
+				android:id="@+id/JSONMessage"
+				style="@style/Widget.MaterialComponents.TextInputEditText.FilledBox"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:drawableTint="#FFFFFF"
+				android:drawableTintMode="screen"
+				android:ems="10"
+				android:gravity="start|top"
+				android:inputType="textMultiLine"
+				android:selectAllOnFocus="true"
+				android:shadowColor="#FFFFFF"
+				android:singleLine="false"
+				android:textColor="#FFFFFF"
+				android:textColorHint="#FFFFFF"
+				tools:text="JSON message to send to Android App MessageHandler" />
+
+			<Button
+				android:id="@+id/Debug3"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:onClick="debugSendToMessageHandler"
+				android:text="Send to MessageHandler" />
 		</LinearLayout>
 	</androidx.constraintlayout.widget.ConstraintLayout>
 
