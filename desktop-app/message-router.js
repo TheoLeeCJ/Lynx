@@ -8,12 +8,17 @@ const {
 } = require("./utility/responses");
 const {
   messageTypes: {
+    GENERIC_MESSAGE,
     INITIAL_AUTH,
+    SCREENSTREAM_REQUEST,
     SCREENSTREAM_FRAME,
+    META_SENDINFO,
   },
   responseTypes: {
-    INITIAL_AUTH_REPLY,
     GENERIC_MESSAGE_REPLY,
+    INITIAL_AUTH_REPLY,
+    SCREENSTREAM_REQUEST_REPLY,
+    META_SENDINFO_REPLY,
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
@@ -31,29 +36,54 @@ const routeMessage = (message, ws) => {
 
   switch (message.type) {
     case INITIAL_AUTH:
-      const { correctToken } = require("./main");
-      if (message.data.token === correctToken) {
-        sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
+      if (message.data.token === require("./main").correctToken) {
         global.deviceAuthenticated = true;
+        sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
       } else {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...INVALID_TOKEN }, ws);
       }
       break;
 
-    case SCREENSTREAM_FRAME:
-      if (global.deviceAuthenticated && message.data.frame) {
-        const { win } = require("./main");
-        if (win === null) {
-          console.log("Could not access window object - win is null. Window possibly closed.");
-        } else if (typeof win === "undefined") {
-          console.log("Could not access window object - win is undefined. " +
-                      "Window object probably not present in exports from main.js (createWindow did not run).");
-        }
+    case SCREENSTREAM_REQUEST:
+      if (global.deviceAuthenticated) {
+        global.screenstreamAuthorised = true;
+        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
+      } else {
+        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
+      }
+      break;
 
-        win.webContents.send("update-screenstream-frame", message.data.frame);
-      } else if (!global.deviceAuthenticated) {
-        // screenstream request not implemented yet
-        // sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
+    case SCREENSTREAM_FRAME:
+      if (global.deviceAuthenticated && global.screenstreamAuthorised) {
+        if (message.data && message.data.frame) {
+          const { win } = require("./main");
+          if (win) {
+            win.webContents.send("update-screenstream-frame", message.data.frame);
+          } else if (win === null) {
+            console.log("Could not access window object - win is null. Window possibly closed.");
+          } else if (typeof win === "undefined") {
+            console.log("Could not access window object - win is undefined. " +
+                        "Window object probably not present in exports from main.js (createWindow did not run).");
+          }
+        } else {
+          sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
+        }
+      } else {
+        sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...FORBIDDEN }, ws);
+      }
+      break;
+
+    case META_SENDINFO:
+      if (global.deviceAuthenticated) {
+        const validateMetadataMessage = require("./utility/validate-metadata-message");
+        if (validateMetadataMessage(message)) {
+          global.deviceMetadata = message.data;
+          sendJsonMessage({ type: META_SENDINFO_REPLY, ...GENERIC_OK }, ws);
+        } else {
+          sendJsonMessage({ type: META_SENDINFO_REPLY, ...BAD_REQUEST }, ws);
+        }
+      } else {
+        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
       }
       break;
 
