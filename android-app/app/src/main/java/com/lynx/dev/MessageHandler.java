@@ -48,14 +48,21 @@ public class MessageHandler {
                         reply.put("type", "meta_sendinfo");
 
                         JSONObject screenDimensions = new JSONObject();
-                        screenDimensions.put("x", BackgroundService.getScreenWidth());
-                        screenDimensions.put("y", BackgroundService.getScreenHeight());
+                        screenDimensions.put("screenWidth", BackgroundService.getScreenWidth());
+                        screenDimensions.put("screenHeight", BackgroundService.getScreenHeight());
 
-                        reply.put("data", new JSONObject());
-                        reply.getJSONObject("data").put("screenDimensions", screenDimensions);
+                        JSONObject screenStreamImageDimensions = new JSONObject();
+                        screenStreamImageDimensions.put("imageWidth", 480);
+                        screenStreamImageDimensions.put("imageHeight", 854);
+
+                        JSONObject replyData = new JSONObject();
+                        replyData.put("screenDimensions", screenDimensions);
+                        replyData.put("screenStreamImageDimensions", screenStreamImageDimensions);
+
+                        reply.put("data", replyData);
                     }
                     catch (Exception e) {
-                        Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while generating meta_getdimensions!", Toast.LENGTH_SHORT);
+                        Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while generating meta_sendinfo!", Toast.LENGTH_SHORT);
                         return;
                     }
                     System.out.println(reply.toString());

@@ -12,7 +12,7 @@ const createWindow = () => {
     height: 600,
     show: false, // hide before maximise to prevent window frame flash
     webPreferences: {
-      preload: path.join(app.getAppPath(), "preload.js"),
+      preload: path.join(app.getAppPath(), "main-window-preload.js"),
     },
   });
   win.on("ready-to-show", win.maximize);
@@ -22,8 +22,6 @@ const createWindow = () => {
   win.on("closed", () => {
     win = null;
   });
-
-  module.exports.win = win;
 };
 
 app.on("ready", createWindow);
