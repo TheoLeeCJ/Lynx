@@ -1,13 +1,15 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
+const startNewScreenstreamWindow =
+    require("./screenstream-new-window/screenstream-new-window-init");
 
 /* ---------------------- APP INIT ---------------------- */
 
-let win;
+let mainWindow;
 
 const createWindow = () => {
-  win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     show: false, // hide before maximise to prevent window frame flash
@@ -15,18 +17,24 @@ const createWindow = () => {
       preload: path.join(app.getAppPath(), "main-window-preload.js"),
     },
   });
-  win.on("ready-to-show", win.maximize);
+  mainWindow.on("ready-to-show", mainWindow.maximize);
 
-  win.loadFile("webpages/index.html");
+  mainWindow.loadFile("webpages/index.html");
 
-  win.on("closed", () => {
-    win = null;
+  mainWindow.on("closed", () => {
+    mainWindow = null;
   });
+
+  global.screenstreamWindow = mainWindow;
+
+  module.exports.mainWindow = mainWindow;
 };
 
 app.on("ready", createWindow);
 
 global.deviceAuthenticated = false;
+global.screenstreamAuthorised = false;
+
 startWebSocketServer();
 
 
@@ -34,4 +42,18 @@ startWebSocketServer();
 
 ipcMain.once("get-connection-token", (_, connectionToken) => {
   module.exports.correctToken = connectionToken;
+});
+
+ipcMain.on("toggle-phone-screen-window", (_, setting) => {
+  if (!global.deviceAuthenticated || !global.screenstreamAuthorised) return;
+
+  if (setting === "newWindow") {
+    startNewScreenstreamWindow();
+    global.screenstreamWindow = global.screenstreamNewWindow;
+  } else if (setting === "sameWindow") {
+    if (global.screenstreamNewWindow) {
+      global.screenstreamNewWindow.close();
+    }
+    global.screenstreamWindow = mainWindow;
+  }
 });

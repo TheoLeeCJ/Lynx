@@ -51,13 +51,13 @@ public class MessageHandler {
                         screenDimensions.put("screenWidth", BackgroundService.getScreenWidth());
                         screenDimensions.put("screenHeight", BackgroundService.getScreenHeight());
 
-                        JSONObject screenStreamImageDimensions = new JSONObject();
-                        screenStreamImageDimensions.put("imageWidth", 480);
-                        screenStreamImageDimensions.put("imageHeight", 854);
+                        JSONObject screenstreamImageDimensions = new JSONObject();
+                        screenstreamImageDimensions.put("imageWidth", 480);
+                        screenstreamImageDimensions.put("imageHeight", 854);
 
                         JSONObject replyData = new JSONObject();
                         replyData.put("screenDimensions", screenDimensions);
-                        replyData.put("screenStreamImageDimensions", screenStreamImageDimensions);
+                        replyData.put("screenstreamImageDimensions", screenstreamImageDimensions);
 
                         reply.put("data", replyData);
                     }

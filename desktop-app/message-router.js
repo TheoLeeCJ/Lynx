@@ -22,9 +22,6 @@ const {
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
-const { startScreenStreamWindow } = require("./screenstream/screenstream-window");
-
-let screenstreamWindow;
 
 const routeMessage = (message, ws) => {
   if (typeof message.type !== "string" || !message.type.trim()) {
@@ -59,14 +56,13 @@ const routeMessage = (message, ws) => {
     case SCREENSTREAM_FRAME:
       if (global.deviceAuthenticated && global.screenstreamAuthorised) {
         if (message.data && message.data.frame && typeof message.data.frame === "string") {
-          if (screenstreamWindow) {
-            screenstreamWindow.webContents.send("update-screenstream-frame", message.data.frame);
-          } else if (screenstreamWindow === null) {
-            console.log("Could not access window object - win is null. Window possibly closed.");
-          } else if (typeof screenstreamWindow === "undefined") {
-            console.log("Could not access window object - screenstreamWindow is undefined. " +
-                        "Window object probably not present in exports from screenstream/screenstream-window.js " +
-                        "(startScreenStreamWindow did not run).");
+          if (global.screenstreamWindow) {
+            global.screenstreamWindow.webContents
+                .send("update-screenstream-frame", message.data.frame);
+          } else if (global.screenstreamWindow === null) {
+            console.error("Could not access window object - win is null. Window possibly closed.");
+          } else if (typeof global.screenstreamWindow === "undefined") {
+            console.error("Could not access window object - global.screenstreamWindow is undefined.");
           }
         } else {
           sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
@@ -82,9 +78,6 @@ const routeMessage = (message, ws) => {
         if (validateMetadataMessage(message)) {
           global.deviceMetadata = message.data;
           sendJsonMessage({ type: META_SENDINFO_REPLY, ...GENERIC_OK }, ws);
-
-          startScreenStreamWindow();
-          screenstreamWindow = require("./screenstream/screenstream-window").screenstreamWindow;
         } else {
           sendJsonMessage({ type: META_SENDINFO_REPLY, ...BAD_REQUEST }, ws);
         }

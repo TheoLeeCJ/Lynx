@@ -9,11 +9,11 @@ const validateMetadataMessage = (message) => {
       typeof message.data.screenDimensions.screenHeight === "number" &&
 
       // screen stream image dimensions
-      message.data.screenStreamImageDimensions &&
-      message.data.screenStreamImageDimensions.imageWidth &&
-      message.data.screenStreamImageDimensions.imageHeight &&
-      typeof message.data.screenStreamImageDimensions.imageWidth === "number" &&
-      typeof message.data.screenStreamImageDimensions.imageHeight === "number");
+      message.data.screenstreamImageDimensions &&
+      message.data.screenstreamImageDimensions.imageWidth &&
+      message.data.screenstreamImageDimensions.imageHeight &&
+      typeof message.data.screenstreamImageDimensions.imageWidth === "number" &&
+      typeof message.data.screenstreamImageDimensions.imageHeight === "number");
 };
 
 module.exports = validateMetadataMessage;
