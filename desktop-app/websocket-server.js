@@ -13,6 +13,10 @@ const startWebSocketServer = () => {
   console.log("Server starting");
 
   server.on("connection", (ws, req) => {
+    // TODO: replace with global.connectedDevices.push({ webSocketConnection: ws });
+    // to keep track of connection info for multiple devices
+    global.webSocketConnections.push(ws);
+
     ws.on("message", (message) => {
       try {
         routeMessage(JSON.parse(message), ws);

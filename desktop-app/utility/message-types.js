@@ -5,6 +5,7 @@ module.exports = {
     SCREENSTREAM_REQUEST: "screenstream_request",
     SCREENSTREAM_FRAME: "screenstream_frame",
     META_SENDINFO: "meta_sendinfo",
+    REMOTECONTROL_TAP: "remotecontrol_tap",
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY: "generic_message_reply",

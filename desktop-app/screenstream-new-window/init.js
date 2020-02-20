@@ -10,6 +10,7 @@ const startNewScreenstreamWindow = () => {
       .screenstreamImageDimensions;
 
   screenstreamNewWindow = new BrowserWindow({
+    // BrowserWindow dimensions can only be integers
     width: Math.round(0.9 * primaryDisplayHeight * (imageWidth / imageHeight)),
     height: Math.round(0.9 * primaryDisplayHeight),
     useContentSize: true,

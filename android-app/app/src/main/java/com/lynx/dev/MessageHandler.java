@@ -24,10 +24,11 @@ public class MessageHandler {
                 BackgroundService.serviceState.put("connectStatus", "connected");
                 break;
             case "remotecontrol_tap":
-                int x, y;
+                float x, y;
                 try {
-                    x = message.getInt("x");
-                    y = message.getInt("y");
+                    JSONObject messageData = message.getJSONObject("data");
+                    x = (float)messageData.getDouble("x");
+                    y = (float)messageData.getDouble("y");
                 }
                 catch (Exception e) {
                     Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
