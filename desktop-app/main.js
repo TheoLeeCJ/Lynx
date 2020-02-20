@@ -1,8 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
-const startNewScreenstreamWindow =
-    require("./screenstream-new-window/screenstream-new-window-init");
+const startNewScreenstreamWindow = require("./screenstream-new-window/init");
 
 /* ---------------------- APP INIT ---------------------- */
 

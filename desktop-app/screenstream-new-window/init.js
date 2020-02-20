@@ -15,8 +15,7 @@ const startNewScreenstreamWindow = () => {
     useContentSize: true,
     resizable: false,
     webPreferences: {
-      preload: path.join(app.getAppPath(),
-          "screenstream-new-window/screenstream-new-window-preload.js"),
+      preload: path.join(app.getAppPath(), "screenstream-new-window/preload.js"),
     },
   });
 
