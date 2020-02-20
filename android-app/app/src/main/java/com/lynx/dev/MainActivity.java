@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
 					((TextView) findViewById(R.id.ConnectingText)).setText("Connecting to " + Utility.IP_ADDR);
 				}
 				else if (homeMessage == Utility.HOMEMESSAGE_CONNECTED) {
-					System.out.println("messing with lstiviews");
 					findViewById(R.id.HomeStatus_Initial).setVisibility(ListView.GONE);
 					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.GONE);
 					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.VISIBLE);
