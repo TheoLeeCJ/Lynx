@@ -12,7 +12,10 @@ public class MessageHandler {
             messageType = message.getString("type");
         }
         catch (JSONException e) {
-            Toast.makeText(MainActivity.mainActivityStatic, "JSON parse error, please try again!", Toast.LENGTH_SHORT);
+            Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
+                    "JSON parse error, please try again!",
+                    Toast.LENGTH_SHORT);
+            errorToast.show();
             return;
         }
         switch (messageType) {
@@ -27,7 +30,10 @@ public class MessageHandler {
                     y = message.getInt("y");
                 }
                 catch (Exception e) {
-                    Toast.makeText(MainActivity.mainActivityStatic, "JSON parse error, please try again!", Toast.LENGTH_SHORT);
+                    Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
+                            "JSON parse error, please try again!",
+                            Toast.LENGTH_SHORT);
+                    errorToast.show();
                     return;
                 }
                 BackgroundService.backgroundServiceStatic.click(x, y);
@@ -39,7 +45,10 @@ public class MessageHandler {
                     allowed = message.getBoolean("success");
                 }
                 catch (Exception e) {
-                    Toast.makeText(MainActivity.mainActivityStatic, "JSON parse error, please try again!", Toast.LENGTH_SHORT);
+                    Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
+                            "JSON parse error, please try again!",
+                            Toast.LENGTH_SHORT);
+                    errorToast.show();
                     return;
                 }
                 if (allowed) { // if allowed, send the dimensions and other metadata
@@ -62,7 +71,10 @@ public class MessageHandler {
                         reply.put("data", replyData);
                     }
                     catch (Exception e) {
-                        Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while generating meta_sendinfo!", Toast.LENGTH_SHORT);
+                        Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
+                                "JSONObject error while generating meta_sendinfo!",
+                                Toast.LENGTH_SHORT);
+                        errorToast.show();
                         return;
                     }
                     System.out.println(reply.toString());
