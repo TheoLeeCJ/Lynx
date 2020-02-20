@@ -60,7 +60,7 @@ const routeMessage = (message, ws) => {
             global.screenstreamWindow.webContents
                 .send("update-screenstream-frame", message.data.frame);
           } else if (global.screenstreamWindow === null) {
-            console.error("Could not access window object - win is null. Window possibly closed.");
+            console.error("Could not access window object - global.screenstreamWindow is null.");
           } else if (typeof global.screenstreamWindow === "undefined") {
             console.error("Could not access window object - global.screenstreamWindow is undefined.");
           }
