@@ -57,6 +57,7 @@ public class BackgroundService extends AccessibilityService {
 	public static int globalX = 0;
 	public static int globalY = 0;
 	public static BackgroundService backgroundServiceStatic;
+	public static double heightDividedByWidth = (double)BackgroundService.getScreenHeight() / (double)BackgroundService.getScreenWidth();
 
 	public static Map<String, String> serviceState = new HashMap<String, String>();
 

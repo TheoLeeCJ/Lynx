@@ -358,14 +358,14 @@ public class MainActivity extends AppCompatActivity {
 		mScreenDensity = metrics.densityDpi;
 
 		Log.i(TAG, "Setting up a VirtualDisplay: " +
-			480 + "x" + 854 +
+			480 + "x" + (int)(BackgroundService.heightDividedByWidth * 510.0) +
 			" (" + mScreenDensity + ")");
 
-		imageReader = ImageReader.newInstance(480, 854, PixelFormat.RGBA_8888, 3);
+		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 480.0), PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
-			480, 854, mScreenDensity,
+			480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity,
 			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 			imageReader.getSurface(), null, null);
 	}

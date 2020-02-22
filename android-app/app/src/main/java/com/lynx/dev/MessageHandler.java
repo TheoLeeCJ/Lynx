@@ -63,7 +63,7 @@ public class MessageHandler {
 
                         JSONObject screenstreamImageDimensions = new JSONObject();
                         screenstreamImageDimensions.put("imageWidth", 480);
-                        screenstreamImageDimensions.put("imageHeight", 854);
+                        screenstreamImageDimensions.put("imageHeight", BackgroundService.heightDividedByWidth * 510.0);
 
                         JSONObject replyData = new JSONObject();
                         replyData.put("screenDimensions", screenDimensions);
