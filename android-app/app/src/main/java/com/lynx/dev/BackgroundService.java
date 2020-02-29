@@ -115,6 +115,18 @@ public class BackgroundService extends AccessibilityService {
 		boolean result = dispatchGesture(createClick(x, y), callback, null);
 	}
 
+	public void home() {
+		System.out.println(performGlobalAction(GLOBAL_ACTION_HOME));
+	}
+
+	public void back() {
+		System.out.println(performGlobalAction(GLOBAL_ACTION_BACK));
+	}
+
+	public void notification_center() {
+		System.out.println(performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS));
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();

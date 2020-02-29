@@ -1,6 +1,9 @@
 <resources>
 	<string name="app_name">Lynx Dev</string>
+
+	<string name="accessibility_service_summary">Allows you to remotely control your phone using Lynx.</string>
 	<string name="accessibility_service_desc">You must enable this Accessibility Service in order to use Lynx\'s Remote Controlling features.</string>
+
 	<string name="title_activity_qrcode">Scan QR Code</string>
 	<string name="title_activity_settings">Settings</string>
 

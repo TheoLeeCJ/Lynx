@@ -120,6 +120,10 @@ public class MainActivity extends AppCompatActivity {
 
 	// UI - Open Accessibility Settings
 	public void androidAccessibiitySettings(View view) {
+		androidAccessibiitySettingsDirect();
+	}
+
+	public void androidAccessibiitySettingsDirect() {
 		startActivityForResult(new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS), 0);
 	}
 
@@ -202,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	public boolean isAccessServiceEnabled(Context context, Class accessibilityServiceClass)
+	public static boolean isAccessServiceEnabled(Context context, Class accessibilityServiceClass)
 	{
 		String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
 		return prefString!= null && prefString.contains(context.getPackageName() + "/" + accessibilityServiceClass.getName());

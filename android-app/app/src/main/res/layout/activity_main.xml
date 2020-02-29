@@ -83,7 +83,7 @@
 							android:layout_width="wrap_content"
 							android:layout_height="wrap_content"
 							android:onClick="UIcall_startScreenCapture"
-							android:text="Screen Mirror"
+							android:text="Screen Mirror + Remote Control"
 							android:textSize="12sp" />
 
 						<Button
@@ -93,7 +93,8 @@
 							android:layout_height="wrap_content"
 							android:layout_weight="1"
 							android:text="Remote Control"
-							android:textSize="12sp" />
+							android:textSize="12sp"
+							android:visibility="gone" />
 					</LinearLayout>
 
 				</LinearLayout>
