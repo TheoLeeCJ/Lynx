@@ -22,6 +22,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 import org.slf4j.helpers.Util;
 
@@ -68,12 +69,12 @@ public class BackgroundService extends AccessibilityService {
 	public void onInterrupt() {}
 
 	@RequiresApi(Build.VERSION_CODES.O)
-	private String createNotificationChannel(String channelId , String channelName) {
+	private String createNotificationChannel(String channelId, String channelName) {
 		NotificationChannel chan = new NotificationChannel(channelId,
 			channelName, NotificationManager.IMPORTANCE_NONE);
 		chan.setLightColor(Color.BLUE);
-		NotificationManager aaa = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		aaa.createNotificationChannel(chan);
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.createNotificationChannel(chan);
 		return channelId;
 	}
 
@@ -133,22 +134,25 @@ public class BackgroundService extends AccessibilityService {
 		backgroundServiceStatic = this;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			createNotificationChannel("AAAAA", "Lynx Dev");
-			Intent notificationIntent = new Intent(this, BackgroundService.class);
-			PendingIntent pendingIntent =
-				PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-			Notification notification =
-				new Notification.Builder(this, "AAAAA")
-					.setContentTitle("Lynx Dev")
-					.setContentText("Lynx is currently connected to 1 PC.")
-					.setSmallIcon(R.drawable.common_full_open_on_phone)
-					.setContentIntent(pendingIntent)
-					.setTicker("ticker")
-					.build();
-
-			startForeground(8, notification);
+			createNotificationChannel("connectedToPc", "Lynx Dev");
 		}
+
+		Intent notificationIntent = new Intent(this, BackgroundService.class);
+		PendingIntent pendingIntent =
+			PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+		// using NotificationCompat.Builder instead of Notification.Builder
+		// to support API versions < 26
+		Notification notification =
+			new NotificationCompat.Builder(this, "connectedToPc")
+				.setContentTitle("Lynx Dev")
+				.setContentText("Lynx is currently connected to 1 PC.")
+				.setSmallIcon(R.drawable.common_full_open_on_phone)
+				.setContentIntent(pendingIntent)
+				.setTicker("ticker")
+				.build();
+
+		startForeground(8, notification);
 	}
 
 	@Override

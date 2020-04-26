@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
 		// Try and check Service State
 		if (BackgroundService.serviceState.get("connectStatus") == "connected") {
-			alterHomeMesage(Utility.HOMEMESSAGE_CONNECTED);
+			alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
 		}
 		((TextView) findViewById(R.id.ServiceState)).setText("SERVICE STATE: " + BackgroundService.serviceState.get("connectStatus"));
 	}
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	// UI - Indicate that we're trying to connect
-	public void alterHomeMesage(final int homeMessage) {
+	public void alterHomeMessage(final int homeMessage) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -102,12 +102,12 @@ public class MainActivity extends AppCompatActivity {
 	// Functions - Connect
 	public void openConnection() {
 		if (!this.isFinishing()) {
+			mainActivityStatic = this;
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				mainActivityStatic = this;
 				startForegroundService(new Intent(this, BackgroundService.class));
 			}
 			else {
-				Toast.makeText(mainActivity, "Unfortunately, I have not implemented support for versions below Android Oreo.", Toast.LENGTH_SHORT).show();
+				startService(new Intent(this, BackgroundService.class));
 			}
 		}
 	}

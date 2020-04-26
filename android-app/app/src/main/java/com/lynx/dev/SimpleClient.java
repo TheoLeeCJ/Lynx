@@ -19,7 +19,7 @@ public class SimpleClient extends WebSocketClient {
 	public String connectionToken;
 
 	@Override
-	public void onOpen(ServerHandshake handshakedata) {
+	public void onOpen(ServerHandshake handshakeData) {
 		simpleClientStatic = this;
 		try {
 			JSONObject json = new JSONObject();

@@ -26,10 +26,10 @@ public class ConfirmAddDevice extends DialogFragment {
 				Utility.IP_ADDR = (String) getArguments().get("ipAddress");
 				Utility.CONNECTION_TOKEN = (String) getArguments().get("uuid");
 
-				Context c = getContext();
-				if (c instanceof MainActivity) {
-					((MainActivity) c).alterHomeMesage(Utility.HOMEMESSAGE_CONNECTING);
-					((MainActivity) c).openConnection();
+				Context context = getContext();
+				if (context instanceof MainActivity) {
+					((MainActivity) context).alterHomeMessage(Utility.HOMEMESSAGE_CONNECTING);
+					((MainActivity) context).openConnection();
 				}
 			}
 		});

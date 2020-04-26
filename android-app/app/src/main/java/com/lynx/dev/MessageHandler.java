@@ -14,7 +14,7 @@ public class MessageHandler {
         }
         catch (JSONException e) {
             Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
-                    "JSON parse error, please try again!",
+                    "Error retrieving parameter 'type' of WebSocket message.",
                     Toast.LENGTH_SHORT);
             errorToast.show();
             return;
@@ -44,7 +44,7 @@ public class MessageHandler {
 
         switch (messageType) {
             case "initial_auth_reply":
-                MainActivity.mainActivityStatic.alterHomeMesage(Utility.HOMEMESSAGE_CONNECTED);
+                MainActivity.mainActivityStatic.alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
                 BackgroundService.serviceState.put("connectStatus", "connected");
                 break;
             case "remotecontrol_home":
@@ -60,8 +60,8 @@ public class MessageHandler {
                 float x, y;
                 try {
                     JSONObject messageData = message.getJSONObject("data");
-                    x = (float)messageData.getDouble("x");
-                    y = (float)messageData.getDouble("y");
+                    x = (float) messageData.getDouble("x");
+                    y = (float) messageData.getDouble("y");
                 }
                 catch (Exception e) {
                     Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
@@ -80,7 +80,7 @@ public class MessageHandler {
                 }
                 catch (Exception e) {
                     Toast errorToast = Toast.makeText(MainActivity.mainActivityStatic,
-                            "JSON parse error, please try again!",
+                            "Error retrieving parameter 'success' of WebSocket message.",
                             Toast.LENGTH_SHORT);
                     errorToast.show();
                     return;
