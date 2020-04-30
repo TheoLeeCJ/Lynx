@@ -8,8 +8,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -175,6 +178,10 @@ public class BackgroundService extends AccessibilityService {
 				.build();
 
 		startForeground(8, notification);
+
+		IntentFilter filter = new IntentFilter();
+		filter.addAction("android.intent.action.CONFIGURATION_CHANGED");
+		this.registerReceiver(mBroadcastReceiver, filter);
 	}
 
 	public static SimpleClient client;
@@ -238,8 +245,42 @@ public class BackgroundService extends AccessibilityService {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		this.unregisterReceiver(mBroadcastReceiver);
 		tearDownMediaProjection();
 	}
+
+	public BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent myIntent) {
+
+			if ( myIntent.getAction().equals( "android.intent.action.CONFIGURATION_CHANGED" ) ) {
+
+				Log.d(TAG, "received->" + "android.intent.action.CONFIGURATION_CHANGED");
+
+
+				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+					// it's Landscape
+					Log.d(TAG, "LANDSCAPE");
+
+					imageReader.close();
+					imageReader = ImageReader.newInstance((int)(BackgroundService.heightDividedByWidth * 480.0), 480, PixelFormat.RGBA_8888, 3);
+					imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
+
+					mVirtualDisplay.resize((int)(BackgroundService.heightDividedByWidth * 510.0), 480, mScreenDensity);
+				}
+				else {
+					Log.d(TAG, "PORTRAIT");
+
+					imageReader.close();
+					imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 510.0), PixelFormat.RGBA_8888, 3);
+					imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
+
+					mVirtualDisplay.resize(480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity);
+				}
+				mVirtualDisplay.setSurface(imageReader.getSurface());
+			}
+		}
+	};
 
 	public void setUpMediaProjection() {
 		mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
@@ -275,11 +316,7 @@ public class BackgroundService extends AccessibilityService {
 		MainActivity.mainActivityStatic.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		mScreenDensity = metrics.densityDpi;
 
-		Log.i(TAG, "Setting up a VirtualDisplay: " +
-			480 + "x" + (int)(BackgroundService.heightDividedByWidth * 510.0) +
-			" (" + mScreenDensity + ")");
-
-		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 480.0), PixelFormat.RGBA_8888, 3);
+		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 510.0), PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
