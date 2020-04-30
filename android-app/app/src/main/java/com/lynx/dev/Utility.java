@@ -22,6 +22,7 @@ public class Utility {
 	public static int ACTIVITY_RESULT_QRCODE = 5001;
 	public static int HOMEMESSAGE_CONNECTING = 6001;
 	public static int HOMEMESSAGE_CONNECTED = 6002;
+	public static int HOMEMESSAGE_NOT_CONNECTED = 6003;
 	public static int WEBSOCKET_PORT = 57531;
 
 	// Data-passing

@@ -95,6 +95,12 @@ public class MainActivity extends AppCompatActivity {
 					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.VISIBLE);
 					((TextView) findViewById(R.id.HomeStatus_Big)).setText("Connected to " + Utility.IP_ADDR);
 				}
+				else if (homeMessage == Utility.HOMEMESSAGE_NOT_CONNECTED) {
+					findViewById(R.id.HomeStatus_Initial).setVisibility(ListView.VISIBLE);
+					findViewById(R.id.HomeStatus_Connecting).setVisibility(ListView.GONE);
+					findViewById(R.id.HomeStatus_Connected).setVisibility(ListView.GONE);
+					((TextView) findViewById(R.id.HomeStatus_Big)).setText("Not connected.");
+				}
 			}
 		});
 	}
@@ -182,27 +188,6 @@ public class MainActivity extends AppCompatActivity {
 				"Message isn't valid JSON!",
 				Toast.LENGTH_LONG).show();
 			return;
-		}
-	}
-
-	// Background Service
-	private boolean askedForOverlayPermission = false;
-	public void startBackgroundService(View view) {
-		System.out.println(isAccessServiceEnabled(this, BackgroundService.class));
-		if (!Settings.canDrawOverlays(this)) {
-			askedForOverlayPermission = true;
-			Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-			startActivityForResult(intent, 889);
-		}
-		else {
-			if (!this.isFinishing()) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					startForegroundService(new Intent(this, BackgroundService.class));
-				}
-				else {
-					Toast.makeText(mainActivity, "Unfortunately, I have not implemented support for versions below Android Oreo.", Toast.LENGTH_SHORT).show();
-				}
-			}
 		}
 	}
 

@@ -80,6 +80,9 @@ public class BackgroundService extends AccessibilityService {
 	public static int globalY = 0;
 	public static BackgroundService backgroundServiceStatic;
 	public static double heightDividedByWidth = (double)BackgroundService.getScreenHeight() / (double)BackgroundService.getScreenWidth();
+	public NotificationManager notificationManager;
+	public Notification notification;
+	public PendingIntent pendingIntent;
 
 	public static Map<String, String> serviceState = new HashMap<String, String>();
 
@@ -94,7 +97,7 @@ public class BackgroundService extends AccessibilityService {
 		NotificationChannel chan = new NotificationChannel(channelId,
 			channelName, NotificationManager.IMPORTANCE_NONE);
 		chan.setLightColor(Color.BLUE);
-		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.createNotificationChannel(chan);
 		return channelId;
 	}
@@ -163,12 +166,12 @@ public class BackgroundService extends AccessibilityService {
 		}
 
 		Intent notificationIntent = new Intent(this, BackgroundService.class);
-		PendingIntent pendingIntent =
+		pendingIntent =
 			PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
 		// using NotificationCompat.Builder instead of Notification.Builder
 		// to support API versions < 26
-		Notification notification =
+		notification =
 			new NotificationCompat.Builder(this, "connectedToPc")
 				.setContentTitle("Lynx Dev")
 				.setContentText("Lynx is currently connected to 1 PC.")
@@ -251,16 +254,12 @@ public class BackgroundService extends AccessibilityService {
 
 	public BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent myIntent) {
+		public void onReceive(Context context, Intent intent) {
 
-			if ( myIntent.getAction().equals( "android.intent.action.CONFIGURATION_CHANGED" ) ) {
-
-				Log.d(TAG, "received->" + "android.intent.action.CONFIGURATION_CHANGED");
-
-
+			if (intent.getAction().equals( "android.intent.action.CONFIGURATION_CHANGED") ) {
+				String orientation;
 				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-					// it's Landscape
-					Log.d(TAG, "LANDSCAPE");
+					orientation = "landscape";
 
 					imageReader.close();
 					imageReader = ImageReader.newInstance((int)(BackgroundService.heightDividedByWidth * 480.0), 480, PixelFormat.RGBA_8888, 3);
@@ -269,7 +268,7 @@ public class BackgroundService extends AccessibilityService {
 					mVirtualDisplay.resize((int)(BackgroundService.heightDividedByWidth * 510.0), 480, mScreenDensity);
 				}
 				else {
-					Log.d(TAG, "PORTRAIT");
+					orientation = "portrait";
 
 					imageReader.close();
 					imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 510.0), PixelFormat.RGBA_8888, 3);
@@ -277,6 +276,21 @@ public class BackgroundService extends AccessibilityService {
 
 					mVirtualDisplay.resize(480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity);
 				}
+
+				JSONObject message = new JSONObject();
+
+				try {
+					message.put("type", "screenstream_orientationchange");
+					JSONObject data = new JSONObject();
+					data.put("orientation", orientation);
+					message.put("data", data);
+				}
+				catch (Exception e) {
+
+				}
+
+				BackgroundService.client.sendText(message.toString());
+
 				mVirtualDisplay.setSurface(imageReader.getSurface());
 			}
 		}
@@ -349,7 +363,7 @@ public class BackgroundService extends AccessibilityService {
 				image.close();
 
 				if (screenStreamApprovedByPC) {
-					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
 					byte[] imageBytes = baos.toByteArray();
 
 					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
@@ -392,13 +406,5 @@ public class BackgroundService extends AccessibilityService {
 		}
 
 		return cleanBitmap;
-	}
-
-	private void stopScreenCapture() {
-		if (mVirtualDisplay == null) {
-			return;
-		}
-		mVirtualDisplay.release();
-		mVirtualDisplay = null;
 	}
 }

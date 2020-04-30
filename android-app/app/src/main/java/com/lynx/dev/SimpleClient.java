@@ -1,6 +1,9 @@
 package com.lynx.dev;
 
+import android.app.PendingIntent;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -41,7 +44,28 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
+		BackgroundService.backgroundServiceStatic.tearDownMediaProjection();
 		System.out.println("closed with exit code " + code + " additional info: " + reason);
+
+		// reset variables
+		BackgroundService.mResultCode = 5000;
+		BackgroundService.mResultData = null;
+
+		// (try) and update mainactivity
+		if (MainActivity.mainActivityStatic != null) {
+			MainActivity.mainActivityStatic.alterHomeMessage(Utility.HOMEMESSAGE_NOT_CONNECTED);
+		}
+
+		// update notification
+		BackgroundService.backgroundServiceStatic.notification =
+			new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "connectedToPc")
+				.setContentTitle("Lynx Dev")
+				.setContentText("Lynx is connected to 0 PCs, using reduced battery.")
+				.setSmallIcon(R.drawable.common_full_open_on_phone)
+				.setContentIntent(BackgroundService.backgroundServiceStatic.pendingIntent)
+				.setTicker("ticker")
+				.build();
+		BackgroundService.backgroundServiceStatic.notificationManager.notify(8, BackgroundService.backgroundServiceStatic.notification);
 	}
 
 	@Override

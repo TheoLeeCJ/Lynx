@@ -185,20 +185,6 @@
 				android:textSize="18sp" />
 
 			<Button
-				android:id="@+id/Debug0"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:onClick="startBackgroundService"
-				android:text="[Debug] Start Background Service" />
-
-			<Button
-				android:id="@+id/Debug1"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:onClick="simulateTap"
-				android:text="[Debug] Simulate Tap at 200, 400, MUST BE CONNECTED TO PC, AccessibilityService must be enabled in Settings" />
-
-			<Button
 				android:id="@+id/Debug2"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
