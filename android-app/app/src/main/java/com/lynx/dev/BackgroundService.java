@@ -2,6 +2,7 @@ package com.lynx.dev;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,22 +11,39 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
+import android.media.Image;
+import android.media.ImageReader;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Build;
+import android.os.Handler;
+import android.util.Base64;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import com.google.android.gms.vision.barcode.Barcode;
+import com.notbytes.barcode_reader.BarcodeReaderActivity;
+
+import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 
+import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Dictionary;
@@ -128,6 +146,10 @@ public class BackgroundService extends AccessibilityService {
 		System.out.println(performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS));
 	}
 
+	public void recents() {
+		System.out.println(performGlobalAction(GLOBAL_ACTION_RECENTS));
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -153,15 +175,6 @@ public class BackgroundService extends AccessibilityService {
 				.build();
 
 		startForeground(8, notification);
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-
-//		if (windowManager != null && cursorView != null) {
-//			windowManager.removeView(cursorView);
-//		}
 	}
 
 	public static SimpleClient client;
@@ -199,5 +212,156 @@ public class BackgroundService extends AccessibilityService {
 //		windowManager.addView(cursorView, cursorLayout); // comment out when the window isn't required...
 
 		return START_STICKY;
+	}
+
+	// ==============================================
+	//
+	// SCREEN STREAMING CODE
+	//
+	// ==============================================
+
+	public static final String TAG = "ScreenCaptureFragment";
+
+	public static final int REQUEST_MEDIA_PROJECTION = 1;
+
+	public static int mScreenDensity;
+
+	public static int mResultCode;
+	public static Intent mResultData;
+
+	public static MediaProjection mMediaProjection;
+	public static VirtualDisplay mVirtualDisplay;
+	public static MediaProjectionManager mMediaProjectionManager;
+
+	public static Boolean screenStreamApprovedByPC = false;
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		tearDownMediaProjection();
+	}
+
+	public void setUpMediaProjection() {
+		mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
+	}
+
+	public void tearDownMediaProjection() {
+		if (mMediaProjection != null) {
+			mMediaProjection.stop();
+			mMediaProjection = null;
+		}
+	}
+
+	public void startScreenCapture() {
+		mMediaProjectionManager = (MediaProjectionManager) this.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+
+		if (mMediaProjection != null) {
+			setUpVirtualDisplay();
+		} else if (mResultCode != 0 && mResultData != null) {
+			setUpMediaProjection();
+			setUpVirtualDisplay();
+		} else {
+			// This initiates a prompt dialog for the user to confirm screen projection.
+			MainActivity.mainActivityStatic.startActivityForResult(
+				mMediaProjectionManager.createScreenCaptureIntent(),
+				REQUEST_MEDIA_PROJECTION);
+		}
+	}
+
+	ImageReader imageReader = null;
+
+	public void setUpVirtualDisplay() {
+		DisplayMetrics metrics = new DisplayMetrics();
+		MainActivity.mainActivityStatic.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		mScreenDensity = metrics.densityDpi;
+
+		Log.i(TAG, "Setting up a VirtualDisplay: " +
+			480 + "x" + (int)(BackgroundService.heightDividedByWidth * 510.0) +
+			" (" + mScreenDensity + ")");
+
+		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 480.0), PixelFormat.RGBA_8888, 3);
+		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
+
+		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
+			480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity,
+			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+			imageReader.getSurface(), null, null);
+	}
+
+	public static long lastImageMillis = 0;
+
+	public static class ImageAvailable implements ImageReader.OnImageAvailableListener {
+		@Override
+		public void onImageAvailable(ImageReader reader) {
+			final Image image = reader.acquireLatestImage();
+			long now = System.currentTimeMillis();
+			if ((now - lastImageMillis) < (1000 / 30)) {
+				try {
+					image.close();
+				}
+				catch (Exception e) {
+					// keep going...
+				}
+				return;
+			}
+			lastImageMillis = now;
+
+			try {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				Bitmap niceCleanBitmap = cleanBitmap(image);
+				image.close();
+
+				if (screenStreamApprovedByPC) {
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
+					byte[] imageBytes = baos.toByteArray();
+
+					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+					JSONObject message = new JSONObject();
+					message.put("type", "screenstream_frame");
+					JSONObject data = new JSONObject();
+					data.put("frame", base64screen);
+					message.put("data", data);
+
+//				BackgroundService.client.sendText(base64screen);
+					BackgroundService.client.sendText(message.toString());
+				}
+			}
+			catch (Exception e) {
+				base64screen = "";
+				// keep going...
+			}
+		}
+	}
+
+	public static String base64screen = "";
+	public static Bitmap reusableBitmap = null;
+
+	public static Bitmap cleanBitmap(final Image image) {
+		Image.Plane plane = image.getPlanes()[0];
+		int width = plane.getRowStride() / plane.getPixelStride();
+		Bitmap cleanBitmap = null;
+
+		if (width > image.getWidth()) {
+			if (reusableBitmap == null) {
+				reusableBitmap = Bitmap.createBitmap(width, image.getHeight(), Bitmap.Config.ARGB_8888);
+			}
+
+			reusableBitmap.copyPixelsFromBuffer(plane.getBuffer());
+			cleanBitmap = Bitmap.createBitmap(reusableBitmap, 0, 0, image.getWidth(), image.getHeight());
+		} else {
+			cleanBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+			cleanBitmap.copyPixelsFromBuffer(plane.getBuffer());
+		}
+
+		return cleanBitmap;
+	}
+
+	private void stopScreenCapture() {
+		if (mVirtualDisplay == null) {
+			return;
+		}
+		mVirtualDisplay.release();
+		mVirtualDisplay = null;
 	}
 }

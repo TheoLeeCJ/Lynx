@@ -263,70 +263,15 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	// ==============================================
-	//
-	// SCREEN STREAMING CODE
-	//
-	// ==============================================
-
-	private static final String TAG = "ScreenCaptureFragment";
-
-	private static final int REQUEST_MEDIA_PROJECTION = 1;
-
-	private int mScreenDensity;
-
-	private int mResultCode;
-	private Intent mResultData;
-
-	private MediaProjection mMediaProjection;
-	private VirtualDisplay mVirtualDisplay;
-	private MediaProjectionManager mMediaProjectionManager;
-
-	public static Boolean screenStreamApprovedByPC = false;
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		tearDownMediaProjection();
-	}
-
-	private void setUpMediaProjection() {
-		mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
-	}
-
-	private void tearDownMediaProjection() {
-		if (mMediaProjection != null) {
-			mMediaProjection.stop();
-			mMediaProjection = null;
-		}
-	}
-
 	public void UIcall_startScreenCapture(View view) {
-		startScreenCapture();
+		BackgroundService.backgroundServiceStatic.startScreenCapture();
 	}
 
-	public void startScreenCapture() {
-		mMediaProjectionManager = (MediaProjectionManager) this.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-
-		if (mMediaProjection != null) {
-			setUpVirtualDisplay();
-		} else if (mResultCode != 0 && mResultData != null) {
-			setUpMediaProjection();
-			setUpVirtualDisplay();
-		} else {
-			// This initiates a prompt dialog for the user to confirm screen projection.
-			startActivityForResult(
-				mMediaProjectionManager.createScreenCaptureIntent(),
-				REQUEST_MEDIA_PROJECTION);
-		}
-	}
-
-	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult( requestCode, resultCode, data);
-		if (requestCode == REQUEST_MEDIA_PROJECTION) {
+		if (requestCode == BackgroundService.REQUEST_MEDIA_PROJECTION) {
 			if (resultCode != Activity.RESULT_OK) {
-				Log.i(TAG, "User cancelled");
+				Log.i(BackgroundService.TAG, "User cancelled");
 				return;
 			}
 			// SEND REQUEST TO PC
@@ -341,113 +286,16 @@ public class MainActivity extends AppCompatActivity {
 			SimpleClient.simpleClientStatic.sendText(reply.toString());
 			// END
 
-			Log.i(TAG, "Starting screen capture");
-			mResultCode = resultCode;
-			mResultData = data;
-			setUpMediaProjection();
-			setUpVirtualDisplay();
+			Log.i(BackgroundService.TAG, "Starting screen capture");
+			BackgroundService.mResultCode = resultCode;
+			BackgroundService.mResultData = data;
+			BackgroundService.backgroundServiceStatic.setUpMediaProjection();
+			BackgroundService.backgroundServiceStatic.setUpVirtualDisplay();
 		}
 		// Scanned QR Code
 		if (requestCode == Utility.ACTIVITY_RESULT_QRCODE && data != null) {
 			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
 			confirmAddDevice(barcode.rawValue);
 		}
-	}
-
-	ImageReader imageReader = null;
-
-	private void setUpVirtualDisplay() {
-		DisplayMetrics metrics = new DisplayMetrics();
-		this.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		mScreenDensity = metrics.densityDpi;
-
-		Log.i(TAG, "Setting up a VirtualDisplay: " +
-			480 + "x" + (int)(BackgroundService.heightDividedByWidth * 510.0) +
-			" (" + mScreenDensity + ")");
-
-		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 480.0), PixelFormat.RGBA_8888, 3);
-		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
-
-		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
-			480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity,
-			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-			imageReader.getSurface(), null, null);
-	}
-
-	private static long lastImageMillis = 0;
-
-	public static class ImageAvailable implements ImageReader.OnImageAvailableListener {
-		@Override
-		public void onImageAvailable(ImageReader reader) {
-			final Image image = reader.acquireLatestImage();
-			long now = System.currentTimeMillis();
-			if ((now - lastImageMillis) < (1000 / 30)) {
-				try {
-					image.close();
-				}
-				catch (Exception e) {
-					// keep going...
-				}
-				return;
-			}
-			lastImageMillis = now;
-
-			try {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				Bitmap niceCleanBitmap = cleanBitmap(image);
-				image.close();
-
-				if (screenStreamApprovedByPC) {
-					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 35, baos);
-					byte[] imageBytes = baos.toByteArray();
-
-					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-					JSONObject message = new JSONObject();
-					message.put("type", "screenstream_frame");
-					JSONObject data = new JSONObject();
-					data.put("frame", base64screen);
-					message.put("data", data);
-
-//				BackgroundService.client.sendText(base64screen);
-					BackgroundService.client.sendText(message.toString());
-				}
-			}
-			catch (Exception e) {
-				base64screen = "";
-				// keep going...
-			}
-		}
-	}
-
-	public static String base64screen = "";
-	public static Bitmap reusableBitmap = null;
-
-	public static Bitmap cleanBitmap(final Image image) {
-		Plane plane = image.getPlanes()[0];
-		int width = plane.getRowStride() / plane.getPixelStride();
-		Bitmap cleanBitmap = null;
-
-		if (width > image.getWidth()) {
-			if (reusableBitmap == null) {
-				reusableBitmap = Bitmap.createBitmap(width, image.getHeight(), Bitmap.Config.ARGB_8888);
-			}
-
-			reusableBitmap.copyPixelsFromBuffer(plane.getBuffer());
-			cleanBitmap = Bitmap.createBitmap(reusableBitmap, 0, 0, image.getWidth(), image.getHeight());
-		} else {
-			cleanBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
-			cleanBitmap.copyPixelsFromBuffer(plane.getBuffer());
-		}
-
-		return cleanBitmap;
-	}
-
-	private void stopScreenCapture() {
-		if (mVirtualDisplay == null) {
-			return;
-		}
-		mVirtualDisplay.release();
-		mVirtualDisplay = null;
 	}
 }

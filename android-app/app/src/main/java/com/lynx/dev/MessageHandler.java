@@ -56,6 +56,9 @@ public class MessageHandler {
             case "remotecontrol_notification":
                 BackgroundService.backgroundServiceStatic.notification_center();
                 break;
+            case "remotecontrol_recents":
+                BackgroundService.backgroundServiceStatic.recents();
+                break;
             case "remotecontrol_tap":
                 float x, y;
                 try {
@@ -116,7 +119,7 @@ public class MessageHandler {
                 }
                 break;
             case "meta_sendinfo_reply":
-                MainActivity.screenStreamApprovedByPC = true;
+                BackgroundService.screenStreamApprovedByPC = true;
                 break;
             default:
                  break;

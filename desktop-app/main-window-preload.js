@@ -9,7 +9,7 @@ ipcRenderer.send("get-connection-token", connectionToken);
 
 const qrCode = generateQrCode(0, "H");
 qrCode.addData(JSON.stringify({
-  ip: getLocalIp(),
+  ip: "192.168.1.149",
   connectionToken,
 }));
 qrCode.make();
