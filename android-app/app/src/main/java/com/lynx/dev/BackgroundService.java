@@ -255,8 +255,7 @@ public class BackgroundService extends AccessibilityService {
 	public BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-
-			if (intent.getAction().equals( "android.intent.action.CONFIGURATION_CHANGED") ) {
+			if (intent.getAction().equals("android.intent.action.CONFIGURATION_CHANGED") ) {
 				String orientation;
 				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
 					orientation = "landscape";
