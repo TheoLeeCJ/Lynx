@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
+const uuid = require("uuid").v4;
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
 const startNewScreenstreamWindow = require("./screenstream-new-window/init");
@@ -8,14 +9,13 @@ const {
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
+const makeConnectionInfoQrCode = require("./utility/make-connection-info-qr-code");
 
 /* ---------------------- APP INIT ---------------------- */
 
-// globals
-// TODO: use global.connectedDevices to keep track of connection info for multiple devices
-global.deviceAuthenticated = false;
-global.screenstreamAuthorised = false;
-global.webSocketConnections = [];
+// initialise globals
+global.connectedDevices = {};
+global.connectionToken = uuid();
 
 // start WebSocket server
 startWebSocketServer();
@@ -33,12 +33,11 @@ const createMainWindow = () => {
     },
   });
   mainWindow.on("ready-to-show", mainWindow.maximize);
-
-  mainWindow.loadFile("webpages/index.html");
-
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+
+  mainWindow.loadFile("webpages/index.html");
 
   global.screenstreamWindow = mainWindow;
 
@@ -47,18 +46,20 @@ const createMainWindow = () => {
 
 app.on("ready", createMainWindow);
 
-
 /* ---------------------- IPC LISTENERS ---------------------- */
 
-// TODO: for all IPC channels, send and receive deviceIndex as well
-// to add support for multiple connections
-
-ipcMain.once("get-connection-token", (_, connectionToken) => {
-  module.exports.correctToken = connectionToken;
+ipcMain.once("ready", () => {
+  mainWindow.webContents
+      .send("update-connection-info-qr-code", makeConnectionInfoQrCode());
 });
 
+ipcMain.once("get-connection-token", (_, connectionToken) => {
+  global.connectionToken = connectionToken;
+});
+
+// TODO: 1 new window per device
 ipcMain.on("toggle-phone-screen-window", (_, setting) => {
-  if (!global.deviceAuthenticated || !global.screenstreamAuthorised) return;
+  // if (!global.deviceAuthenticated || !global.screenstreamAuthorised) return;
 
   if (setting === "newWindow") {
     startNewScreenstreamWindow();
@@ -71,8 +72,7 @@ ipcMain.on("toggle-phone-screen-window", (_, setting) => {
   }
 });
 
-ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }) => {
-  console.log(xOffsetFactor, yOffsetFactor);
+ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceIpAddress) => {
   const { screenWidth, screenHeight } = global.deviceMetadata.screenDimensions;
 
   sendJsonMessage({
@@ -81,5 +81,5 @@ ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }) => {
       x: xOffsetFactor * screenWidth,
       y: yOffsetFactor * screenHeight,
     },
-  }, global.webSocketConnections[0] /* TODO: replace with global.connectedDevices[deviceIndex].webSocketConnection */);
+  }, global.connectedDevices[deviceIpAddress].webSocketConnection);
 });

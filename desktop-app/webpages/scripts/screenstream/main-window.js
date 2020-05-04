@@ -1,3 +1,29 @@
+// tell main process that renderer process is ready for messages
+ipcRenderer.send("ready");
+
+// receive connection info QR code
+ipcRenderer.on("update-connection-info-qr-code", (_, connectionInfoQrCode) => {
+  console.log("Connection info QR code updated.");
+  document.getElementById("connection-info-qr-code").src = connectionInfoQrCode;
+});
+
+// update devices list
+ipcRenderer.on("add-device", (_, { address, token }) => {
+  const newDeviceDiv = document.createElement("div");
+  newDeviceDiv.className = "device";
+  newDeviceDiv.id = `device-${token}`;
+
+  const deviceInfoDiv = document.createElement("div");
+  deviceInfoDiv.className = "device-info";
+  deviceInfoDiv.textContent = `Address: ${address}\nToken: ${token}`;
+
+  const deviceScreenstreamFrame = document.createElement("img");
+  deviceScreenstreamFrame.className = "screenstream-frame";
+
+  newDeviceDiv.append(deviceInfoDiv, deviceScreenstreamFrame);
+  document.getElementById("devices-list").append(newDeviceDiv);
+});
+
 // toggle between displaying stream in current or new window
 let streamInCurrentWindow = true;
 

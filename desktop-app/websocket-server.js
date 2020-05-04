@@ -13,13 +13,9 @@ const startWebSocketServer = () => {
   console.log("Server starting");
 
   server.on("connection", (ws, req) => {
-    // TODO: replace with global.connectedDevices.push({ webSocketConnection: ws });
-    // to keep track of connection info for multiple devices
-    global.webSocketConnections.push(ws);
-
     ws.on("message", (message) => {
       try {
-        routeMessage(JSON.parse(message), ws);
+        routeMessage(JSON.parse(message), ws, req);
       } catch (err) {
         if (err instanceof SyntaxError) { // invalid JSON
           sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
@@ -29,10 +25,10 @@ const startWebSocketServer = () => {
       }
     });
     ws.on("close", (code, reason) => {
-      global.deviceAuthenticated = false;
+      delete global.connectedDevices[req.socket.remoteAddress];
       console.log(`Closed connection to ${req.socket.remoteAddress} with code ${code}. Reason: ${reason}`);
     });
-    ws.send("Connection established.");
+    // ws.send("Connection established.");
     console.log(`New connection from ${req.socket.remoteAddress}`);
   });
 };
