@@ -15,9 +15,11 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.Image;
@@ -26,10 +28,13 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
@@ -53,6 +58,8 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class BackgroundService extends AccessibilityService {
 	android.os.Handler intervalHandler = new android.os.Handler();
@@ -79,12 +86,15 @@ public class BackgroundService extends AccessibilityService {
 	public static int globalX = 0;
 	public static int globalY = 0;
 	public static BackgroundService backgroundServiceStatic;
-	public static double heightDividedByWidth = (double)BackgroundService.getScreenHeight() / (double)BackgroundService.getScreenWidth();
 	public NotificationManager notificationManager;
 	public Notification notification;
 	public PendingIntent pendingIntent;
 
 	public static Map<String, String> serviceState = new HashMap<String, String>();
+
+	public static float screenWidth, screenHeight;
+	public static float streamWidth, streamHeight;
+	public static float resolution = (float) 480.0;
 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {}
@@ -102,12 +112,32 @@ public class BackgroundService extends AccessibilityService {
 		return channelId;
 	}
 
-	public static int getScreenWidth() {
-		return Resources.getSystem().getDisplayMetrics().widthPixels;
-	}
+	public void refreshDimensions() {
+		WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+		Display display = window.getDefaultDisplay();
 
-	public static int getScreenHeight() {
-		return Resources.getSystem().getDisplayMetrics().heightPixels;
+//		screenWidth = (float) display.getWidth();
+//		screenHeight = (float) display.getHeight();
+
+		Point size = new Point();
+//		display.getSize(size);
+		display.getRealSize(size);
+
+		screenWidth = size.x;
+		screenHeight = size.y;
+
+		if (screenHeight > screenWidth) {
+			float factor = resolution / screenWidth;
+			streamWidth = resolution;
+			streamHeight = factor * screenHeight;
+		}
+		else {
+			float factor = resolution / screenHeight;
+			streamWidth = factor * screenWidth;
+			streamHeight = resolution;
+		}
+
+		System.out.println("Refreshed Dimensions: " + screenWidth + " " + screenHeight + "; " + streamWidth + " " + streamHeight);
 	}
 
 	// (x, y) in screen coordinates
@@ -161,6 +191,8 @@ public class BackgroundService extends AccessibilityService {
 		super.onCreate();
 		backgroundServiceStatic = this;
 
+		refreshDimensions();
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			createNotificationChannel("connectedToPc", "Lynx Dev");
 		}
@@ -185,7 +217,57 @@ public class BackgroundService extends AccessibilityService {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction("android.intent.action.CONFIGURATION_CHANGED");
 		this.registerReceiver(mBroadcastReceiver, filter);
+
+//		{
+//			DisplayMetrics metrics = new DisplayMetrics();
+//
+//			WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+//			Display display = window.getDefaultDisplay();
+//
+//			currentRotation = display.getRotation();
+//		}
+
+//		handler3.postDelayed(updateData,1000);
 	}
+
+	Handler handler3 = new Handler();
+
+	// inactive code, but don't remove it!!!
+	private Runnable updateData = new Runnable() {
+		public void run() {
+			if (imageReader != null) {
+				DisplayMetrics metrics = new DisplayMetrics();
+
+				WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+				Display display = window.getDefaultDisplay();
+
+				int newRotation = display.getRotation();
+				System.out.println(currentRotation);
+				System.out.println(newRotation);
+
+				if (currentRotation != newRotation) {
+					refreshDimensions();
+					try {
+						Thread.sleep(1000);
+					}
+					catch (Exception e) {
+
+					}
+
+					System.out.println("ROTATE");
+
+					tearDownVirtualDisplay();
+					setUpVirtualDisplay();
+
+					currentRotation = newRotation;
+				}
+			}
+
+			handler3.postDelayed(updateData,1000);
+		}
+	};
+
+	int currentRotation;
 
 	public static SimpleClient client;
 
@@ -249,32 +331,20 @@ public class BackgroundService extends AccessibilityService {
 	public void onDestroy() {
 		super.onDestroy();
 		this.unregisterReceiver(mBroadcastReceiver);
-		tearDownMediaProjection();
+		tearDownVirtualDisplay();
 	}
 
+	// handle screen rotation (landscape to portrait, etc)
 	public BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals("android.intent.action.CONFIGURATION_CHANGED") ) {
+			if (intent.getAction().equals("android.intent.action.CONFIGURATION_CHANGED") && (mVirtualDisplay != null)) {
 				String orientation;
-				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-					orientation = "landscape";
+				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) { orientation = "landscape"; }
+				else { orientation = "portrait"; }
 
-					imageReader.close();
-					imageReader = ImageReader.newInstance((int)(BackgroundService.heightDividedByWidth * 480.0), 480, PixelFormat.RGBA_8888, 3);
-					imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
-
-					mVirtualDisplay.resize((int)(BackgroundService.heightDividedByWidth * 510.0), 480, mScreenDensity);
-				}
-				else {
-					orientation = "portrait";
-
-					imageReader.close();
-					imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 510.0), PixelFormat.RGBA_8888, 3);
-					imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
-
-					mVirtualDisplay.resize(480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity);
-				}
+				tearDownVirtualDisplay();
+				setUpVirtualDisplay();
 
 				JSONObject message = new JSONObject();
 
@@ -285,12 +355,10 @@ public class BackgroundService extends AccessibilityService {
 					message.put("data", data);
 				}
 				catch (Exception e) {
-
+					System.out.println("JSON generation failed; this should never ever happen!!!");
 				}
 
 				BackgroundService.client.sendText(message.toString());
-
-				mVirtualDisplay.setSurface(imageReader.getSurface());
 			}
 		}
 	};
@@ -299,10 +367,15 @@ public class BackgroundService extends AccessibilityService {
 		mMediaProjection = mMediaProjectionManager.getMediaProjection(mResultCode, mResultData);
 	}
 
-	public void tearDownMediaProjection() {
-		if (mMediaProjection != null) {
-			mMediaProjection.stop();
-			mMediaProjection = null;
+	public void tearDownVirtualDisplay() {
+		if (mVirtualDisplay != null) {
+			mVirtualDisplay.release();
+			mVirtualDisplay = null;
+			imageReader.close();
+			imageReader = null;
+			reusableBitmap = null;
+
+			refreshDimensions();
 		}
 	}
 
@@ -325,15 +398,22 @@ public class BackgroundService extends AccessibilityService {
 	ImageReader imageReader = null;
 
 	public void setUpVirtualDisplay() {
+		refreshDimensions();
+
 		DisplayMetrics metrics = new DisplayMetrics();
-		MainActivity.mainActivityStatic.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+		WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+		Display display = window.getDefaultDisplay();
+		display.getRealMetrics(metrics);
+
 		mScreenDensity = metrics.densityDpi;
 
-		imageReader = ImageReader.newInstance(480, (int)(BackgroundService.heightDividedByWidth * 510.0), PixelFormat.RGBA_8888, 3);
+		imageReader = null;
+		imageReader = ImageReader.newInstance((int) streamWidth, (int) streamHeight, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
-			480, (int)(BackgroundService.heightDividedByWidth * 510.0), mScreenDensity,
+			(int) streamWidth, (int) streamHeight, mScreenDensity,
 			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 			imageReader.getSurface(), null, null);
 	}
@@ -343,18 +423,24 @@ public class BackgroundService extends AccessibilityService {
 	public static class ImageAvailable implements ImageReader.OnImageAvailableListener {
 		@Override
 		public void onImageAvailable(ImageReader reader) {
-			final Image image = reader.acquireLatestImage();
-			long now = System.currentTimeMillis();
-			if ((now - lastImageMillis) < (1000 / 30)) {
-				try {
-					image.close();
+			Image image;
+			try {
+				image = reader.acquireLatestImage();
+				long now = System.currentTimeMillis();
+				if ((now - lastImageMillis) < (1000 / 30)) {
+					try {
+						image.close();
+					} catch (Exception e) {
+						// keep going...
+					}
+					return;
 				}
-				catch (Exception e) {
-					// keep going...
-				}
+				lastImageMillis = now;
+			}
+			catch (Exception e) {
+				System.out.println("HELP");
 				return;
 			}
-			lastImageMillis = now;
 
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -367,19 +453,29 @@ public class BackgroundService extends AccessibilityService {
 
 					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-					JSONObject message = new JSONObject();
-					message.put("type", "screenstream_frame");
-					JSONObject data = new JSONObject();
-					data.put("frame", base64screen);
-					message.put("data", data);
+					try {
+						JSONObject message = new JSONObject();
+						message.put("type", "screenstream_frame");
+						JSONObject data = new JSONObject();
+						data.put("frame", base64screen);
+						message.put("data", data);
+						BackgroundService.client.sendText(message.toString());
+					}
+					catch (Exception e) {
 
-//				BackgroundService.client.sendText(base64screen);
-					BackgroundService.client.sendText(message.toString());
+					}
 				}
 			}
 			catch (Exception e) {
+				System.out.println(e);
 				base64screen = "";
-				// keep going...
+			}
+
+			try {
+				image.close();
+			}
+			catch (Exception e) {
+
 			}
 		}
 	}
@@ -398,7 +494,13 @@ public class BackgroundService extends AccessibilityService {
 			}
 
 			reusableBitmap.copyPixelsFromBuffer(plane.getBuffer());
-			cleanBitmap = Bitmap.createBitmap(reusableBitmap, 0, 0, image.getWidth(), image.getHeight());
+			try {
+				cleanBitmap = Bitmap.createBitmap(reusableBitmap, 0, 0, image.getWidth(), image.getHeight());
+			}
+			catch (Exception e) {
+				cleanBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+				cleanBitmap.copyPixelsFromBuffer(plane.getBuffer());
+			}
 		} else {
 			cleanBitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
 			cleanBitmap.copyPixelsFromBuffer(plane.getBuffer());

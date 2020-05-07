@@ -95,6 +95,14 @@
 							android:text="Remote Control"
 							android:textSize="12sp"
 							android:visibility="gone" />
+
+						<Button
+							android:id="@+id/HomeStatus_StopScreen"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:onClick="stopScreenShare"
+							android:text="Stop Screen Sharing" />
 					</LinearLayout>
 
 				</LinearLayout>

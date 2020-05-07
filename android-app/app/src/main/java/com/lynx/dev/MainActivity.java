@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -31,7 +32,9 @@ import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
@@ -72,10 +75,39 @@ public class MainActivity extends AppCompatActivity {
 		((TextView) findViewById(R.id.ServiceState)).setText("SERVICE STATE: " + BackgroundService.serviceState.get("connectStatus"));
 	}
 
+	// UI - Stop Screen Sharing (if it was started)
+	public void stopScreenShare(View view) {
+		BackgroundService.backgroundServiceStatic.tearDownVirtualDisplay();
+
+		Runnable sendStoppedImage = new Runnable() {
+			public void run() {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Bitmap dia = BitmapFactory.decodeResource(getResources(), R.mipmap.dia);
+						SimpleClient.simpleClientStatic.sendStopImage(dia);
+					}
+				});
+			}
+		};
+
+		Handler handler3 = new Handler();
+
+		handler3.postDelayed(sendStoppedImage,1000);
+	}
+
 	// UI - Start QR Code Scanner Activity
 	public void addDevice(View view) {
-		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
-		startActivityForResult(launchIntent, Utility.ACTIVITY_RESULT_QRCODE);
+		// new QR code reader
+		Intent intent = new Intent(this, QRCodeScanner.class);
+		startActivityForResult(intent, Utility.ACTIVITY_RESULT_QRCODE);
+
+		// old QR code reader (Google Play Services)
+//		Intent launchIntent = BarcodeReaderActivity.getLaunchIntent(this, true, false);
+//		startActivityForResult(launchIntent, Utility.ACTIVITY_RESULT_QRCODE);
+
+		// TO BYPASS QR CODE SCANNER:
+//		confirmAddDevice("{\"ip\": \"192.168.1.98\", \"connectionToken\": \"2efd17a2-872b-487b-8a44-6977228b369c\" }");
 	}
 
 	// UI - Indicate that we're trying to connect
@@ -279,8 +311,9 @@ public class MainActivity extends AppCompatActivity {
 		}
 		// Scanned QR Code
 		if (requestCode == Utility.ACTIVITY_RESULT_QRCODE && data != null) {
-			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
-			confirmAddDevice(barcode.rawValue);
+//			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
+			System.out.println(data.getData());
+			confirmAddDevice(data.getData().toString());
 		}
 	}
 }

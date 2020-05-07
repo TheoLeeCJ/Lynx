@@ -93,13 +93,15 @@ public class MessageHandler {
                     try {
                         reply.put("type", "meta_sendinfo");
 
+                        BackgroundService.backgroundServiceStatic.refreshDimensions();
+
                         JSONObject screenDimensions = new JSONObject();
-                        screenDimensions.put("screenWidth", BackgroundService.getScreenWidth());
-                        screenDimensions.put("screenHeight", BackgroundService.getScreenHeight());
+                        screenDimensions.put("screenWidth", BackgroundService.screenWidth);
+                        screenDimensions.put("screenHeight", BackgroundService.screenHeight);
 
                         JSONObject screenstreamImageDimensions = new JSONObject();
-                        screenstreamImageDimensions.put("imageWidth", 480);
-                        screenstreamImageDimensions.put("imageHeight", BackgroundService.heightDividedByWidth * 510.0);
+                        screenstreamImageDimensions.put("imageWidth", BackgroundService.streamWidth);
+                        screenstreamImageDimensions.put("imageHeight", BackgroundService.streamHeight);
 
                         JSONObject replyData = new JSONObject();
                         replyData.put("screenDimensions", screenDimensions);
