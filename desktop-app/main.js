@@ -39,23 +39,17 @@ const createMainWindow = () => {
 
   mainWindow.loadFile("webpages/index.html");
 
+  global.mainWindow = mainWindow;
   global.screenstreamWindow = mainWindow;
-
-  module.exports.mainWindow = mainWindow;
 };
 
 app.on("ready", createMainWindow);
 
+// initialise IPC listeners
+require("./ipc");
+
+// FIXME: IPC listeners below do not support multiple devices yet
 /* ---------------------- IPC LISTENERS ---------------------- */
-
-ipcMain.once("ready", () => {
-  mainWindow.webContents
-      .send("update-connection-info-qr-code", makeConnectionInfoQrCode());
-});
-
-ipcMain.once("get-connection-token", (_, connectionToken) => {
-  global.connectionToken = connectionToken;
-});
 
 // TODO: 1 new window per device
 ipcMain.on("toggle-phone-screen-window", (_, setting) => {
