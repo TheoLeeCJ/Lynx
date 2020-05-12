@@ -28,7 +28,7 @@ const startNewScreenstreamWindow = () => {
     if (mainWindow) {
       global.screenstreamWindow = mainWindow;
     } else if (mainWindow === null) {
-      console.error("mainWindow is null. This should never happen.");
+      console.error("mainWindow is null. This should never happen. Contact the wing yip hotline.");
     } else if (typeof mainWindow === "undefined") {
       console.error("mainWindow is undefined. This should never happen.");
     } else {
