@@ -48,17 +48,15 @@ const routeMessage = (message, ws, req) => {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
 
         // send updated devices list (addresses and tokens only) to app window
-        require("./main").mainWindow.webContents.send("add-device", {
-          address: req.socket.remoteAddress,
-          token: global.connectionToken,
-        });
+        global.mainWindow.webContents.send("add-device", req.socket.remoteAddress,
+            global.connectionToken);
 
         // update connection token
         global.connectionToken = uuid();
 
         // send new connection info QR code to app window
-        require("./main").mainWindow.webContents
-            .send("update-connection-info-qr-code", makeConnectionInfoQrCode());
+        global.mainWindow.webContents.send("update-connection-info-qr-code",
+            makeConnectionInfoQrCode());
       } else {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...INVALID_TOKEN }, ws);
       }
@@ -88,7 +86,8 @@ const routeMessage = (message, ws, req) => {
           // }
 
           // TODO: each device can have its own pop-out window for screen stream
-          require("./main").mainWindow.webContents.send("update-screenstream-frame",
+          global.mainWindow.webContents.send("update-screenstream-frame",
+              req.socket.remoteAddress,
               global.connectedDevices[req.socket.remoteAddress].token,
               message.data.frame);
         } else {
