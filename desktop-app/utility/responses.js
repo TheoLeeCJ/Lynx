@@ -17,7 +17,7 @@ module.exports = {
   INVALID_TOKEN: {
     status: 401,
     success: false,
-    message: "Token is invalid.",
+    message: "Invalid token.",
   },
   FORBIDDEN: {
     status: 403,

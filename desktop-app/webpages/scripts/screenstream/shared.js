@@ -1,17 +1,14 @@
 // const screenstreamFrame = document.getElementById("screenstream-frame");
 
 // update screenstream frame when ipcMain sends message
-ipcRenderer.on("update-screenstream-frame", (_, deviceAddress, deviceToken, frame) => {
-  document.querySelector(`#device-${deviceToken} .screenstream-frame`)
-      .src = `data:image/png;base64,${frame}`;
-  // if (window.connectedDevices[deviceAddress].screenstreamAuthorised) {
-  //   document.querySelector(`#device-${deviceToken} .screenstream-frame`)
-  //       .src = `data:image/png;base64,${frame}`;
-  // } else {
-  //   // TODO: alert user that "A device with IP address [IP] is trying to screen share. Allow?"
-  //   // document.querySelector(`#device-${deviceToken} .screenstream-alert`)
-  // }
-});
+ipcRenderer.on("update-screenstream-frame",
+    async (_, deviceAddress, deviceToken, frame) => {
+      const screenstreamFrame = document
+          .querySelector(`#device-${deviceToken} .screenstream-frame`);
+      if (window.connectedDevices[deviceAddress].screenstreamAuthorised) {
+        screenstreamFrame.src = `data:image/png;base64,${frame}`;
+      }
+    });
 
 // screenstreamFrame.addEventListener("click", ({ offsetX, offsetY }) => {
 //   const imageRect = screenstreamFrame.getBoundingClientRect();

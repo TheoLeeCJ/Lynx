@@ -9,7 +9,6 @@ const {
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
-const makeConnectionInfoQrCode = require("./utility/make-connection-info-qr-code");
 
 /* ---------------------- APP INIT ---------------------- */
 
@@ -46,7 +45,7 @@ const createMainWindow = () => {
 app.on("ready", createMainWindow);
 
 // initialise IPC listeners
-require("./ipc");
+require("./ipc-listeners");
 
 // FIXME: IPC listeners below do not support multiple devices yet
 /* ---------------------- IPC LISTENERS ---------------------- */

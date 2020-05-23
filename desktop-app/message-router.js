@@ -1,4 +1,5 @@
 const uuid = require("uuid").v4;
+const { dialog } = require("electron");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -45,9 +46,8 @@ const routeMessage = (message, ws, req) => {
           webSocketConnection: ws,
           screenstreamAuthorised: false,
         };
-        sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
 
-        // send updated devices list (addresses and tokens only) to app window
+        // add device to app window's devices list (addresses and tokens only)
         global.mainWindow.webContents.send("add-device", req.socket.remoteAddress,
             global.connectionToken);
 
@@ -57,19 +57,33 @@ const routeMessage = (message, ws, req) => {
         // send new connection info QR code to app window
         global.mainWindow.webContents.send("update-connection-info-qr-code",
             makeConnectionInfoQrCode());
+
+        sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
       } else {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...INVALID_TOKEN }, ws);
       }
       break;
 
     case SCREENSTREAM_REQUEST:
-      if (req.socket.remoteAddress in global.connectedDevices) {
-        global.connectedDevices[req.socket.remoteAddress]
-            .screenstreamAuthorised = true;
-        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
-      } else {
-        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
-      }
+      dialog.showMessageBox(global.mainWindow, {
+        title: "A device is asking to share its screen",
+        message: `The device at ${req.socket.remoteAddress} is asking to share ` +
+                  "its screen and enable remote control features.",
+        buttons: ["&Allow", "&Deny"],
+        cancelId: 1, // if user presses Esc, "Deny" is automatically selected
+        noLink: true, // disable big buttons
+      }).then(({ response: clickedButton }) => {
+        if (clickedButton === 0) { // user clicked "Allow"
+          global.connectedDevices[req.socket.remoteAddress]
+              .screenstreamAuthorised = true;
+          global.mainWindow.webContents.send("allow-screenstream",
+              req.socket.remoteAddress);
+
+          sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
+        } else {
+          sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
+        }
+      });
       break;
 
     case SCREENSTREAM_FRAME:
