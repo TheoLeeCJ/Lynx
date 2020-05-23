@@ -184,10 +184,15 @@ public class MainActivity extends AppCompatActivity {
 	public void confirmAddDevice(String deviceData) {
 		// Parse JSON
 		String ipAddr = "";
+		String ipFamily = "";
 		String uuid = "";
 		try {
 			JSONObject deviceDataJSON = new JSONObject(deviceData);
-			ipAddr = deviceDataJSON.getString("ip");
+
+			JSONObject ipInfo = deviceDataJSON.getJSONObject("ipInfo");
+			ipAddr = ipInfo.getString("address");
+			ipFamily = ipInfo.getString("family");
+
 			uuid = deviceDataJSON.getString("connectionToken");
 		}
 		catch (Exception e) {
@@ -201,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
 		Bundle bundle = new Bundle();
 		bundle.putString("ipAddress", ipAddr);
 		bundle.putString("uuid", uuid);
+		bundle.putString("ipFamily", ipFamily);
 		DialogFragment newFragment = new ConfirmAddDevice();
 		newFragment.setArguments(bundle);
 		newFragment.show(getSupportFragmentManager(), "ConfirmAddDevice");
@@ -297,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
 				reply.put("type", "screenstream_request");
 			}
 			catch (Exception e) {
-				Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while making screenstream_request!", Toast.LENGTH_SHORT);
+				Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while making screenstream_request!", Toast.LENGTH_SHORT).show();
 				return;
 			}
 			SimpleClient.simpleClientStatic.sendText(reply.toString());
@@ -312,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
 		// Scanned QR Code
 		if (requestCode == Utility.ACTIVITY_RESULT_QRCODE && data != null) {
 //			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
-			System.out.println(data.getData());
 			confirmAddDevice(data.getData().toString());
 		}
 	}

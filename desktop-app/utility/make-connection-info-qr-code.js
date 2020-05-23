@@ -1,10 +1,10 @@
 const generateQrCode = require("qrcode-generator");
-const getLocalIp = require("./get-local-ip");
+const getLocalIpInfo = require("./get-local-ip-info");
 
 const makeConnectionInfoQrCode = () => {
   const qrCode = generateQrCode(0, "H");
   qrCode.addData(JSON.stringify({
-    ip: getLocalIp(),
+    ipInfo: getLocalIpInfo(),
     connectionToken: global.connectionToken,
   }));
   qrCode.make();

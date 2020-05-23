@@ -2,7 +2,7 @@
 
 // update screenstream frame when ipcMain sends message
 ipcRenderer.on("update-screenstream-frame",
-    async (_, deviceAddress, deviceToken, frame) => {
+    (_, deviceAddress, deviceToken, frame) => {
       const screenstreamFrame = document
           .querySelector(`#device-${deviceToken} .screenstream-frame`);
       if (window.connectedDevices[deviceAddress].screenstreamAuthorised) {
