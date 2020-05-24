@@ -12,7 +12,7 @@ const getLocalIpInfo = () => {
       break;
 
     case "linux":
-      interfaceNames = ["eth0", "wifi0"];
+      interfaceNames = ["eth0", "wlan0", "wifi0"];
       break;
 
     default:
@@ -20,12 +20,15 @@ const getLocalIpInfo = () => {
   }
 
   for (const interfaceName of interfaceNames) {
-    if (Array.isArray(interfaces[interfaceName]) &&
-        interfaces[interfaceName].length > 0) {
-      return {
-        address: interfaces[interfaceName][0].address,
-        family: interfaces[interfaceName][0].family,
-      };
+    if (Array.isArray(interfaces[interfaceName])) {
+      for (const interface of interfaces[interfaceName]) {
+        if (!interface.internal) {
+          return {
+            address: interface.address,
+            family: interface.family,
+          };
+        }
+      }
     }
   }
 
