@@ -22,7 +22,10 @@ const getLocalIpInfo = () => {
   for (const interfaceName of interfaceNames) {
     if (Array.isArray(interfaces[interfaceName])) {
       for (const interface of interfaces[interfaceName]) {
-        if (!interface.internal) {
+        if (!interface.internal &&
+            // link-local IP addresses don't work
+            !(interface.family === "IPv4" && interface.address.startsWith("169.254.0.0")) &&
+            !(interface.family === "IPv6" && interface.address.startsWith("fe80::"))) {
           return {
             address: interface.address,
             family: interface.family,

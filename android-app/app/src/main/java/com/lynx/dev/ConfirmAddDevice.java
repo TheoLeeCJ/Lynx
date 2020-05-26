@@ -31,17 +31,14 @@ public class ConfirmAddDevice extends DialogFragment {
 
 				String connectionUrl = "ws://";
 				if (Utility.IP_FAMILY.equals("IPv4")) {
-					Log.i("eeee", "4");
 					connectionUrl += Utility.IP_ADDR;
 				} else if (Utility.IP_FAMILY.equals("IPv6")) {
 					// Wrap IP address in square brackets if it is IPv6
 					connectionUrl += "[" + Utility.IP_ADDR + "]";
-					Log.i("eeee", "6");
 				}
 				connectionUrl += ":" + Utility.WEBSOCKET_PORT;
 
 				Utility.CONNECTION_URL = connectionUrl;
-				Log.i("eeee", connectionUrl);
 
 				Context context = getContext();
 				if (context instanceof MainActivity) {
