@@ -10,6 +10,8 @@ import android.util.Log;
 
 import androidx.fragment.app.DialogFragment;
 
+import org.slf4j.helpers.Util;
+
 public class ConfirmAddDevice extends DialogFragment {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -24,7 +26,22 @@ public class ConfirmAddDevice extends DialogFragment {
 			public void onClick(DialogInterface dialog, int id) {
 				// User clicked OK button, attempt to connect
 				Utility.IP_ADDR = (String) getArguments().get("ipAddress");
+				Utility.IP_FAMILY = (String) getArguments().get("ipFamily");
 				Utility.CONNECTION_TOKEN = (String) getArguments().get("uuid");
+
+				String connectionUrl = "ws://";
+				if (Utility.IP_FAMILY.equals("IPv4")) {
+					Log.i("eeee", "4");
+					connectionUrl += Utility.IP_ADDR;
+				} else if (Utility.IP_FAMILY.equals("IPv6")) {
+					// Wrap IP address in square brackets if it is IPv6
+					connectionUrl += "[" + Utility.IP_ADDR + "]";
+					Log.i("eeee", "6");
+				}
+				connectionUrl += ":" + Utility.WEBSOCKET_PORT;
+
+				Utility.CONNECTION_URL = connectionUrl;
+				Log.i("eeee", connectionUrl);
 
 				Context context = getContext();
 				if (context instanceof MainActivity) {

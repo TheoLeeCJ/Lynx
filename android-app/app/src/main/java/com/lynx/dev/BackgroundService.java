@@ -273,10 +273,10 @@ public class BackgroundService extends AccessibilityService {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		// start WebSocket client (?)
+		// start WebSocket client
 		try {
-			System.out.println("ws://" + Utility.IP_ADDR);
-			client = new SimpleClient(new URI("ws://" + Utility.IP_ADDR + ":" + Utility.WEBSOCKET_PORT));
+			System.out.println(Utility.CONNECTION_URL);
+			client = new SimpleClient(new URI(Utility.CONNECTION_URL));
 			client.connectionToken = Utility.CONNECTION_TOKEN;
 			client.connect();
 			android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);

@@ -54,9 +54,14 @@ public class QRCodeScanner extends AppCompatActivity implements QRCodeReaderView
 		// Parse JSON
 		String ipAddr = "";
 		String uuid = "";
+		String ipFamily = "";
 		try {
 			JSONObject deviceDataJSON = new JSONObject(text);
-			ipAddr = deviceDataJSON.getString("ip");
+
+			JSONObject ipInfo = deviceDataJSON.getJSONObject("ipInfo");
+			ipAddr = ipInfo.getString("address");
+			ipFamily = ipInfo.getString("family");
+
 			uuid = deviceDataJSON.getString("connectionToken");
 		}
 		catch (Exception e) {

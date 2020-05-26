@@ -14,7 +14,7 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   window.connectedDevices[deviceAddress] = {
     address: deviceAddress,
     token: deviceToken,
-    // screenstreamAuthorised: false,
+    screenstreamAuthorised: false,
   };
 
   // show new device in window
@@ -56,6 +56,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
 ipcRenderer.on("remove-device", (_, deviceAddress, deviceToken) => {
   delete window.connectedDevices[deviceAddress];
   document.querySelector(`#device-${deviceToken}`).remove();
+});
+
+ipcRenderer.on("allow-screenstream", (_, deviceAddress) => {
+  window.connectedDevices[deviceAddress].screenstreamAuthorised = true;
 });
 
 // TODO: 1 pop-out window per device

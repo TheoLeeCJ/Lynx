@@ -27,7 +27,9 @@ public class Utility {
 
 	// Data-passing
 	public static String IP_ADDR = "";
+	public static String IP_FAMILY = "";
 	public static String CONNECTION_TOKEN = "";
+	public static String CONNECTION_URL = "";
 
 	public static JSONObject readSettings(Context context) {
 		FileInputStream fis;
