@@ -169,6 +169,7 @@
 				android:drawableStart="@android:drawable/stat_notify_sdcard"
 				android:drawablePadding="20dp"
 				android:includeFontPadding="false"
+				android:onClick="showFilePicker"
 				android:padding="18dp"
 				android:paddingStart="20dp"
 				android:text="Browse Shared Folder(s)"

@@ -27,6 +27,7 @@ import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Base64;
@@ -50,6 +51,7 @@ import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 //	public WebView webapp = null;
@@ -73,6 +75,42 @@ public class MainActivity extends AppCompatActivity {
 			alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
 		}
 		((TextView) findViewById(R.id.ServiceState)).setText("SERVICE STATE: " + BackgroundService.serviceState.get("connectStatus"));
+	}
+
+	// UI - File Picker
+	public void showFilePicker(View view) {
+		requestForPermission();
+
+		// Prepare Dialog
+		Bundle bundle = new Bundle();
+		DialogFragment newFragment = new FilePicker();
+		newFragment.setArguments(bundle);
+		newFragment.show(getSupportFragmentManager(), "FilePicker");
+	}
+
+	public final String[] EXTERNAL_PERMS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+
+	public final int EXTERNAL_REQUEST = 138;
+
+	public boolean requestForPermission() {
+		boolean isPermissionOn = true;
+		final int version = Build.VERSION.SDK_INT;
+		if (version >= 23) {
+			if (!canAccessExternalSd()) {
+				isPermissionOn = false;
+				requestPermissions(EXTERNAL_PERMS, EXTERNAL_REQUEST);
+			}
+		}
+
+		return isPermissionOn;
+	}
+
+	public boolean canAccessExternalSd() {
+		return (hasPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE));
+	}
+
+	private boolean hasPermission(String perm) {
+		return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(this, perm));
 	}
 
 	// UI - Stop Screen Sharing (if it was started)
