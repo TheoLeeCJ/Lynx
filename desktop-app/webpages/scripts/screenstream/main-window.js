@@ -28,7 +28,18 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
 
   const deviceScreenstreamFrame = document.createElement("img");
   deviceScreenstreamFrame.className = "screenstream-frame";
-
+  deviceScreenstreamFrame.onclick = (event) => {
+    const bounds = deviceScreenstreamFrame.getBoundingClientRect();
+    const x = Math.round(event.clientX - bounds.x);
+    const y = Math.round(event.clientY - bounds.y);
+    console.log(`click X is ${x} and Y is ${y}`);
+    let position = {
+      xOffsetFactor: x / bounds.width,
+      yOffsetFactor: y / bounds.height
+    }
+    console.log("JSON");
+    ipcRenderer.send("remotecontrol-tap", position, deviceAddress);
+  };
   // navigation buttons for device
   const backButton = document.createElement("button");
   backButton.textContent = "Back";
