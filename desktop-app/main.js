@@ -64,16 +64,3 @@ ipcMain.on("toggle-phone-screen-window", (_, setting) => {
     global.screenstreamWindow = mainWindow;
   }
 });
-
-ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceIpAddress) => {
-  const { screenWidth, screenHeight } = global.connectedDevices[deviceIpAddress]
-      .deviceMetadata.screenDimensions;
-
-  sendJsonMessage({
-    type: REMOTECONTROL_TAP,
-    data: {
-      x: xOffsetFactor * screenWidth,
-      y: yOffsetFactor * screenHeight,
-    },
-  }, global.connectedDevices[deviceIpAddress].webSocketConnection);
-});
