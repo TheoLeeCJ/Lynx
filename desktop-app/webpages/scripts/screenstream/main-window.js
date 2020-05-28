@@ -30,16 +30,17 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   deviceScreenstreamFrame.className = "screenstream-frame";
   deviceScreenstreamFrame.onclick = (event) => {
     const bounds = deviceScreenstreamFrame.getBoundingClientRect();
-    const x = Math.round(event.clientX - bounds.x);
-    const y = Math.round(event.clientY - bounds.y);
-    console.log(`click X is ${x} and Y is ${y}`);
-    let position = {
-      xOffsetFactor: x / bounds.width,
-      yOffsetFactor: y / bounds.height
-    }
-    console.log("JSON");
+
+    const xPixels = Math.round(event.clientX - bounds.x);
+    const yPixels = Math.round(event.clientY - bounds.y);
+    const position = {
+      xOffsetFactor: xPixels / bounds.width,
+      yOffsetFactor: yPixels / bounds.height,
+    };
+
     ipcRenderer.send("remotecontrol-tap", position, deviceAddress);
   };
+
   // navigation buttons for device
   const backButton = document.createElement("button");
   backButton.textContent = "Back";
@@ -64,9 +65,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   document.getElementById("devices-list").append(newDeviceDiv);
 });
 
-ipcRenderer.on("remove-device", (_, deviceAddress, deviceToken) => {
+ipcRenderer.on("remove-device", (_, deviceAddress) => {
+  document.querySelector(`#device-${window.connectedDevices[deviceAddress].token}`)
+      .remove();
   delete window.connectedDevices[deviceAddress];
-  document.querySelector(`#device-${deviceToken}`).remove();
 });
 
 ipcRenderer.on("allow-screenstream", (_, deviceAddress) => {

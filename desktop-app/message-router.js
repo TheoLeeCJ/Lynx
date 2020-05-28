@@ -44,6 +44,7 @@ const routeMessage = (message, ws, req) => {
           address: req.socket.remoteAddress,
           token: global.connectionToken,
           webSocketConnection: ws,
+          deviceMetadata: null,
           screenstreamAuthorised: false,
         };
 

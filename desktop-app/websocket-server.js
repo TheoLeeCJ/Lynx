@@ -26,10 +26,8 @@ const startWebSocketServer = () => {
     });
 
     ws.on("close", (code, reason) => {
-      global.mainWindow.webContents.send("remove-device", req.socket.remoteAddress,
-          global.connectedDevices[req.socket.remoteAddress].token);
+      global.mainWindow.webContents.send("remove-device", req.socket.remoteAddress);
       delete global.connectedDevices[req.socket.remoteAddress];
-
       console.log(`Closed connection to ${req.socket.remoteAddress} with code ${code}. Reason: ${reason}`);
     });
 
