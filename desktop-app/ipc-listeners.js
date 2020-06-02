@@ -4,6 +4,7 @@ const {
     REMOTECONTROL_BACK,
     REMOTECONTROL_HOME,
     REMOTECONTROL_RECENTS,
+    REMOTECONTROL_TAP,
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");

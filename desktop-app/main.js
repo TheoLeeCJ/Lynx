@@ -1,13 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, session, ipcMain } = require("electron");
 const uuid = require("uuid").v4;
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
 const startNewScreenstreamWindow = require("./screenstream-new-window/init");
-const {
-  messageTypes: {
-    REMOTECONTROL_TAP,
-  },
-} = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
 
 /* ---------------------- APP INIT ---------------------- */
@@ -42,7 +37,19 @@ const createMainWindow = () => {
   global.screenstreamWindow = mainWindow;
 };
 
-app.on("ready", createMainWindow);
+app.on("ready", () => {
+  createMainWindow();
+
+  // TODO: set CSP header (implement only in production)
+  // session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+  //   callback({
+  //     responseHeaders: {
+  //       ...details.responseHeaders,
+  //       "Content-Security-Policy": ["script-src 'self'"],
+  //     },
+  //   });
+  // });
+});
 
 // initialise IPC listeners
 require("./ipc-listeners");
