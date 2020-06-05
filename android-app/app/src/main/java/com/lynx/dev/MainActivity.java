@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
@@ -29,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -50,8 +52,16 @@ import com.notbytes.barcode_reader.BarcodeReaderActivity;
 import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 //	public WebView webapp = null;
@@ -82,11 +92,29 @@ public class MainActivity extends AppCompatActivity {
 		requestForPermission();
 
 		// Prepare Dialog
-		Bundle bundle = new Bundle();
-		DialogFragment newFragment = new FilePicker();
-		newFragment.setArguments(bundle);
-		newFragment.show(getSupportFragmentManager(), "FilePicker");
+//		Bundle bundle = new Bundle();
+//		DialogFragment newFragment = new FilePicker();
+//		newFragment.setArguments(bundle);
+//		newFragment.show(getSupportFragmentManager(), "FilePicker");
+
+		// System File Picker???
+		Intent chooseFile;
+		Intent intent;
+		chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+//		chooseFile.addCategory(Intent.CATEGORY_OPENABLE);
+		chooseFile.setType("*/*");
+		intent = Intent.createChooser(chooseFile, "Choose a file");
+		startActivityForResult(intent, Utility.ACTIVITY_RESULT_FILECHOSEN);
 	}
+
+//	public String getRealPathFromURI(Uri contentUri) {
+//		String [] proj      = {MediaStore.Images.Media.DATA};
+//		Cursor cursor       = getContentResolver().query( contentUri, proj, null, null,null);
+//		if (cursor == null) return null;
+//		int column_index    = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+//		cursor.moveToFirst();
+//		return cursor.getString(column_index);
+//	}
 
 	public final String[] EXTERNAL_PERMS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
 
@@ -329,7 +357,8 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult( requestCode, resultCode, data);
+		super.onActivityResult(requestCode, resultCode, data);
+
 		if (requestCode == BackgroundService.REQUEST_MEDIA_PROJECTION) {
 			if (resultCode != Activity.RESULT_OK) {
 				Log.i(BackgroundService.TAG, "User cancelled");
@@ -353,10 +382,89 @@ public class MainActivity extends AppCompatActivity {
 			BackgroundService.backgroundServiceStatic.setUpMediaProjection();
 			BackgroundService.backgroundServiceStatic.setUpVirtualDisplay();
 		}
+
 		// Scanned QR Code
 		if (requestCode == Utility.ACTIVITY_RESULT_QRCODE && data != null) {
 //			Barcode barcode = data.getParcelableExtra(BarcodeReaderActivity.KEY_CAPTURED_BARCODE);
 			confirmAddDevice(data.getData().toString());
 		}
+
+		if (requestCode == Utility.ACTIVITY_RESULT_FILECHOSEN && data != null) {
+			System.out.println("OI");
+			Uri uri = data.getData();
+//			String FilePath = getRealPathFromURI(uri); // should the path be here in this string
+			System.out.println("Path  = " + uri.toString());
+
+			File userFile = new File(uri.toString());
+			String fileName = getFileName(uri);
+			System.out.println(fileName);
+
+			Cursor returnCursor =
+				getContentResolver().query(uri, null, null, null, null);
+			int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+			returnCursor.moveToFirst();
+			int size = (int) returnCursor.getLong(sizeIndex);
+
+			byte[] bytes = new byte[size];
+			try {
+				InputStream inputStream = getContentResolver().openInputStream(uri);
+
+				BufferedInputStream buf = new BufferedInputStream(inputStream);
+				buf.read(bytes, 0, bytes.length);
+				buf.close();
+
+				inputStream.close();
+
+				System.out.println(bytes);
+				System.out.println(bytes.length);
+
+				String base64File = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+				try {
+					try {
+						JSONObject message = new JSONObject();
+						message.put("type", "filetransfer_testreceive");
+						JSONObject messageData = new JSONObject();
+						messageData.put("fileName", fileName);
+						messageData.put("fileContent", base64File);
+						message.put("data", messageData);
+						BackgroundService.client.sendText(message.toString());
+					}
+					catch (Exception e) {
+						System.out.println("JSON error " + e.toString());
+					}
+				}
+				catch (Exception e) {
+					System.out.println("Not connected to any PCs OR " + e.toString());
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// thanks, https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content!
+	public String getFileName(Uri uri) {
+		String result = null;
+		if (uri.getScheme().equals("content")) {
+			Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+			try {
+				if (cursor != null && cursor.moveToFirst()) {
+					result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+				}
+			} finally {
+				cursor.close();
+			}
+		}
+		if (result == null) {
+			result = uri.getPath();
+			int cut = result.lastIndexOf('/');
+			if (cut != -1) {
+				result = result.substring(cut + 1);
+			}
+		}
+		return result;
 	}
 }

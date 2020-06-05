@@ -15,6 +15,7 @@ const {
     SCREENSTREAM_REQUEST,
     SCREENSTREAM_FRAME,
     META_SENDINFO,
+    FILETRANSFER_TESTRECEIVE,
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY,
@@ -25,16 +26,21 @@ const {
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
 const makeConnectionInfoQrCode = require("./utility/make-connection-info-qr-code");
+const fs = require("fs");
 
 const routeMessage = (message, ws, req) => {
   if (typeof message.type !== "string" || !message.type.trim()) {
     sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...BAD_REQUEST }, ws);
   }
 
-  if (message.type !== SCREENSTREAM_FRAME) {
-    console.log("Received message:", message);
-  } else {
+  if (message.type == SCREENSTREAM_FRAME) {
     console.log("Received screen stream frame");
+  }
+  else if (message.type == FILETRANSFER_TESTRECEIVE) {
+    console.log("Received file");
+  }
+  else {
+    console.log("Received message:", message);
   }
 
   switch (message.type) {
@@ -127,6 +133,21 @@ const routeMessage = (message, ws, req) => {
         sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
       }
       break;
+
+    // insecure, ugly code by me (Theo)
+    // it is all inline now, just for testing purposes. ideally it should go into a separate file.
+    case FILETRANSFER_TESTRECEIVE:
+      let home = require("os").homedir();
+      let path = home + '/Documents/' + message.data.fileName;
+
+      let binaryData = new Buffer(message.data.fileContent, 'base64').toString('binary');
+
+      fs.writeFile(path, binaryData, "binary", function (err) {
+        // console.log(err);
+      });
+
+      break;
+    // end insecure ugly code by me (Theo)
 
     default: // matched no message types - invalid
       sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);

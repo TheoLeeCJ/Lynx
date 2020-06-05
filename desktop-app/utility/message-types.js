@@ -11,6 +11,9 @@ module.exports = {
     REMOTECONTROL_BACK: "remotecontrol_back",
     REMOTECONTROL_HOME: "remotecontrol_home",
     REMOTECONTROL_RECENTS: "remotecontrol_recents",
+
+    // file transfer
+    FILETRANSFER_TESTRECEIVE: "filetransfer_testreceive",
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY: "generic_message_reply",

@@ -19,10 +19,14 @@ public class Utility {
 	public static int PERMISSION_SCREENCAST = 4097;
 	public static int PERMISSION_DISPLAYOVEROTHERAPPS = 4098;
 	public static int MISAKA_MIKOTO = 4099;
+
 	public static int ACTIVITY_RESULT_QRCODE = 5001;
+	public static int ACTIVITY_RESULT_FILECHOSEN = 5002;
+
 	public static int HOMEMESSAGE_CONNECTING = 6001;
 	public static int HOMEMESSAGE_CONNECTED = 6002;
 	public static int HOMEMESSAGE_NOT_CONNECTED = 6003;
+
 	public static int WEBSOCKET_PORT = 57531;
 
 	// Data-passing
