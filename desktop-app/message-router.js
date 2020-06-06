@@ -16,6 +16,7 @@ const {
     SCREENSTREAM_FRAME,
     META_SENDINFO,
     FILETRANSFER_TESTRECEIVE,
+    ORIENTATION_CHANGE,
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY,
@@ -148,7 +149,9 @@ const routeMessage = (message, ws, req) => {
 
       break;
     // end insecure ugly code by me (Theo)
-
+    case ORIENTATION_CHANGE:
+      global.mainWindow.webContents.send("orientation-change", message.data.orientation);
+      break;
     default: // matched no message types - invalid
       sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
   }

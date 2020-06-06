@@ -11,7 +11,9 @@ module.exports = {
     REMOTECONTROL_BACK: "remotecontrol_back",
     REMOTECONTROL_HOME: "remotecontrol_home",
     REMOTECONTROL_RECENTS: "remotecontrol_recents",
-
+    
+    // screen orientation
+    ORIENTATION_CHANGE: "screenstream_orientationchange",
     // file transfer
     FILETRANSFER_TESTRECEIVE: "filetransfer_testreceive",
   },
