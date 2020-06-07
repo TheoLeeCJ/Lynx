@@ -172,7 +172,7 @@
 				android:onClick="showFilePicker"
 				android:padding="18dp"
 				android:paddingStart="20dp"
-				android:text="Browse Shared Folder(s)"
+				android:text="Send File to PC"
 				android:textAlignment="textStart"
 				android:textColor="#FFFFFF"
 				android:textSize="18sp" />

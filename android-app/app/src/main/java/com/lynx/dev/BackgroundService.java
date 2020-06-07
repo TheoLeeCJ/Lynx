@@ -383,8 +383,10 @@ public class BackgroundService extends AccessibilityService {
 		mMediaProjectionManager = (MediaProjectionManager) this.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
 
 		if (mMediaProjection != null) {
+			sendScreenStreamRequest();
 			setUpVirtualDisplay();
 		} else if (mResultCode != 0 && mResultData != null) {
+			sendScreenStreamRequest();
 			setUpMediaProjection();
 			setUpVirtualDisplay();
 		} else {
@@ -393,6 +395,20 @@ public class BackgroundService extends AccessibilityService {
 				mMediaProjectionManager.createScreenCaptureIntent(),
 				REQUEST_MEDIA_PROJECTION);
 		}
+	}
+
+	public void sendScreenStreamRequest() {
+		// SEND REQUEST TO PC
+		JSONObject reply = new JSONObject();
+		try {
+			reply.put("type", "screenstream_request");
+		}
+		catch (Exception e) {
+			Toast.makeText(MainActivity.mainActivityStatic, "JSONObject error while making screenstream_request!", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		SimpleClient.simpleClientStatic.sendText(reply.toString());
+		// END
 	}
 
 	ImageReader imageReader = null;
