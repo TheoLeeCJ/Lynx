@@ -30,6 +30,7 @@ public class ConfirmAddDevice extends DialogFragment {
 				Utility.CONNECTION_TOKEN = (String) getArguments().get("uuid");
 
 				String connectionUrl = "ws://";
+//				String connectionUrl = "wss://";
 				if (Utility.IP_FAMILY.equals("IPv4")) {
 					connectionUrl += Utility.IP_ADDR;
 				} else if (Utility.IP_FAMILY.equals("IPv6")) {

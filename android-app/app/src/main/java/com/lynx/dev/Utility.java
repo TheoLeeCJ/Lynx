@@ -28,6 +28,7 @@ public class Utility {
 	public static int HOMEMESSAGE_NOT_CONNECTED = 6003;
 
 	public static int WEBSOCKET_PORT = 57531;
+//	public static int WEBSOCKET_PORT = 443;
 
 	// Data-passing
 	public static String IP_ADDR = "";
