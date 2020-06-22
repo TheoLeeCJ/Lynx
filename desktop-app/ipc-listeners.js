@@ -30,22 +30,10 @@ ipcMain.on("remotecontrol-recents", (_, deviceAddress) => {
   sendJsonMessage({ type: REMOTECONTROL_RECENTS },
       global.connectedDevices[deviceAddress].webSocketConnection);
 });
-let invert = false;
-ipcMain.on("orientation-change", (_, orient) => {
-  console.log("received change in orientation");
-  switch(orient){
-    case "portrait":
-      invert = false;
-      break;
-    case "landscape":
-      invert = true;
-      break;
-  }
-});
 ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceIpAddress) => {
   const { screenWidth, screenHeight } = global.connectedDevices[deviceIpAddress]
       .deviceMetadata.screenDimensions;
-  if(invert){
+  if(global.connectedDevices[deviceIpAddress].orientation === "landscape"){
     sendJsonMessage({
       type: REMOTECONTROL_TAP,
       data: {

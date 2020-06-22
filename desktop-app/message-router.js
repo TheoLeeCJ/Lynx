@@ -150,7 +150,7 @@ const routeMessage = (message, ws, req) => {
       break;
     // end insecure ugly code by me (Theo)
     case ORIENTATION_CHANGE:
-      global.mainWindow.webContents.send("orientation-change", message.data.orientation);
+      global.connectedDevices[req.socket.remoteAddress].orientation = message.data.orientation;
       break;
     default: // matched no message types - invalid
       sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
