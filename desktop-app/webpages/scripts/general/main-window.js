@@ -15,6 +15,8 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
     address: deviceAddress,
     token: deviceToken,
     screenstreamAuthorised: false,
+    screenstreamInProgress: false,
+    screenstreamPoppedOut: false,
   };
 
   // show new device in window
@@ -29,15 +31,7 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   const deviceScreenstreamFrame = document.createElement("img");
   deviceScreenstreamFrame.className = "screenstream-frame";
   deviceScreenstreamFrame.onclick = (event) => {
-    const bounds = deviceScreenstreamFrame.getBoundingClientRect();
-
-    const xPixels = Math.round(event.clientX - bounds.x);
-    const yPixels = Math.round(event.clientY - bounds.y);
-    const position = {
-      xOffsetFactor: xPixels / bounds.width,
-      yOffsetFactor: yPixels / bounds.height,
-    };
-
+    const position = getRemoteControlTapPosition(event, deviceScreenstreamFrame);
     ipcRenderer.send("remotecontrol-tap", position, deviceAddress);
   };
 
@@ -71,26 +65,9 @@ ipcRenderer.on("remove-device", (_, deviceAddress) => {
   delete window.connectedDevices[deviceAddress];
 });
 
-ipcRenderer.on("allow-screenstream", (_, deviceAddress) => {
-  window.connectedDevices[deviceAddress].screenstreamAuthorised = true;
+ipcRenderer.on("screenstream-new-window-closed", (_, deviceAddress) => {
+  window.connectedDevices[deviceAddress].screenstreamPoppedOut = false;
+  document.querySelector(`#device-${window.connectedDevices[deviceAddress].token}
+      .screenstream-window-toggle-button`)
+      .textContent = "Display screen stream in new window";
 });
-
-// TODO: 1 pop-out window per device
-// toggle between displaying stream in current or new window
-let streamInCurrentWindow = true;
-
-document.getElementById("screenstream-window-toggle-button")
-    .addEventListener("click", (event) => {
-      if (streamInCurrentWindow) {
-        // transfer stream from current window to new window
-        screenstreamFrame.src = "";
-        streamInCurrentWindow = false;
-        ipcRenderer.send("toggle-phone-screen-window", "newWindow");
-        event.target.textContent = "Display phone screen in this window";
-      } else {
-        // transfer stream from new window to current window
-        streamInCurrentWindow = true;
-        ipcRenderer.send("toggle-phone-screen-window", "sameWindow");
-        event.target.textContent = "Display phone screen in new window";
-      }
-    });

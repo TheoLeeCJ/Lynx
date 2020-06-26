@@ -2,7 +2,6 @@ const { app, BrowserWindow, session, ipcMain } = require("electron");
 const uuid = require("uuid").v4;
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
-const startNewScreenstreamWindow = require("./screenstream-new-window/init");
 const sendJsonMessage = require("./utility/send-json-message");
 
 /* ---------------------- APP INIT ---------------------- */
@@ -53,21 +52,3 @@ app.on("ready", () => {
 
 // initialise IPC listeners
 require("./ipc-listeners");
-
-// FIXME: IPC listeners below do not support multiple devices yet
-/* ---------------------- IPC LISTENERS ---------------------- */
-
-// TODO: 1 new window per device
-ipcMain.on("toggle-phone-screen-window", (_, setting) => {
-  // if (!global.deviceAuthenticated || !global.screenstreamAuthorised) return;
-
-  if (setting === "newWindow") {
-    startNewScreenstreamWindow();
-    global.screenstreamWindow = global.screenstreamNewWindow;
-  } else if (setting === "sameWindow") {
-    if (global.screenstreamNewWindow) {
-      global.screenstreamNewWindow.close();
-    }
-    global.screenstreamWindow = mainWindow;
-  }
-});

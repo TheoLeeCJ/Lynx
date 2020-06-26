@@ -1,5 +1,6 @@
 const uuid = require("uuid").v4;
-const { dialog } = require("electron");
+const { BrowserWindow, dialog } = require("electron");
+const fs = require("fs");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -14,9 +15,10 @@ const {
     INITIAL_AUTH,
     SCREENSTREAM_REQUEST,
     SCREENSTREAM_FRAME,
+    SCREENSTREAM_ORIENTATIONCHANGE,
+    SCREENSTREAM_STOP,
     META_SENDINFO,
     FILETRANSFER_TESTRECEIVE,
-    ORIENTATION_CHANGE,
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY,
@@ -27,33 +29,29 @@ const {
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
 const makeConnectionInfoQrCode = require("./utility/make-connection-info-qr-code");
-const fs = require("fs");
+const Device = require("./utility/classes/Device");
 
 const routeMessage = (message, ws, req) => {
   if (typeof message.type !== "string" || !message.type.trim()) {
     sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...BAD_REQUEST }, ws);
   }
 
-  if (message.type == SCREENSTREAM_FRAME) {
+  if (message.type === SCREENSTREAM_FRAME) {
     console.log("Received screen stream frame");
-  }
-  else if (message.type == FILETRANSFER_TESTRECEIVE) {
+  } else if (message.type === FILETRANSFER_TESTRECEIVE) {
     console.log("Received file");
-  }
-  else {
+  } else {
     console.log("Received message:", message);
   }
 
   switch (message.type) {
     case INITIAL_AUTH:
       if (message.data.token === global.connectionToken) {
-        global.connectedDevices[req.socket.remoteAddress] = {
+        global.connectedDevices[req.socket.remoteAddress] = new Device({
           address: req.socket.remoteAddress,
           token: global.connectionToken,
           webSocketConnection: ws,
-          deviceMetadata: null,
-          screenstreamAuthorised: false,
-        };
+        });
 
         // add device to app window's devices list (addresses and tokens only)
         global.mainWindow.webContents.send("add-device", req.socket.remoteAddress,
@@ -84,7 +82,9 @@ const routeMessage = (message, ws, req) => {
         if (clickedButton === 0) { // user clicked "Allow"
           global.connectedDevices[req.socket.remoteAddress]
               .screenstreamAuthorised = true;
-          global.mainWindow.webContents.send("allow-screenstream",
+          global.connectedDevices[req.socket.remoteAddress].screenstreamWindow =
+              global.mainWindow;
+          global.mainWindow.webContents.send("authorise-screenstream",
               req.socket.remoteAddress);
 
           sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
@@ -107,17 +107,23 @@ const routeMessage = (message, ws, req) => {
           //   console.error("Could not access window object - global.screenstreamWindow is undefined.");
           // }
 
-          // TODO: each device can have its own pop-out window for screen stream
-          global.mainWindow.webContents.send("update-screenstream-frame",
-              req.socket.remoteAddress,
-              global.connectedDevices[req.socket.remoteAddress].token,
-              message.data.frame);
+          global.connectedDevices[req.socket.remoteAddress].screenstreamWindow
+              .webContents.send("update-screenstream-frame",
+                  req.socket.remoteAddress,
+                  message.data.frame);
         } else {
           sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
         }
       } else {
         sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...FORBIDDEN }, ws);
       }
+      break;
+
+    case SCREENSTREAM_STOP:
+      global.connectedDevices[req.socket.remoteAddress].screenstreamAuthorised =
+          false;
+      global.mainWindow.webContents.send("screenstream-stop",
+          req.socket.remoteAddress);
       break;
 
     case META_SENDINFO:
@@ -138,20 +144,23 @@ const routeMessage = (message, ws, req) => {
     // insecure, ugly code by me (Theo)
     // it is all inline now, just for testing purposes. ideally it should go into a separate file.
     case FILETRANSFER_TESTRECEIVE:
-      let home = require("os").homedir();
-      let path = home + '/Documents/' + message.data.fileName;
+      const home = require("os").homedir();
+      // FIXME: "filename" not "fileName"
+      const path = home + "/Documents/" + message.data.fileName;
 
-      let binaryData = new Buffer(message.data.fileContent, 'base64').toString('binary');
+      const binaryData = Buffer.from(message.data.fileContent, "base64")
+          .toString("binary");
 
-      fs.writeFile(path, binaryData, "binary", function (err) {
-        // console.log(err);
+      fs.writeFile(path, binaryData, "binary", (err) => {
+        if (err) console.error(err);
       });
+      break;
 
-      break;
-    // end insecure ugly code by me (Theo)
-    case ORIENTATION_CHANGE:
-      global.mainWindow.webContents.send("orientation-change", message.data.orientation);
-      break;
+    case SCREENSTREAM_ORIENTATIONCHANGE:
+      // global.mainWindow.webContents.send("orientation-change",
+      //     message.data.orientation);
+      // break;
+
     default: // matched no message types - invalid
       sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);
   }
