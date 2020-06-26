@@ -57,12 +57,12 @@ ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddr
   sendJsonMessage({
     type: REMOTECONTROL_TAP,
     data: {
-      x: xOffsetFactor * (deviceOrientation === "landscape" ?
-          screenHeight :
-          screenWidth),
-      y: yOffsetFactor * (deviceOrientation === "landscape" ?
+      x: xOffsetFactor * (deviceOrientation === "portrait" ?
           screenWidth :
           screenHeight),
+      y: yOffsetFactor * (deviceOrientation === "portrait" ?
+          screenHeight :
+          screenWidth),
     },
   }, global.connectedDevices[deviceAddress].webSocketConnection);
 });
