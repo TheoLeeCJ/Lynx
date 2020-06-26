@@ -144,22 +144,22 @@ const routeMessage = (message, ws, req) => {
     // insecure, ugly code by me (Theo)
     // it is all inline now, just for testing purposes. ideally it should go into a separate file.
     case FILETRANSFER_TESTRECEIVE:
-      const home = require("os").homedir();
+      const homeDir = require("os").homedir();
       // FIXME: "filename" not "fileName"
-      const path = home + "/Documents/" + message.data.fileName;
-
+      const writePath = `${homeDir}/Documents/${message.data.fileName}`;
       const binaryData = Buffer.from(message.data.fileContent, "base64")
           .toString("binary");
-
-      fs.writeFile(path, binaryData, "binary", (err) => {
+      fs.writeFile(writePath, binaryData, "binary", (err) => {
         if (err) console.error(err);
       });
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
-      // global.mainWindow.webContents.send("orientation-change",
-      //     message.data.orientation);
-      // break;
+      global.connectedDevices[req.socket.remoteAddress].orientation =
+          message.data.orientation;
+      global.mainWindow.webContents.send("orientation-change",
+          message.data.orientation);
+      break;
 
     default: // matched no message types - invalid
       sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...BAD_REQUEST }, ws);

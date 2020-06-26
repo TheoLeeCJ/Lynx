@@ -49,46 +49,20 @@ ipcMain.on("remotecontrol-recents", (_, deviceAddress) => {
       global.connectedDevices[deviceAddress].webSocketConnection);
 });
 
-// let invert = false;
-// ipcMain.on("orientation-change", (_, orientation) => {
-//   console.log("received change in orientation");
-//   switch (orientation) {
-//     case "portrait":
-//       invert = false;
-//       break;
-//     case "landscape":
-//       invert = true;
-//       break;
-//   }
-// });
-
 ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddress) => {
   const { screenWidth, screenHeight } = global.connectedDevices[deviceAddress]
       .deviceMetadata.screenDimensions;
+  const deviceOrientation = global.connectedDevices[deviceAddress].orientation;
 
   sendJsonMessage({
     type: REMOTECONTROL_TAP,
     data: {
-      x: xOffsetFactor * screenWidth,
-      y: yOffsetFactor * screenHeight,
+      x: xOffsetFactor * (deviceOrientation === "landscape" ?
+          screenHeight :
+          screenWidth),
+      y: yOffsetFactor * (deviceOrientation === "landscape" ?
+          screenWidth :
+          screenHeight),
     },
   }, global.connectedDevices[deviceAddress].webSocketConnection);
-
-  // if (invert) {
-  //   sendJsonMessage({
-  //     type: REMOTECONTROL_TAP,
-  //     data: {
-  //       x: xOffsetFactor * screenHeight,
-  //       y: yOffsetFactor * screenWidth,
-  //     },
-  //   }, global.connectedDevices[deviceAddress].webSocketConnection);
-  // } else {
-  //   sendJsonMessage({
-  //     type: REMOTECONTROL_TAP,
-  //     data: {
-  //       x: xOffsetFactor * screenWidth,
-  //       y: yOffsetFactor * screenHeight,
-  //     },
-  //   }, global.connectedDevices[deviceAddress].webSocketConnection);
-  // }
 });
