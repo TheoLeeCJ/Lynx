@@ -96,7 +96,6 @@ public class SimpleClient extends WebSocketClient {
 			new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "connectedToPc")
 				.setContentTitle("Lynx Dev")
 				.setContentText("Lynx is connected to 0 PCs, using reduced battery.")
-				.setSmallIcon(R.drawable.common_full_open_on_phone)
 				.setContentIntent(BackgroundService.backgroundServiceStatic.pendingIntent)
 				.setTicker("ticker")
 				.build();

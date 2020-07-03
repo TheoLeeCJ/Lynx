@@ -45,9 +45,6 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
-import com.google.android.gms.vision.barcode.Barcode;
-import com.notbytes.barcode_reader.BarcodeReaderActivity;
-
 import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 
@@ -207,7 +204,6 @@ public class BackgroundService extends AccessibilityService {
 			new NotificationCompat.Builder(this, "connectedToPc")
 				.setContentTitle("Lynx Dev")
 				.setContentText("Lynx is currently connected to 1 PC.")
-				.setSmallIcon(R.drawable.common_full_open_on_phone)
 				.setContentIntent(pendingIntent)
 				.setTicker("ticker")
 				.build();

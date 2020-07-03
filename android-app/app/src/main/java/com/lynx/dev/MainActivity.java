@@ -46,9 +46,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.barcode.Barcode;
-import com.notbytes.barcode_reader.BarcodeReaderActivity;
-
 import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 

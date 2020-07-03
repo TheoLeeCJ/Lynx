@@ -22,7 +22,7 @@ public class ConfirmAddDevice extends DialogFragment {
 			.setTitle("Connect to PC");
 
 		// Add the buttons
-		builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				// User clicked OK button, attempt to connect
 				Utility.IP_ADDR = (String) getArguments().get("ipAddress");
@@ -48,7 +48,7 @@ public class ConfirmAddDevice extends DialogFragment {
 				}
 			}
 		});
-		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				// User cancelled the dialog
 			}
