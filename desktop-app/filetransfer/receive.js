@@ -3,14 +3,14 @@ const homeDir = require("os").homedir();
 let receiveState = false;
 let fileBuffer = new Buffer.alloc(0);
 
-function receiveBinaryFileChunk(fileChunk) {
+const receiveBinaryFileChunk = (fileChunk) => {
   if (receiveState !== false) {
     fileBuffer = Buffer.concat([fileBuffer, fileChunk]);
     console.log("Processed file chunk, size is now " + fileBuffer.length);
   }
 };
 
-function setFileReceiveState(fileReceiveState) {
+const setFileReceiveState = (fileReceiveState) => {
   if (fileReceiveState === false) {
     // flush buffer to file
     console.log("Writing file.");
