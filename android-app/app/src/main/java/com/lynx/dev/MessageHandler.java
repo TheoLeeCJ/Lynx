@@ -6,6 +6,8 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+
 public class MessageHandler {
     static void handleMessage(final JSONObject message) {
         String messageType = "";
@@ -43,6 +45,25 @@ public class MessageHandler {
         }
 
         switch (messageType) {
+            case "filetransfer_batch_request_reply":
+                if (!FileActions.transferOpen) return;
+                try {
+                    if (message.getBoolean("success")) {
+                        FileActions.beginBatch();
+                    }
+                    else {
+                        FileActions.transferOpen = false;
+                        Toast.makeText(MainActivity.mainActivityStatic,
+                          "File transfer was refused.",
+                          Toast.LENGTH_SHORT).show();
+                    }
+                }
+                catch (Exception e) {
+                    Toast.makeText(MainActivity.mainActivityStatic,
+                      "Error" + e.toString(),
+                      Toast.LENGTH_SHORT).show();
+                }
+                break;
             case "initial_auth_reply":
                 MainActivity.mainActivityStatic.alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
                 BackgroundService.serviceState.put("connectStatus", "connected");

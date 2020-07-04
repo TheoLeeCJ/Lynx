@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 			alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
 		}
 		((TextView) findViewById(R.id.ServiceState)).setText("SERVICE STATE: " + BackgroundService.serviceState.get("connectStatus"));
+
+		// Set mainActivityStatic
+		mainActivityStatic = this;
 	}
 
 	// UI - File Picker
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 		Intent chooseFile;
 		Intent intent;
 		chooseFile = new Intent(Intent.ACTION_GET_CONTENT);
+		chooseFile.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 //		chooseFile.addCategory(Intent.CATEGORY_OPENABLE);
 		chooseFile.setType("*/*");
 		intent = Intent.createChooser(chooseFile, "Choose a file");
@@ -387,81 +391,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		if (requestCode == Utility.ACTIVITY_RESULT_FILECHOSEN && data != null) {
-			System.out.println("OI");
-			Uri uri = data.getData();
-//			String FilePath = getRealPathFromURI(uri); // should the path be here in this string
-			System.out.println("Path  = " + uri.toString());
-
-			File userFile = new File(uri.toString());
-			String fileName = getFileName(uri);
-			System.out.println(fileName);
-
-			Cursor returnCursor =
-				getContentResolver().query(uri, null, null, null, null);
-			int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
-			returnCursor.moveToFirst();
-			int size = (int) returnCursor.getLong(sizeIndex);
-
-			byte[] bytes = new byte[size];
-			try {
-				InputStream inputStream = getContentResolver().openInputStream(uri);
-
-				BufferedInputStream buf = new BufferedInputStream(inputStream);
-				buf.read(bytes, 0, bytes.length);
-				buf.close();
-
-				inputStream.close();
-
-				System.out.println(bytes);
-				System.out.println(bytes.length);
-
-				String base64File = Base64.encodeToString(bytes, Base64.DEFAULT);
-
-				try {
-					try {
-						JSONObject message = new JSONObject();
-						message.put("type", "filetransfer_testreceive");
-						JSONObject messageData = new JSONObject();
-						messageData.put("fileName", fileName);
-						messageData.put("fileContent", base64File);
-						message.put("data", messageData);
-						BackgroundService.client.sendText(message.toString());
-					}
-					catch (Exception e) {
-						System.out.println("JSON error " + e.toString());
-					}
-				}
-				catch (Exception e) {
-					System.out.println("Not connected to any PCs OR " + e.toString());
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			FileActions.sendFile(data);
 		}
-	}
-
-	// thanks, https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content!
-	public String getFileName(Uri uri) {
-		String result = null;
-		if (uri.getScheme().equals("content")) {
-			Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-			try {
-				if (cursor != null && cursor.moveToFirst()) {
-					result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-				}
-			} finally {
-				cursor.close();
-			}
-		}
-		if (result == null) {
-			result = uri.getPath();
-			int cut = result.lastIndexOf('/');
-			if (cut != -1) {
-				result = result.substring(cut + 1);
-			}
-		}
-		return result;
 	}
 }

@@ -1,5 +1,6 @@
 const WebSocket = require("ws");
 const routeMessage = require("./message-router");
+const { receiveBinaryFileChunk } = require("./filetransfer/receive");
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("./utility/responses");
 const {
   responseTypes: {
@@ -15,6 +16,13 @@ const startWebSocketServer = () => {
   server.on("connection", (ws, req) => {
     ws.on("message", (message) => {
       try {
+        // file transfer
+        if (typeof message !== "string") {
+          receiveBinaryFileChunk(message);
+          return;
+        }
+
+        // everything else
         routeMessage(JSON.parse(message), ws, req);
       } catch (err) {
         if (err instanceof SyntaxError) { // invalid JSON

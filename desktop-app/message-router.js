@@ -1,5 +1,6 @@
 const uuid = require("uuid").v4;
 const { BrowserWindow, dialog } = require("electron");
+const { setFileReceiveState } = require("./filetransfer/receive");
 const fs = require("fs");
 const {
   AUTH_OK,
@@ -19,10 +20,14 @@ const {
     SCREENSTREAM_STOP,
     META_SENDINFO,
     FILETRANSFER_TESTRECEIVE,
+    FILETRANSFER_BATCH_REQUEST,
+    FILETRANSFER_FILE_START,
+    FILETRANSFER_FILE_END,
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY,
     INITIAL_AUTH_REPLY,
+    FILETRANSFER_BATCH_REQUEST_REPLY,
     SCREENSTREAM_REQUEST_REPLY,
     META_SENDINFO_REPLY,
   },
@@ -141,17 +146,37 @@ const routeMessage = (message, ws, req) => {
       }
       break;
 
-    // insecure, ugly code by me (Theo)
-    // it is all inline now, just for testing purposes. ideally it should go into a separate file.
-    case FILETRANSFER_TESTRECEIVE:
-      const homeDir = require("os").homedir();
-      // FIXME: "filename" not "fileName"
-      const writePath = `${homeDir}/Documents/${message.data.fileName}`;
-      const binaryData = Buffer.from(message.data.fileContent, "base64")
-          .toString("binary");
-      fs.writeFile(writePath, binaryData, "binary", (err) => {
-        if (err) console.error(err);
+    case FILETRANSFER_BATCH_REQUEST:
+      // prepare line-break separated list of files to show user
+      let prettyFileList = "";
+      message.data.filenames.forEach((filename) => {
+        prettyFileList += `\n${filename}`;
       });
+
+      // display dialog to request permission
+      dialog.showMessageBox(global.mainWindow, {
+        title: "A device wants to share files",
+        message: `The device at ${req.socket.remoteAddress} is asking to share ` +
+                  "these files with you.\n" +
+                  prettyFileList,
+        buttons: ["&Allow", "&Deny"],
+        cancelId: 1, // if user presses Esc, "Deny" is automatically selected
+        noLink: true, // disable big buttons
+      }).then(({ response: clickedButton }) => {
+        if (clickedButton === 0) { // user clicked "Allow"
+          sendJsonMessage({ type: FILETRANSFER_BATCH_REQUEST_REPLY, ...GENERIC_OK }, ws);
+        } else {
+          sendJsonMessage({ type: FILETRANSFER_BATCH_REQUEST_REPLY, ...FORBIDDEN }, ws);
+        }
+      });
+      break;
+
+    case FILETRANSFER_FILE_START:
+      setFileReceiveState(message.data);
+      break;
+
+    case FILETRANSFER_FILE_END:
+      setFileReceiveState(false);
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:

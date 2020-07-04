@@ -18,6 +18,9 @@ module.exports = {
 
     // file transfer
     FILETRANSFER_TESTRECEIVE: "filetransfer_testreceive",
+    FILETRANSFER_BATCH_REQUEST: "filetransfer_batch_request",
+    FILETRANSFER_FILE_START: "filetransfer_file_start",
+    FILETRANSFER_FILE_END: "filetransfer_file_end",
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY: "generic_message_reply",
@@ -26,5 +29,8 @@ module.exports = {
 
     // screen streaming
     SCREENSTREAM_REQUEST_REPLY: "screenstream_request_reply",
+
+    // file transfer
+    FILETRANSFER_BATCH_REQUEST_REPLY: "filetransfer_batch_request_reply",
   },
 };
