@@ -6,21 +6,19 @@ let fileBuffer = new Buffer.alloc(0);
 const receiveBinaryFileChunk = (fileChunk) => {
   if (receiveState !== false) {
     fileBuffer = Buffer.concat([fileBuffer, fileChunk]);
-    console.log("Processed file chunk, size is now " + fileBuffer.length);
+    console.log(`Processed file chunk, size is now ${fileBuffer.length}`);
   }
 };
 
 const setFileReceiveState = (fileReceiveState) => {
   if (fileReceiveState === false) {
     // flush buffer to file
-    console.log("Writing file.");
+    console.log("Writing file");
     const writePath = `${homeDir}/Documents/${receiveState.filename}`;
-    fs.writeFile(writePath, fileBuffer, function(err) {
-      if (err) {
-        return console.log(err);
-      }
+    fs.writeFile(writePath, fileBuffer, (err) => {
+      if (err) return console.error(err);
     });
-    console.log("File saved as " . writePath);
+    console.log(`File saved as ${writePath}`);
   }
 
   // end / if setting up a new file transfer

@@ -80,7 +80,7 @@ const routeMessage = (message, ws, req) => {
       dialog.showMessageBox(global.mainWindow, {
         title: "A device is asking to share its screen",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
-                  "its screen and enable remote control features.",
+                 "its screen and enable remote control features.",
         buttons: ["&Allow", "&Deny"],
         cancelId: 1, // if user presses Esc, "Deny" is automatically selected
         noLink: true, // disable big buttons
@@ -148,18 +148,11 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_BATCH_REQUEST:
-      // prepare line-break separated list of files to show user
-      let prettyFileList = "";
-      message.data.filenames.forEach((filename) => {
-        prettyFileList += `\n${filename}`;
-      });
-
-      // display dialog to request permission
+      // display dialog to request permission to receive files
       dialog.showMessageBox(global.mainWindow, {
         title: "A device wants to share files",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
-                  "these files with you.\n" +
-                  prettyFileList,
+                 `these files with you:\n\n${message.data.filenames.join("\n")}`,
         buttons: ["&Allow", "&Deny"],
         cancelId: 1, // if user presses Esc, "Deny" is automatically selected
         noLink: true, // disable big buttons
