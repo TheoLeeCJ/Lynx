@@ -2,6 +2,7 @@ package com.lynx.dev;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +12,13 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Utility {
 	// Constants
@@ -22,6 +29,7 @@ public class Utility {
 
 	public static int ACTIVITY_RESULT_QRCODE = 5001;
 	public static int ACTIVITY_RESULT_FILECHOSEN = 5002;
+	public static int ACTIVITY_RESULT_SAVELOCATIONCHOSEN = 5003;
 
 	public static int HOMEMESSAGE_CONNECTING = 6001;
 	public static int HOMEMESSAGE_CONNECTED = 6002;
@@ -70,5 +78,21 @@ public class Utility {
 		catch (Exception e) {
 			return false;
 		}
+	}
+
+	public static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
+		Map<String, String> map = new HashMap<String, String>();
+		Iterator<String> keys = jsonobj.keys();
+		while(keys.hasNext()) {
+			String key = keys.next();
+			String value = jsonobj.get(key).toString();
+//			if (value instanceof JSONArray) {
+//				value = "";
+//			} else if (value instanceof JSONObject) {
+//				value = "";
+//			}
+			map.put(key, value);
+		}
+		return map;
 	}
 }

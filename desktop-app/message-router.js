@@ -1,6 +1,7 @@
 const uuid = require("uuid").v4;
 const { BrowserWindow, dialog } = require("electron");
 const { setFileReceiveState } = require("./filetransfer/receive");
+const { sendFiles } = require("./filetransfer/send");
 const fs = require("fs");
 const {
   AUTH_OK,
@@ -177,6 +178,11 @@ const routeMessage = (message, ws, req) => {
 
     case FILETRANSFER_FILE_END:
       setFileReceiveState(false);
+      break;
+
+    case FILETRANSFER_BATCH_REQUEST_REPLY:
+      console.log(FILETRANSFER_BATCH_REQUEST_REPLY);
+      if (message.success) sendFiles();
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:

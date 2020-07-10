@@ -8,6 +8,7 @@ const {
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
+const sendRawMessage = require("./utility/send-raw-message");
 
 const startWebSocketServer = () => {
   const server = new WebSocket.Server({ port: 57531 });

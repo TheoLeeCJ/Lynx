@@ -100,9 +100,9 @@ public class BackgroundService extends AccessibilityService {
 	public void onInterrupt() {}
 
 	@RequiresApi(Build.VERSION_CODES.O)
-	private String createNotificationChannel(String channelId, String channelName) {
+	public String createNotificationChannel(String channelId, String channelName, int importance) {
 		NotificationChannel chan = new NotificationChannel(channelId,
-			channelName, NotificationManager.IMPORTANCE_NONE);
+			channelName, importance);
 		chan.setLightColor(Color.BLUE);
 		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.createNotificationChannel(chan);
@@ -191,7 +191,7 @@ public class BackgroundService extends AccessibilityService {
 		refreshDimensions();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			createNotificationChannel("connectedToPc", "Lynx Dev");
+			createNotificationChannel("connectedToPc", "Lynx Dev", NotificationManager.IMPORTANCE_LOW);
 		}
 
 		Intent notificationIntent = new Intent(this, BackgroundService.class);

@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.widget.Toast;
@@ -13,14 +14,83 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class FileActions {
 	public static ArrayList<Uri> files;
 	public static Boolean transferOpen = false;
+	public static Map<String, String> receiveState;
+	public static BufferedOutputStream currentFileBuffer;
+	public static OutputStream currentFileOutputStream;
+
+	public static void receiveBinaryFileChunk(ByteBuffer fileChunk) {
+		if ((receiveState == null) || (!transferOpen)) return;
+
+		if (currentFileBuffer == null) {
+			System.out.println("Open new file.");
+			String filename = receiveState.get("filename");
+			Uri dirUri;
+
+			System.out.println(fileChunk.remaining());
+
+			byte[] bytes = new byte[fileChunk.remaining()];
+			fileChunk.get(bytes);
+
+			System.out.println(fileChunk.remaining());
+
+			try {
+				JSONObject currentSettings = Utility.readSettings(BackgroundService.backgroundServiceStatic);
+				dirUri = Uri.parse(currentSettings.getString("receiveLocation"));
+
+				Uri newDoc = DocumentsContract.createDocument(BackgroundService.backgroundServiceStatic.getContentResolver(), dirUri, receiveState.get("mimeType"), filename);
+				currentFileOutputStream = MainActivity.mainActivityStatic.getContentResolver().openOutputStream(newDoc);
+				System.out.println(newDoc);
+				currentFileBuffer = new BufferedOutputStream(currentFileOutputStream);
+				System.out.println("writing bytes");
+				currentFileBuffer.write(bytes);
+			}
+			catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+		else {
+			byte[] bytes = new byte[fileChunk.remaining()];
+			fileChunk.get(bytes);
+
+			try {
+				currentFileBuffer.write(bytes);
+			}
+			catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+	}
+
+	public static void setFileReceiveState(Map<String, String> newReceiveState) {
+		// write to file
+		if (newReceiveState == null) {
+			try {
+				System.out.println("close");
+				currentFileBuffer.close();
+				currentFileOutputStream.close();
+				currentFileBuffer = null;
+				currentFileOutputStream = null;
+			}
+			catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+
+		// open new file
+		receiveState = newReceiveState;
+	}
 
 	public static void beginBatch() {
 		for (int i = 0; i < files.size(); i++) {
@@ -100,9 +170,11 @@ public class FileActions {
 				e.printStackTrace();
 			}
 		}
+
+		transferOpen = false;
 	}
 
-	public static void sendFile(Intent data) {
+	public static void sendFiles(Intent data) {
 		transferOpen = true;
 		System.out.println("OI");
 

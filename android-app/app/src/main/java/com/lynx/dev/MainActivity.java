@@ -1,8 +1,10 @@
 package com.lynx.dev;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 
 import android.Manifest;
@@ -11,6 +13,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +33,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Base64;
@@ -50,6 +54,7 @@ import org.json.JSONObject;
 import org.slf4j.helpers.Util;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -58,7 +63,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+
+import static android.os.FileUtils.closeQuietly;
 
 public class MainActivity extends AppCompatActivity {
 //	public WebView webapp = null;
@@ -106,6 +116,17 @@ public class MainActivity extends AppCompatActivity {
 		chooseFile.setType("*/*");
 		intent = Intent.createChooser(chooseFile, "Choose a file");
 		startActivityForResult(intent, Utility.ACTIVITY_RESULT_FILECHOSEN);
+	}
+
+	// UI - Set save location for transferred files
+	public void setSaveLocation(View view) {
+		// System File Picker???
+		Intent chooseFolder;
+		Intent intent;
+		chooseFolder = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+		chooseFolder.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+//		chooseFile.addCategory(Intent.CATEGORY_OPENABLE);
+		startActivityForResult(chooseFolder, Utility.ACTIVITY_RESULT_SAVELOCATIONCHOSEN);
 	}
 
 //	public String getRealPathFromURI(Uri contentUri) {
@@ -390,8 +411,73 @@ public class MainActivity extends AppCompatActivity {
 			confirmAddDevice(data.getData().toString());
 		}
 
+		// Send files
 		if (requestCode == Utility.ACTIVITY_RESULT_FILECHOSEN && data != null) {
-			FileActions.sendFile(data);
+			FileActions.sendFiles(data);
+		}
+
+		// Set save location
+		if (requestCode == Utility.ACTIVITY_RESULT_SAVELOCATIONCHOSEN && data != null) {
+			System.out.println(data);
+			Uri uri = data.getData();
+			System.out.println(uri);
+			traverseDirectoryEntries(uri);
+
+			String docId = DocumentsContract.getTreeDocumentId(uri);
+			Uri dirUri = DocumentsContract.buildDocumentUriUsingTree(uri, docId );
+
+			try {
+				JSONObject currentSettings = Utility.readSettings(this);
+				currentSettings.put("receiveLocation", dirUri);
+				Utility.writeSettings(this, currentSettings.toString());
+				System.out.println(Utility.readSettings(this).toString());
+			}
+			catch (Exception e) {
+				System.out.println("Error occurred while writing save directory location to settings.");
+			}
+
+			OutputStream outputStream = null;
+			try {
+				byte[] bytes = new byte[100];
+				bytes[0] = 'A';
+
+				Uri newDoc = DocumentsContract.createDocument(getContentResolver(), dirUri, "text/plain", "Lynx.txt");
+				outputStream = MainActivity.mainActivityStatic.getContentResolver().openOutputStream(newDoc);
+				System.out.println(newDoc);
+				BufferedOutputStream buf = new BufferedOutputStream(outputStream);
+				buf.write(bytes);
+
+				buf.close();
+				outputStream.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// https://stackoverflow.com/questions/41096332/issues-traversing-through-directory-hierarchy-with-android-storage-access-framew
+	// not needed, but useful function that may help later
+	void traverseDirectoryEntries(Uri rootUri) {
+		ContentResolver contentResolver = getContentResolver();
+		Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(rootUri, DocumentsContract.getTreeDocumentId(rootUri));
+
+		// Keep track of our directory hierarchy
+		List<Uri> dirNodes = new LinkedList<>();
+		dirNodes.add(childrenUri);
+
+		while(!dirNodes.isEmpty()) {
+			childrenUri = dirNodes.remove(0); // get the item from top
+			System.out.println("node uri: " + childrenUri);
+			Cursor c = contentResolver.query(childrenUri, new String[]{DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE}, null, null, null);
+			try {
+				while (c.moveToNext()) {
+					final String docId = c.getString(0);
+					final String name = c.getString(1);
+					final String mime = c.getString(2);
+					System.out.println("docId: " + docId + ", name: " + name + ", mime: " + mime);
+				}
+			} finally {
+			}
 		}
 	}
 }

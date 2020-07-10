@@ -1,12 +1,21 @@
 package com.lynx.dev;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.Map;
 
 public class MessageHandler {
     static void handleMessage(final JSONObject message) {
@@ -45,6 +54,24 @@ public class MessageHandler {
         }
 
         switch (messageType) {
+            case "filetransfer_file_start":
+                if (!FileActions.transferOpen) return;
+                try {
+                    FileActions.setFileReceiveState(Utility.toMap(message.getJSONObject("data")));
+                }
+                catch (Exception e) {
+                    System.out.println(e);
+                }
+                break;
+            case "filetransfer_file_end":
+                if (!FileActions.transferOpen) return;
+                try {
+                    FileActions.setFileReceiveState(null);
+                }
+                catch (Exception e) {
+                    System.out.println(e);
+                }
+                break;
             case "filetransfer_batch_request_reply":
                 if (!FileActions.transferOpen) return;
                 try {
@@ -63,6 +90,32 @@ public class MessageHandler {
                       "Error" + e.toString(),
                       Toast.LENGTH_SHORT).show();
                 }
+                break;
+            case "filetransfer_batch_request":
+                Intent fileAcceptIntent = new Intent(BackgroundService.backgroundServiceStatic, NotificationBroadcastReceiver.class);
+                fileAcceptIntent.setAction("Accept");
+                PendingIntent fileAcceptPendingIntent =
+                  PendingIntent.getBroadcast(BackgroundService.backgroundServiceStatic, 0, fileAcceptIntent, 0);
+
+                Intent fileRejectIntent = new Intent(BackgroundService.backgroundServiceStatic, NotificationBroadcastReceiver.class);
+                fileRejectIntent.setAction("Reject");
+                PendingIntent fileRejectPendingIntent =
+                  PendingIntent.getBroadcast(BackgroundService.backgroundServiceStatic, 0, fileRejectIntent, 0);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    BackgroundService.backgroundServiceStatic.createNotificationChannel("fileReceive", "File Transfer Request", NotificationManager.IMPORTANCE_HIGH);
+                }
+
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "fileReceive")
+                  .setSmallIcon(R.mipmap.ic_launcher)
+                  .setContentTitle("PC wants to share files with you.")
+                  .setContentText("The PC that you're connected to over Lynx wants to send some files to you.")
+                  .setPriority(NotificationCompat.PRIORITY_HIGH)
+                  .addAction(R.mipmap.ic_launcher, "Accept Files", fileAcceptPendingIntent)
+                  .addAction(R.mipmap.ic_launcher, "Reject", fileRejectPendingIntent);
+
+                ((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(16, builder.build());
+
                 break;
             case "initial_auth_reply":
                 MainActivity.mainActivityStatic.alterHomeMessage(Utility.HOMEMESSAGE_CONNECTED);
