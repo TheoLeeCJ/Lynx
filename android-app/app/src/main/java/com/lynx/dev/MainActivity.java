@@ -436,22 +436,22 @@ public class MainActivity extends AppCompatActivity {
 				System.out.println("Error occurred while writing save directory location to settings.");
 			}
 
-			OutputStream outputStream = null;
-			try {
-				byte[] bytes = new byte[100];
-				bytes[0] = 'A';
-
-				Uri newDoc = DocumentsContract.createDocument(getContentResolver(), dirUri, "text/plain", "Lynx.txt");
-				outputStream = MainActivity.mainActivityStatic.getContentResolver().openOutputStream(newDoc);
-				System.out.println(newDoc);
-				BufferedOutputStream buf = new BufferedOutputStream(outputStream);
-				buf.write(bytes);
-
-				buf.close();
-				outputStream.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+//			OutputStream outputStream = null;
+//			try {
+//				byte[] bytes = new byte[100];
+//				bytes[0] = 'A';
+//
+//				Uri newDoc = DocumentsContract.createDocument(getContentResolver(), dirUri, "text/plain", "Lynx.txt");
+//				outputStream = MainActivity.mainActivityStatic.getContentResolver().openOutputStream(newDoc);
+//				System.out.println(newDoc);
+//				BufferedOutputStream buf = new BufferedOutputStream(outputStream);
+//				buf.write(bytes);
+//
+//				buf.close();
+//				outputStream.close();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
 		}
 	}
 
