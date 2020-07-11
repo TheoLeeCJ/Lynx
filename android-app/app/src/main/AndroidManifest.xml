@@ -62,7 +62,7 @@
 				android:resource="@xml/background_service" />
 		</service>
 
-		<receiver android:name=".NotificationBroadcastReceiver"  android:exported="true">
+		<receiver android:name=".NotificationBroadcastReceiver" android:exported="true">
 			<intent-filter>
 				<action android:name="com.lynx.dev.MainActivity" />
 			</intent-filter>

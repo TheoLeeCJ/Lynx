@@ -31,8 +31,7 @@ ipcMain.on("filetransfer-send", (ipcEvent, messageData) => {
   if (messageData.fileDialogResult.canceled) return;
 
   // extract filenames from filepaths
-  let filenames = [];
-  filenames = []; // why allocate twice? to avoid ESLint errors!
+  const filenames = [];
   filePaths = messageData.fileDialogResult.filePaths;
   console.log(filePaths);
   messageData.fileDialogResult.filePaths.forEach((path) => {
@@ -77,7 +76,9 @@ const sendFiles = () => {
           fs.read(fd, buffer, 0, CHUNK_SIZE, null, function(err, nread) {
             if (err) throw err;
 
-            if (nread === 0) {console.log("Read done");
+            if (nread === 0) {
+              console.log("Read done");
+
               // done reading file, do any necessary finalization steps
               sendJsonMessage({
                 "type": "filetransfer_file_end",
@@ -101,7 +102,7 @@ const sendFiles = () => {
             console.log(data.length);
             sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection);
 
-            setTimeout(readNextChunk, 1000); // throttle send speed to prevent file corruption
+            setTimeout(readNextChunk, 1000);
           });
         }
         readNextChunk();
