@@ -107,12 +107,12 @@ public class MessageHandler {
                 }
 
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "fileReceive")
-                  .setSmallIcon(R.mipmap.ic_launcher)
+                  .setSmallIcon(R.mipmap.lynx_raw)
                   .setContentTitle("PC wants to share files with you.")
                   .setContentText("The PC that you're connected to over Lynx wants to send some files to you.")
                   .setPriority(NotificationCompat.PRIORITY_HIGH)
-                  .addAction(R.mipmap.ic_launcher, "Accept Files", fileAcceptPendingIntent)
-                  .addAction(R.mipmap.ic_launcher, "Reject", fileRejectPendingIntent);
+                  .addAction(R.mipmap.lynx_raw, "Accept Files", fileAcceptPendingIntent)
+                  .addAction(R.mipmap.lynx_raw, "Reject", fileRejectPendingIntent);
 
                 ((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(16, builder.build());
 

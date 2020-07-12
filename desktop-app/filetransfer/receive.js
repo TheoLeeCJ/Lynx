@@ -12,9 +12,17 @@ const receiveBinaryFileChunk = (fileChunk) => {
 
 const setFileReceiveState = (fileReceiveState) => {
   if (fileReceiveState === false) {
+    // check if can access ~/Documents/Lynx
+    // we should allow the user to choose which folder to save these to in the future
+    try {
+      fs.accessSync(`${homeDir}/Documents/Lynx/`, fs.constants.R_OK | fs.constants.W_OK);
+    } catch (err) {
+      fs.mkdirSync(`${homeDir}/Documents/Lynx/`);
+    }
+
     // flush buffer to file
     console.log("Writing file");
-    const writePath = `${homeDir}/Documents/${receiveState.filename}`;
+    const writePath = `${homeDir}/Documents/Lynx/${receiveState.filename}`;
     fs.writeFile(writePath, fileBuffer, (err) => {
       if (err) return console.error(err);
     });

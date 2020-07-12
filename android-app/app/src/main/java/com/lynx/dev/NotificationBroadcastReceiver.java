@@ -12,8 +12,14 @@ import androidx.core.app.NotificationCompat;
 import org.json.JSONObject;
 
 public class NotificationBroadcastReceiver extends BroadcastReceiver {
+	static long lastAccepted = 0;
+
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		// check to make sure same notification's buttons were not tapped twice (Android is kinda slow at dismissing the notification)
+		if (((System.currentTimeMillis() / 1000L) - lastAccepted) < 2) return;
+		lastAccepted = System.currentTimeMillis() / 1000L;
+
 		// dismiss notification, check if transfer was Accepted or Rejected
 		((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(16);
 		if (intent.getAction().equals("Reject")) {

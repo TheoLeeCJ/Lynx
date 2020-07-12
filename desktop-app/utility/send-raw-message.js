@@ -1,5 +1,5 @@
-const sendRawMessage = (message, ws) => {
-  ws.send(message);
+const sendRawMessage = (message, ws, callback = () => {}) => {
+  ws.send(message, callback);
 };
 
 module.exports = sendRawMessage;

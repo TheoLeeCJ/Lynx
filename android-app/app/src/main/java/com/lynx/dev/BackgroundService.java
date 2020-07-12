@@ -202,6 +202,7 @@ public class BackgroundService extends AccessibilityService {
 		// to support API versions < 26
 		notification =
 			new NotificationCompat.Builder(this, "connectedToPc")
+				.setSmallIcon(R.mipmap.lynx_raw)
 				.setContentTitle("Lynx Dev")
 				.setContentText("Lynx is currently connected to 1 PC.")
 				.setContentIntent(pendingIntent)

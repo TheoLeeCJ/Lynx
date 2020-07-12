@@ -100,9 +100,9 @@ const sendFiles = () => {
 
             // do something with `data`, then call `readNextChunk();`
             console.log(data.length);
-            sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection);
+            sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection, readNextChunk);
 
-            setTimeout(readNextChunk, 1000);
+            // readNextChunk();
           });
         }
         readNextChunk();
