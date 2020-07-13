@@ -54,7 +54,7 @@ const sendFiles = () => {
   try {
     filePaths.forEach((path, index) => {
       // adapted from https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size. thanks!
-      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+      const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB
       const buffer = Buffer.alloc(CHUNK_SIZE);
       const filePath = path;
       const pathElements = path.split("\\");
@@ -100,6 +100,8 @@ const sendFiles = () => {
 
             // do something with `data`, then call `readNextChunk();`
             console.log(data.length);
+
+            // readNextChunk will be executed ONLY AFTER THE CURRENT CHUNK HAS BEEN SENT
             sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection, readNextChunk);
 
             // readNextChunk();

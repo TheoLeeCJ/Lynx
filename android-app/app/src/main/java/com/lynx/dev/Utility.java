@@ -35,6 +35,8 @@ public class Utility {
 	public static int HOMEMESSAGE_CONNECTED = 6002;
 	public static int HOMEMESSAGE_NOT_CONNECTED = 6003;
 
+	public static int FILETRANSFER_SEND_CHUNK_SIZE = 10000000; // 10MB
+
 	public static int WEBSOCKET_PORT = 57531;
 //	public static int WEBSOCKET_PORT = 443;
 

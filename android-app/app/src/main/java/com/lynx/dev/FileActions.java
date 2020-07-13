@@ -104,7 +104,7 @@ public class FileActions {
 			returnCursor.moveToFirst();
 			int size = (int) returnCursor.getLong(sizeIndex);
 
-			byte[] bytes = new byte[5000000];
+			byte[] bytes = new byte[Utility.FILETRANSFER_SEND_CHUNK_SIZE];
 
 			// indicate to PC to start file transfer
 			JSONObject transferStart = new JSONObject();
@@ -131,17 +131,17 @@ public class FileActions {
 
 				// chunking
 				while (size > bytesSent) {
-					if ((size - (bytesSent + 5000000)) > 0) {
+					if ((size - (bytesSent + Utility.FILETRANSFER_SEND_CHUNK_SIZE)) > 0) {
 						System.out.println("A chunk");
-						buf.read(bytes, 0, 5000000);
-						bytesSent += 5000000;
+						buf.read(bytes, 0, Utility.FILETRANSFER_SEND_CHUNK_SIZE);
+						bytesSent += Utility.FILETRANSFER_SEND_CHUNK_SIZE;
 					}
 					else {
 						System.out.println(size - bytesSent);
 						bytes = new byte[size - bytesSent];
 						System.out.println("Near end of file / small file");
 						buf.read(bytes, 0, size - bytesSent);
-						bytesSent += 5000000;
+						bytesSent += Utility.FILETRANSFER_SEND_CHUNK_SIZE;
 					}
 
 					try {

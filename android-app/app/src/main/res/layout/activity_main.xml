@@ -44,6 +44,7 @@
 				android:layout_height="wrap_content"
 				android:layout_margin="2dp"
 				android:background="@android:drawable/editbox_dropdown_dark_frame"
+				android:animateLayoutChanges="true"
 				android:orientation="vertical">
 
 				<TextView
