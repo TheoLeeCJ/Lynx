@@ -183,6 +183,19 @@ public class BackgroundService extends AccessibilityService {
 		System.out.println(performGlobalAction(GLOBAL_ACTION_RECENTS));
 	}
 
+	Handler fixRemoteControl = new Handler();
+	Runnable fixRemoteControlRunnable = new Runnable() {
+		@Override
+		public void run() {
+			try {
+				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"landscape\" } }");
+				Thread.sleep(500);
+				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"portrait\" } }");
+			}
+			catch (Exception e) {}
+		}
+	};
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -424,6 +437,8 @@ public class BackgroundService extends AccessibilityService {
 		imageReader = null;
 		imageReader = ImageReader.newInstance((int) streamWidth, (int) streamHeight, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
+
+		fixRemoteControl.postDelayed(fixRemoteControlRunnable, 1000);
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
 			(int) streamWidth, (int) streamHeight, mScreenDensity,
