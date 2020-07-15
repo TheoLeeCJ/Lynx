@@ -71,11 +71,11 @@ public class QRCodeScanner extends AppCompatActivity implements QRCodeReaderView
 			return;
 		}
 
-//		Intent data = new Intent();
-//		data.setData(Uri.parse(text));
-//		setResult(RESULT_OK, data);
-//
-//		finish();
+		Intent data = new Intent();
+		data.setData(Uri.parse(text));
+		setResult(RESULT_OK, data);
+
+		finish();
 	}
 
 	@Override
