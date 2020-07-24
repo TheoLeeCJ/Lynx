@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import androidx.core.app.NotificationCompat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
@@ -112,6 +113,12 @@ public class SimpleClient extends WebSocketClient {
 		}
 	}
 
+	@Override
+	public void onMessage(ByteBuffer message) {
+		System.out.println("received ByteBuffer" + message.remaining());
+		FileActions.receiveBinaryFileChunk(message);
+	}
+
 	// INACTIVE CODE (but don't remove)
 	Handler pingPongHandler = new Handler();
 
@@ -126,11 +133,6 @@ public class SimpleClient extends WebSocketClient {
 		}
 	};
 	// END INACTIVE CODE
-
-	@Override
-	public void onMessage(ByteBuffer message) {
-		System.out.println("received ByteBuffer");
-	}
 
 	@Override
 	public void onError(Exception ex) {

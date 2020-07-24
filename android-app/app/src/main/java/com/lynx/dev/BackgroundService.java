@@ -100,9 +100,9 @@ public class BackgroundService extends AccessibilityService {
 	public void onInterrupt() {}
 
 	@RequiresApi(Build.VERSION_CODES.O)
-	private String createNotificationChannel(String channelId, String channelName) {
+	public String createNotificationChannel(String channelId, String channelName, int importance) {
 		NotificationChannel chan = new NotificationChannel(channelId,
-			channelName, NotificationManager.IMPORTANCE_NONE);
+			channelName, importance);
 		chan.setLightColor(Color.BLUE);
 		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.createNotificationChannel(chan);
@@ -183,6 +183,19 @@ public class BackgroundService extends AccessibilityService {
 		System.out.println(performGlobalAction(GLOBAL_ACTION_RECENTS));
 	}
 
+	Handler fixRemoteControl = new Handler();
+	Runnable fixRemoteControlRunnable = new Runnable() {
+		@Override
+		public void run() {
+			try {
+				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"landscape\" } }");
+				Thread.sleep(500);
+				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"portrait\" } }");
+			}
+			catch (Exception e) {}
+		}
+	};
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -191,7 +204,7 @@ public class BackgroundService extends AccessibilityService {
 		refreshDimensions();
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			createNotificationChannel("connectedToPc", "Lynx Dev");
+			createNotificationChannel("connectedToPc", "Lynx Dev", NotificationManager.IMPORTANCE_LOW);
 		}
 
 		Intent notificationIntent = new Intent(this, BackgroundService.class);
@@ -202,6 +215,7 @@ public class BackgroundService extends AccessibilityService {
 		// to support API versions < 26
 		notification =
 			new NotificationCompat.Builder(this, "connectedToPc")
+				.setSmallIcon(R.mipmap.lynx_raw)
 				.setContentTitle("Lynx Dev")
 				.setContentText("Lynx is currently connected to 1 PC.")
 				.setContentIntent(pendingIntent)
@@ -424,9 +438,13 @@ public class BackgroundService extends AccessibilityService {
 		imageReader = ImageReader.newInstance((int) streamWidth, (int) streamHeight, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
+		fixRemoteControl.postDelayed(fixRemoteControlRunnable, 1000);
+
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
 			(int) streamWidth, (int) streamHeight, mScreenDensity,
 			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+//			DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
+//			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
 			imageReader.getSurface(), null, null);
 	}
 

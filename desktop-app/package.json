@@ -24,8 +24,10 @@
   },
   "dependencies": {
     "@types/ws": "^6.0.4",
+    "mime": "^2.4.6",
     "qrcode-generator": "^1.4.4",
     "uuid": "^3.3.3",
+    "webdav-server": "^2.6.2",
     "ws": "^7.2.1"
   },
   "optionalDependencies": {

@@ -18,7 +18,9 @@ public class ConfirmAddDevice extends DialogFragment {
 		super.onCreate(savedInstanceState);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setMessage("Are you sure you want to connect to " + getArguments().get("ipAddress") + "?")
+		// Are you sure you want to connect to (IP Address)?
+		// MAKE SURE THIS IS A PC YOU CAN TRUST. (bold and italic)
+		builder.setMessage("Are you sure you want to connect to " + getArguments().get("ipAddress") + "?\n\uD835\uDE48\uD835\uDE56\uD835\uDE60\uD835\uDE5A \uD835\uDE68\uD835\uDE6A\uD835\uDE67\uD835\uDE5A \uD835\uDE69\uD835\uDE5D\uD835\uDE5E\uD835\uDE68 \uD835\uDE5E\uD835\uDE68 \uD835\uDE56 \uD835\uDE4B\uD835\uDE3E \uD835\uDE6E\uD835\uDE64\uD835\uDE6A \uD835\uDE58\uD835\uDE56\uD835\uDE63 \uD835\uDE69\uD835\uDE67\uD835\uDE6A\uD835\uDE68\uD835\uDE69.")
 			.setTitle("Connect to PC");
 
 		// Add the buttons
