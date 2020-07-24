@@ -147,7 +147,7 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_BATCH_REQUEST:
-      // display dialog to request permission to receive files
+      // TODO: extract dialog showing to separate function & file
       dialog.showMessageBox(global.mainWindow, {
         title: "A device wants to share files",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
