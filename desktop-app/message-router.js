@@ -179,8 +179,8 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
-      global.connectedDevices[req.socket.remoteAddress].orientation =
-          message.data.orientation;
+      global.connectedDevices[req.socket.remoteAddress].deviceMetadata
+          .orientation = message.data.orientation;
       global.mainWindow.webContents.send("orientation-change",
           message.data.orientation);
       break;
