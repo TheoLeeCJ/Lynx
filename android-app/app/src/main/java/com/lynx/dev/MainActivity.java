@@ -81,6 +81,15 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		JSONObject initSettings = Utility.readSettings(this);
+		try {
+			initSettings.getBoolean("firstRun");
+		}
+		catch (Exception e) {
+			Intent intent = new Intent(this, FirstRun.class);
+			startActivity(intent);
+		}
+
 		// Hide the big bar
 		requestWindowFeature(this.getWindow().FEATURE_NO_TITLE);
 		getSupportActionBar().hide();
@@ -351,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		switch (requestCode) {
 			case 888: {
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

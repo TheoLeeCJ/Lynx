@@ -27,9 +27,9 @@ public class Utility {
 	public static int PERMISSION_DISPLAYOVEROTHERAPPS = 4098;
 	public static int MISAKA_MIKOTO = 4099;
 
-	public static int ACTIVITY_RESULT_QRCODE = 5001;
-	public static int ACTIVITY_RESULT_FILECHOSEN = 5002;
-	public static int ACTIVITY_RESULT_SAVELOCATIONCHOSEN = 5003;
+	public static final int ACTIVITY_RESULT_QRCODE = 5001;
+	public static final int ACTIVITY_RESULT_FILECHOSEN = 5002;
+	public static final int ACTIVITY_RESULT_SAVELOCATIONCHOSEN = 5003;
 
 	public static int HOMEMESSAGE_CONNECTING = 6001;
 	public static int HOMEMESSAGE_CONNECTED = 6002;

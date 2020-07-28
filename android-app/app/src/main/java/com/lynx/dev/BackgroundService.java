@@ -442,9 +442,9 @@ public class BackgroundService extends AccessibilityService {
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
 			(int) streamWidth, (int) streamHeight, mScreenDensity,
-			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+//			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 //			DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
-//			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
 			imageReader.getSurface(), null, null);
 	}
 
