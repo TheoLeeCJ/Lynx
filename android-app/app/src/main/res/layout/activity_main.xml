@@ -179,22 +179,6 @@
 				android:textSize="18sp" />
 
 			<Button
-				android:id="@+id/SetDownloadFolder"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:backgroundTint="#585858"
-				android:drawableStart="@android:drawable/ic_menu_save"
-				android:drawablePadding="16dp"
-				android:includeFontPadding="false"
-				android:onClick="setSaveLocation"
-				android:padding="18dp"
-				android:paddingStart="16dp"
-				android:text="Set Save Location for Files"
-				android:textAlignment="textStart"
-				android:textColor="#FFFFFF"
-				android:textSize="18sp" />
-
-			<Button
 				android:id="@+id/Settings"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"

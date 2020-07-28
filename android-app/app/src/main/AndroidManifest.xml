@@ -24,7 +24,12 @@
 		android:theme="@style/AppTheme"
 		android:usesCleartextTraffic="true"
 		tools:targetApi="q">
-		<activity android:name=".FirstRun"></activity>
+
+		<activity
+			android:name=".FirstRun"
+			android:configChanges="orientation"
+			android:screenOrientation="portrait"></activity>
+
 		<activity
 			android:name=".QRCodeScanner"
 			android:configChanges="orientation"
@@ -33,6 +38,7 @@
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value="com.lynx.dev.MainActivity" />
 		</activity>
+
 		<activity
 			android:name=".SettingsActivity"
 			android:label="@string/title_activity_settings"
@@ -41,11 +47,31 @@
 				android:name="android.support.PARENT_ACTIVITY"
 				android:value="com.lynx.dev.MainActivity" />
 		</activity>
+
 		<activity android:name=".MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 
 				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+
+		<activity android:name=".ShareReceive">
+			<!-- Will add more MIME types later -->
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="image/*" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.SEND_MULTIPLE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="image/*" />
 			</intent-filter>
 		</activity>
 
