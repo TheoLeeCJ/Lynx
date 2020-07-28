@@ -52,7 +52,8 @@ ipcMain.on("remotecontrol-recents", (_, deviceAddress) => {
 ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddress) => {
   const { screenWidth, screenHeight } = global.connectedDevices[deviceAddress]
       .deviceMetadata.screenDimensions;
-  const deviceOrientation = global.connectedDevices[deviceAddress].orientation;
+  const deviceOrientation = global.connectedDevices[deviceAddress]
+      .deviceMetadata.orientation;
 
   sendJsonMessage({
     type: REMOTECONTROL_TAP,

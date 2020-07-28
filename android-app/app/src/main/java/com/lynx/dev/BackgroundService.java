@@ -344,14 +344,25 @@ public class BackgroundService extends AccessibilityService {
 		tearDownVirtualDisplay();
 	}
 
+	public String getDeviceOrientation() {
+		int orientation = getResources().getConfiguration().orientation;
+		if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+			return "portrait";
+		} else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			return "landscape";
+		} else {
+			Log.e("getDeviceOrientation()",
+					"Orientation value is neither portrait nor landscape");
+			return "";
+		}
+	}
+
 	// handle screen rotation (landscape to portrait, etc)
 	public BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals("android.intent.action.CONFIGURATION_CHANGED") && (mVirtualDisplay != null)) {
-				String orientation;
-				if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) { orientation = "landscape"; }
-				else { orientation = "portrait"; }
+				String orientation = getDeviceOrientation();
 
 				tearDownVirtualDisplay();
 				setUpVirtualDisplay();

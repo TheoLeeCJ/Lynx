@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Handler;
 import android.view.View;
@@ -181,6 +182,8 @@ public class MessageHandler {
                         JSONObject replyData = new JSONObject();
                         replyData.put("screenDimensions", screenDimensions);
                         replyData.put("screenstreamImageDimensions", screenstreamImageDimensions);
+                        replyData.put("orientation", BackgroundService.backgroundServiceStatic
+                                .getDeviceOrientation());
 
                         reply.put("data", replyData);
                     }

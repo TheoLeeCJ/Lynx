@@ -148,7 +148,7 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_BATCH_REQUEST:
-      // display dialog to request permission to receive files
+      // TODO: extract dialog showing to separate function & file
       dialog.showMessageBox(global.mainWindow, {
         title: "A device wants to share files",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
@@ -179,8 +179,8 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
-      global.connectedDevices[req.socket.remoteAddress].orientation =
-          message.data.orientation;
+      global.connectedDevices[req.socket.remoteAddress].deviceMetadata
+          .orientation = message.data.orientation;
       global.mainWindow.webContents.send("orientation-change",
           message.data.orientation);
       break;
