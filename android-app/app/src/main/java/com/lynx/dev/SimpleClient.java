@@ -92,6 +92,8 @@ public class SimpleClient extends WebSocketClient {
 			MainActivity.mainActivityStatic.alterHomeMessage(Utility.HOMEMESSAGE_NOT_CONNECTED);
 		}
 
+		BackgroundService.fixAppliedInSession = false;
+
 		// update notification
 		BackgroundService.backgroundServiceStatic.notification =
 			new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "connectedToPc")
