@@ -26,10 +26,12 @@ ipcMain.on("screenstream-toggle-window", (_, windowSetting, deviceAddress) => {
       device.screenstreamNewWindow.close();
       device.screenstreamNewWindow = null;
       device.screenstreamWindow = global.mainWindow;
+      device.screenstreamPoppedOut = false;
     }
   } else if (windowSetting === "newWindow") {
     device.screenstreamNewWindow = createNewScreenstreamWindow(deviceAddress);
     device.screenstreamWindow = device.screenstreamNewWindow;
+    device.screenstreamPoppedOut = true;
   }
 });
 

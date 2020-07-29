@@ -104,15 +104,6 @@ const routeMessage = (message, ws, req) => {
       if (req.socket.remoteAddress in global.connectedDevices &&
           global.connectedDevices[req.socket.remoteAddress].screenstreamAuthorised) {
         if (message.data && message.data.frame && typeof message.data.frame === "string") {
-          // if (global.screenstreamWindow) {
-          //   global.screenstreamWindow.webContents
-          //       .send("update-screenstream-frame", message.data.frame);
-          // } else if (global.screenstreamWindow === null) {
-          //   console.error("Could not access window object - global.screenstreamWindow is null.");
-          // } else if (typeof global.screenstreamWindow === "undefined") {
-          //   console.error("Could not access window object - global.screenstreamWindow is undefined.");
-          // }
-
           global.connectedDevices[req.socket.remoteAddress].screenstreamWindow
               .webContents.send("update-screenstream-frame",
                   req.socket.remoteAddress,
@@ -179,10 +170,30 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
-      global.connectedDevices[req.socket.remoteAddress].deviceMetadata
-          .orientation = message.data.orientation;
+      const device = global.connectedDevices[req.socket.remoteAddress];
+      if (message.data.orientation === device.deviceMetadata.orientation) {
+        break;
+      }
+
+      device.deviceMetadata.orientation = message.data.orientation;
+      if (device.screenstreamPoppedOut) {
+        // swap window's width & height
+        const [currentWidth] = device.screenstreamNewWindow.getSize();
+        const { imageWidth, imageHeight } = device.deviceMetadata
+            .screenstreamImageDimensions;
+        const newWidth = Math.round(currentWidth * (
+          device.deviceMetadata.orientation === "portrait" ?
+              imageWidth / imageHeight :
+              imageHeight / imageWidth
+        ));
+        const newHeight = currentWidth;
+        // win.setSize() is broken, calling win.setMinimumSize() before it is a workaround
+        device.screenstreamNewWindow.setMinimumSize(newWidth, newHeight);
+        device.screenstreamNewWindow.setSize(newWidth, newHeight);
+      }
+
       global.mainWindow.webContents.send("orientation-change",
-          message.data.orientation);
+          req.socket.remoteAddress, message.data.orientation);
       break;
 
     default: // matched no message types - invalid

@@ -1,12 +1,13 @@
-const { app, BrowserWindow, screen, ipcMain } = require("electron");
+const { app, BrowserWindow, screen } = require("electron");
 const path = require("path");
 const url = require("url");
 
 const createNewScreenstreamWindow = (deviceAddress) => {
   const primaryDisplayHeight = screen.getPrimaryDisplay().size.height;
 
-  const { imageWidth, imageHeight } = global.connectedDevices[deviceAddress]
-      .deviceMetadata.screenstreamImageDimensions;
+  const device = global.connectedDevices[deviceAddress];
+  const { imageWidth, imageHeight } = device.deviceMetadata
+      .screenstreamImageDimensions;
 
   let screenstreamNewWindow = new BrowserWindow({
     // BrowserWindow dimensions can only be integers
@@ -16,7 +17,8 @@ const createNewScreenstreamWindow = (deviceAddress) => {
     useContentSize: true,
     resizable: false,
     webPreferences: {
-      preload: path.join(app.getAppPath(), "screenstream-new-window/preload.js"),
+      preload: path.join(app.getAppPath(),
+          "screenstream-new-window/screenstream-new-window-preload.js"),
     },
   });
 
@@ -25,7 +27,7 @@ const createNewScreenstreamWindow = (deviceAddress) => {
     pathname: `${__dirname}/../webpages/screenstream-new-window.html`,
     query: { // put device info in query params
       deviceAddress,
-      token: global.connectedDevices[deviceAddress].token,
+      token: device.token,
     },
   });
 
@@ -33,7 +35,7 @@ const createNewScreenstreamWindow = (deviceAddress) => {
 
   screenstreamNewWindow.on("closed", () => {
     // transfer stream back to main window
-    global.connectedDevices[deviceAddress].screenstreamWindow = global.mainWindow;
+    device.screenstreamWindow = global.mainWindow;
     screenstreamNewWindow = null;
 
     // tell renderer process that screen stream pop-out window closed

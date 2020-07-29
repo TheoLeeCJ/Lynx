@@ -10,15 +10,18 @@ class Device {
     this.screenstreamAuthorised = false;
     this.screenstreamWindow = null;
     this.screenstreamNewWindow = null;
+    this.screenstreamPoppedOut = false;
   }
 
   cleanup() {
-    // add more cleanup operations as necessary
+    // close new screen stream window if open
     if (this.screenstreamNewWindow instanceof BrowserWindow &&
         !this.screenstreamNewWindow.isDestroyed()) {
       this.screenstreamNewWindow.close();
     }
     this.screenstreamNewWindow = null;
+
+    // add more cleanup operations as necessary
   }
 
   delete() {

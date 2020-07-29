@@ -1,19 +1,24 @@
 const validateMetadataMessage = (message) => {
-  return !!(message.data &&
+  const metadata = message.data;
 
-      // phone screen dimensions
-      message.data.screenDimensions &&
-      message.data.screenDimensions.screenWidth &&
-      message.data.screenDimensions.screenHeight &&
-      typeof message.data.screenDimensions.screenWidth === "number" &&
-      typeof message.data.screenDimensions.screenHeight === "number" &&
+  return !!(
+    (metadata &&
+    typeof metadata === "object") &&
 
-      // screen stream image dimensions
-      message.data.screenstreamImageDimensions &&
-      message.data.screenstreamImageDimensions.imageWidth &&
-      message.data.screenstreamImageDimensions.imageHeight &&
-      typeof message.data.screenstreamImageDimensions.imageWidth === "number" &&
-      typeof message.data.screenstreamImageDimensions.imageHeight === "number");
+    // phone screen dimensions
+    (metadata.screenDimensions &&
+    typeof metadata.screenDimensions.screenWidth === "number" &&
+    typeof metadata.screenDimensions.screenHeight === "number") &&
+
+    // screen stream image dimensions
+    (metadata.screenstreamImageDimensions &&
+    typeof metadata.screenstreamImageDimensions.imageWidth === "number" &&
+    typeof metadata.screenstreamImageDimensions.imageHeight === "number") &&
+
+    // phone orientation
+    (metadata.orientation === "portrait" ||
+    metadata.orientation === "landscape")
+  );
 };
 
 module.exports = validateMetadataMessage;

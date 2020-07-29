@@ -1,7 +1,7 @@
 const { ipcMain } = require("electron");
 const fs = require("fs");
-const sendJsonMessage = require("../utility/send-json-message");
 const mime = require("mime");
+const sendJsonMessage = require("../utility/send-json-message");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -41,10 +41,8 @@ ipcMain.on("filetransfer-send", (ipcEvent, messageData) => {
 
   // send to phone
   sendJsonMessage({
-    "type": "filetransfer_batch_request",
-    "data": {
-      "filenames": filenames,
-    },
+    type: FILETRANSFER_BATCH_REQUEST,
+    data: { filenames },
   }, global.connectedDevices[messageData.deviceAddress].webSocketConnection);
 
   receiverDevices = [messageData.deviceAddress];
@@ -52,7 +50,7 @@ ipcMain.on("filetransfer-send", (ipcEvent, messageData) => {
 
 const sendFiles = () => {
   try {
-    filePaths.forEach((path, index) => {
+    filePaths.forEach((path, fileIndex) => {
       // adapted from https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size. thanks!
       const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB
       const buffer = Buffer.alloc(CHUNK_SIZE);
@@ -61,12 +59,12 @@ const sendFiles = () => {
       const filename = pathElements[pathElements.length - 1];
 
       sendJsonMessage({
-        "type": "filetransfer_file_start",
-        "data": {
-          "filename": filename,
-          "fileIndex": index,
-          "fileSize": fs.statSync(path).size,
-          "mimeType": mime.getType(filename),
+        type: FILETRANSFER_FILE_START,
+        data: {
+          filename,
+          fileIndex,
+          fileSize: fs.statSync(path).size,
+          mimeType: mime.getType(filename),
         },
       }, global.connectedDevices[receiverDevices[0]].webSocketConnection);
 
@@ -81,7 +79,7 @@ const sendFiles = () => {
 
               // done reading file, do any necessary finalization steps
               sendJsonMessage({
-                "type": "filetransfer_file_end",
+                type: FILETRANSFER_FILE_END,
               }, global.connectedDevices[receiverDevices[0]].webSocketConnection);
 
               fs.close(fd, function(err) {
@@ -103,8 +101,6 @@ const sendFiles = () => {
 
             // readNextChunk will be executed ONLY AFTER THE CURRENT CHUNK HAS BEEN SENT
             sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection, readNextChunk);
-
-            // readNextChunk();
           });
         }
         readNextChunk();
