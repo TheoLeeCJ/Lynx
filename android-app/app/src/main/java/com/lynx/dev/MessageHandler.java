@@ -20,6 +20,8 @@ import java.io.File;
 import java.util.Map;
 
 public class MessageHandler {
+    public static boolean remoteControlRequestedInSession = false;
+
     static void handleMessage(final JSONObject message) {
         String messageType = "";
         try {
@@ -52,6 +54,28 @@ public class MessageHandler {
                     MainActivity.mainActivityStatic.runOnUiThread(showToast);
                 }
                 SimpleClient.simpleClientStatic.sendText(disabledErrorMessage.toString());
+
+                if (!remoteControlRequestedInSession) {
+                    remoteControlRequestedInSession = true;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        BackgroundService.backgroundServiceStatic.createNotificationChannel("error", "Errors", NotificationManager.IMPORTANCE_HIGH);
+                    }
+
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "error")
+                      .setSmallIcon(R.mipmap.lynx_raw)
+                      .setContentTitle("Allow Remote Control?")
+                      .setContentText("If so, please open the Lynx app and enable the Accessbility Service.")
+                      .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+                    NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+                    bigTextStyle.setBigContentTitle("Allow Remote Control?");
+                    bigTextStyle.bigText("The PC you are connected to via Lynx wants to remotely use this phone. If this is you, please enter the Lynx app and 'Open Accessibility Settings' to enable.");
+
+                    builder.setStyle(bigTextStyle);
+
+                    ((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(24, builder.build());
+                }
             }
         }
 

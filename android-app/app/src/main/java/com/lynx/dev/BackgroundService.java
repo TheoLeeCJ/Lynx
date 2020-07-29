@@ -76,6 +76,7 @@ public class BackgroundService extends AccessibilityService {
 	};
 
 	public static String command;
+	public static boolean fixAppliedInSession = false;
 	private View cursorView;
 	private WindowManager.LayoutParams cursorLayout;
 	private WindowManager windowManager;
@@ -188,9 +189,11 @@ public class BackgroundService extends AccessibilityService {
 		@Override
 		public void run() {
 			try {
+				fixAppliedInSession = true;
 				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"landscape\" } }");
 				Thread.sleep(500);
 				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"portrait\" } }");
+				System.out.println("This should only run once");
 			}
 			catch (Exception e) {}
 		}
@@ -380,6 +383,7 @@ public class BackgroundService extends AccessibilityService {
 				}
 
 				BackgroundService.client.sendText(message.toString());
+				System.out.println("OK change dimension");
 			}
 		}
 	};
@@ -449,13 +453,13 @@ public class BackgroundService extends AccessibilityService {
 		imageReader = ImageReader.newInstance((int) streamWidth, (int) streamHeight, PixelFormat.RGBA_8888, 3);
 		imageReader.setOnImageAvailableListener(new ImageAvailable(), new Handler());
 
-		fixRemoteControl.postDelayed(fixRemoteControlRunnable, 1000);
+		if (!fixAppliedInSession) fixRemoteControl.postDelayed(fixRemoteControlRunnable, 1000);
 
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
 			(int) streamWidth, (int) streamHeight, mScreenDensity,
-			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+//			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
 //			DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
-//			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
 			imageReader.getSurface(), null, null);
 	}
 

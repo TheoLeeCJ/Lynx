@@ -1,11 +1,19 @@
 package com.lynx.dev;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,14 +22,42 @@ import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.util.Map;
+
 public class QRCodeScanner extends AppCompatActivity implements QRCodeReaderView.OnQRCodeReadListener {
 	private TextView resultTextView;
 	private QRCodeReaderView qrCodeReaderView;
+	private static Activity qrCodeScanner;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.qr_code_scanner);
+		qrCodeScanner = this;
+
+		String[] permissions = { Manifest.permission.CAMERA };
+
+		ActivityResultLauncher<String[]> requestPermissionLauncher = this.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+			@Override
+			public void onActivityResult(Map<String, Boolean> result) {
+				System.out.println(result);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(qrCodeScanner, "Please grant Lynx permission in Settings to use your camera in order to scan QR codes.", Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+		});
+
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+			PackageManager.PERMISSION_GRANTED) {
+			// You can use the API that requires the permission.
+		} else if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+			Toast.makeText(this, "Please grant Lynx permission in Settings to use your camera in order to scan QR codes.", Toast.LENGTH_SHORT).show();
+		} else {
+			requestPermissionLauncher.launch(permissions);
+		}
 
 		qrCodeReaderView = (QRCodeReaderView) findViewById(R.id.qrdecoderview);
 		qrCodeReaderView.setOnQRCodeReadListener(this);

@@ -25,10 +25,17 @@
 		android:usesCleartextTraffic="true"
 		tools:targetApi="q">
 
-		<activity android:name=".QRCodeScanner">
+		<activity
+			android:name=".FirstRun"
+			android:configChanges="orientation"
+			android:screenOrientation="portrait"></activity>
+
+		<activity
+			android:name=".QRCodeScanner"
+			android:configChanges="orientation"
+			android:screenOrientation="portrait">
 			<meta-data
 				android:name="android.support.PARENT_ACTIVITY"
-				android:screenOrientation="portrait"
 				android:value="com.lynx.dev.MainActivity" />
 		</activity>
 
@@ -44,7 +51,27 @@
 		<activity android:name=".MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
+
 				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+
+		<activity android:name=".ShareReceive">
+			<!-- Will add more MIME types later -->
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="image/*" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.SEND_MULTIPLE" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="image/*" />
 			</intent-filter>
 		</activity>
 
@@ -63,12 +90,13 @@
 				android:resource="@xml/background_service" />
 		</service>
 
-		<receiver android:name=".NotificationBroadcastReceiver" android:exported="true">
+		<receiver
+			android:name=".NotificationBroadcastReceiver"
+			android:exported="true">
 			<intent-filter>
 				<action android:name="com.lynx.dev.MainActivity" />
 			</intent-filter>
 		</receiver>
-
 	</application>
 
 </manifest>
