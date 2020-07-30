@@ -56,18 +56,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
 
   const sendFilesButton = document.createElement("button");
   sendFilesButton.textContent = "Send Files to Device";
-  sendFilesButton.onclick = () => {
-    dialog.showOpenDialog({
-      properties: ["openFile", "multiSelections"],
-      title: "Choose File(s) to Send to Device",
-      buttonLabel: "Send File(s)",
-    }).then((result) => {
-      console.log(result);
-      ipcRenderer.send("filetransfer-send", {
-        deviceAddress,
-        fileDialogResult: result,
-      });
-    });
+  sendFilesButton.onclick = async () => {
+    // get filePaths for later use
+    const filePaths = await ipcRenderer.invoke("filetransfer-choose-files",
+        deviceAddress);
   };
 
   newDeviceDiv.append(deviceInfoDiv, deviceScreenstreamFrame,

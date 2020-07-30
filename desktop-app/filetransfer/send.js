@@ -1,4 +1,4 @@
-const { ipcMain } = require("electron");
+const path = require("path");
 const fs = require("fs");
 const mime = require("mime");
 const sendJsonMessage = require("../utility/send-json-message");
@@ -25,37 +25,51 @@ const {
 const sendRawMessage = require("../utility/send-raw-message");
 
 let filePaths = [];
-let receiverDevices = []; // make provisions to send files to multiple devices at once?
+let receiverDeviceAddresses = []; // make provisions to send files to multiple devices at once?
 
-ipcMain.on("filetransfer-send", (ipcEvent, messageData) => {
-  if (messageData.fileDialogResult.canceled) return;
+// ipcMain.on("filetransfer-send", (_, messageData) => {
+//   if (messageData.fileDialogResult.canceled) return;
 
-  // extract filenames from filepaths
-  const filenames = [];
-  filePaths = messageData.fileDialogResult.filePaths;
+//   // extract filenames from filepaths
+//   const filenames = [];
+//   filePaths = messageData.fileDialogResult.filePaths;
+//   console.log(filePaths);
+//   messageData.fileDialogResult.filePaths.forEach((path) => {
+//     const pathElements = path.split("\\");
+//     filenames.push(pathElements[pathElements.length - 1]);
+//   });
+
+//   // send to phone
+//   sendJsonMessage({
+//     type: FILETRANSFER_BATCH_REQUEST,
+//     data: { filenames },
+//   }, global.connectedDevices[messageData.deviceAddress].webSocketConnection);
+
+//   receiverDeviceAddresses = [messageData.deviceAddress];
+// });
+
+const handleChosenFilesResult = (chosenFiles, deviceAddress) => {
+  if (chosenFiles.length === 0) return;
+
+  filePaths = chosenFiles;
   console.log(filePaths);
-  messageData.fileDialogResult.filePaths.forEach((path) => {
-    const pathElements = path.split("\\");
-    filenames.push(pathElements[pathElements.length - 1]);
-  });
 
-  // send to phone
+  const filenames = filePaths.map((filePath) => path.basename(filePath));
   sendJsonMessage({
     type: FILETRANSFER_BATCH_REQUEST,
     data: { filenames },
-  }, global.connectedDevices[messageData.deviceAddress].webSocketConnection);
+  }, global.connectedDevices[deviceAddress].webSocketConnection);
 
-  receiverDevices = [messageData.deviceAddress];
-});
+  receiverDeviceAddresses = [deviceAddress];
+};
 
 const sendFiles = () => {
   try {
-    filePaths.forEach((path, fileIndex) => {
-      // adapted from https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size. thanks!
+    filePaths.forEach((filePath, fileIndex) => {
+      // https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size
       const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB
       const buffer = Buffer.alloc(CHUNK_SIZE);
-      const filePath = path;
-      const pathElements = path.split("\\");
+      const pathElements = filePath.split("\\");
       const filename = pathElements[pathElements.length - 1];
 
       sendJsonMessage({
@@ -63,10 +77,10 @@ const sendFiles = () => {
         data: {
           filename,
           fileIndex,
-          fileSize: fs.statSync(path).size,
+          fileSize: fs.statSync(filePath).size,
           mimeType: mime.getType(filename),
         },
-      }, global.connectedDevices[receiverDevices[0]].webSocketConnection);
+      }, global.connectedDevices[receiverDeviceAddresses[0]].webSocketConnection);
 
       fs.open(filePath, "r", function(err, fd) {
         if (err) throw err;
@@ -80,7 +94,7 @@ const sendFiles = () => {
               // done reading file, do any necessary finalization steps
               sendJsonMessage({
                 type: FILETRANSFER_FILE_END,
-              }, global.connectedDevices[receiverDevices[0]].webSocketConnection);
+              }, global.connectedDevices[receiverDeviceAddresses[0]].webSocketConnection);
 
               fs.close(fd, function(err) {
                 if (err) throw err;
@@ -100,7 +114,7 @@ const sendFiles = () => {
             console.log(data.length);
 
             // readNextChunk will be executed ONLY AFTER THE CURRENT CHUNK HAS BEEN SENT
-            sendRawMessage(data, global.connectedDevices[receiverDevices[0]].webSocketConnection, readNextChunk);
+            sendRawMessage(data, global.connectedDevices[receiverDeviceAddresses[0]].webSocketConnection, readNextChunk);
           });
         }
         readNextChunk();
@@ -112,4 +126,4 @@ const sendFiles = () => {
   }
 };
 
-module.exports = { sendFiles };
+module.exports = { handleChosenFilesResult, sendFiles };

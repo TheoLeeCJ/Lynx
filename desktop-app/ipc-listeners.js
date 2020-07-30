@@ -1,4 +1,4 @@
-const { ipcMain } = require("electron");
+const { ipcMain, dialog } = require("electron");
 const {
   messageTypes: {
     REMOTECONTROL_BACK,
@@ -12,6 +12,7 @@ const makeConnectionInfoQrCode =
     require("./utility/make-connection-info-qr-code");
 const createNewScreenstreamWindow =
     require("./screenstream-new-window/create-new-screenstream-window");
+const { handleChosenFilesResult } = require("./filetransfer/send");
 
 ipcMain.once("ready", (event) => {
   event.reply("update-connection-info-qr-code", makeConnectionInfoQrCode());
@@ -68,4 +69,15 @@ ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddr
           screenWidth),
     },
   }, global.connectedDevices[deviceAddress].webSocketConnection);
+});
+
+ipcMain.handle("filetransfer-choose-files", async (_, deviceAddress) => {
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ["openFile", "multiSelections"],
+    title: "Choose File(s) to Send to Device",
+    buttonLabel: "Send File(s)",
+  });
+
+  handleChosenFilesResult(filePaths, deviceAddress);
+  return filePaths;
 });
