@@ -174,24 +174,31 @@ public class FileActions {
 		transferOpen = false;
 	}
 
-	public static void sendFiles(Intent data) {
+	public static void sendFiles(Intent data, boolean ...useFileArrayDirectlyArgument) {
+		boolean useFileArrayDirectly = false;
+		if (useFileArrayDirectlyArgument.length == 1) useFileArrayDirectly = useFileArrayDirectlyArgument[0];
+		// ^ weird hack to get around Java's lack of default arguments
+
 		transferOpen = true;
-		System.out.println("OI");
 
-		Uri singleFile = data.getData();
-		ClipData multiFile = data.getClipData();
-		files = new ArrayList<Uri>();
+		if (!useFileArrayDirectly) {
+			System.out.println("OI");
 
-		// process Intent data into an array of Uris, regardless of whether a single file or multiple files were chosen
-		if (multiFile != null) {
-			for (int i = 0; i < multiFile.getItemCount(); i++) {
-				System.out.println(multiFile.getItemAt(i).getUri());
-				files.add(multiFile.getItemAt(i).getUri());
+			Uri singleFile = data.getData();
+			ClipData multiFile = data.getClipData();
+			files = new ArrayList<Uri>();
+
+			// process Intent data into an array of Uris, regardless of whether a single file or multiple files were chosen
+			if (multiFile != null) {
+				for (int i = 0; i < multiFile.getItemCount(); i++) {
+					System.out.println(multiFile.getItemAt(i).getUri());
+					files.add(multiFile.getItemAt(i).getUri());
+				}
 			}
-		}
-		else {
-			System.out.println(singleFile);
-			files.add(singleFile);
+			else {
+				System.out.println(singleFile);
+				files.add(singleFile);
+			}
 		}
 
 		// ask PC for permission to send these files

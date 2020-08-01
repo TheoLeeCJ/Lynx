@@ -201,6 +201,13 @@
 				android:onClick="androidAccessibiitySettings"
 				android:text="Open Accessibility Settings" />
 
+			<Button
+				android:id="@+id/button"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:onClick="fixedSwipe"
+				android:text="Fixed Swipe Test to the right (5s delay)" />
+
 			<EditText
 				android:id="@+id/JSONMessage"
 				style="@style/Widget.MaterialComponents.TextInputEditText.FilledBox"

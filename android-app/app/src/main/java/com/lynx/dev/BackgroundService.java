@@ -2,20 +2,16 @@ package com.lynx.dev;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
@@ -28,17 +24,14 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -46,17 +39,11 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import org.json.JSONObject;
-import org.slf4j.helpers.Util;
 
 import java.io.ByteArrayOutputStream;
-import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class BackgroundService extends AccessibilityService {
 	android.os.Handler intervalHandler = new android.os.Handler();
@@ -150,6 +137,56 @@ public class BackgroundService extends AccessibilityService {
 		clickBuilder.addStroke(clickStroke);
 
 		return clickBuilder.build();
+	}
+
+	public static void fixedSwipe(int direction) {
+		try {
+			GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+			Path path = new Path();
+
+			System.out.println(screenWidth + " " + screenHeight);
+
+			GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+				@Override
+				public void onCompleted(GestureDescription gestureDescription) {
+					System.out.println("gesture completed");
+					super.onCompleted(gestureDescription);
+				}
+
+				@Override
+				public void onCancelled(GestureDescription gestureDescription) {
+					System.out.println("gesture cancelled");
+					super.onCancelled(gestureDescription);
+				}
+			};
+
+			if (direction == 1) {
+				//Swipe left
+				path.moveTo(screenWidth - 10, (screenHeight / 2));
+				path.lineTo(0, (screenHeight / 2));
+			}
+			else if (direction == 2) {
+				//Swipe right
+				path.moveTo(0, (screenHeight / 2));
+				path.lineTo(screenWidth - 10, (screenHeight / 2));
+			}
+			else if (direction == 3) {
+				//Swipe top
+				path.moveTo((screenWidth / 2), screenHeight - 50);
+				path.lineTo((screenWidth / 2), 0);
+			}
+			else if (direction == 4) {
+				//Swipe bottom
+				path.moveTo((screenWidth / 2), 0);
+				path.lineTo((screenWidth / 2), screenHeight - 50);
+			}
+
+			gestureBuilder.addStroke(new GestureDescription.StrokeDescription(path, 100, 1000));
+			BackgroundService.backgroundServiceStatic.dispatchGesture(gestureBuilder.build(), callback, null);
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 	public void click(float x, float y) {
@@ -458,8 +495,8 @@ public class BackgroundService extends AccessibilityService {
 		mVirtualDisplay = mMediaProjection.createVirtualDisplay("ScreenCapture",
 			(int) streamWidth, (int) streamHeight, mScreenDensity,
 //			DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-//			DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
-			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+			DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
+//			DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
 			imageReader.getSurface(), null, null);
 	}
 
@@ -493,7 +530,7 @@ public class BackgroundService extends AccessibilityService {
 				image.close();
 
 				if (screenStreamApprovedByPC) {
-					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 40, baos);
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 45, baos);
 					byte[] imageBytes = baos.toByteArray();
 
 					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);

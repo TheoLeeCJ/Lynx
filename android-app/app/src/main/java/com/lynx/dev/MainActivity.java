@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						Bitmap dia = BitmapFactory.decodeResource(getResources(), R.mipmap.dia);
+						Bitmap dia = BitmapFactory.decodeResource(getResources(), R.mipmap.lynx_screen);
 						SimpleClient.simpleClientStatic.sendStopImage(dia);
 					}
 				});
@@ -234,10 +234,26 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	// Testing - Fixed Swipes via AccessibilityService
+	public void fixedSwipe(View view) {
+		Runnable emulateSwipe = new Runnable() {
+			public void run() {
+				BackgroundService.fixedSwipe(2);
+			}
+		};
+
+		Handler handler3 = new Handler();
+
+		handler3.postDelayed(emulateSwipe,5000);
+	}
+
 	// Functions - Connect
 	public void openConnection() {
 		if (!this.isFinishing()) {
 			mainActivityStatic = this;
+
+			if (SimpleClient.simpleClientStatic != null) SimpleClient.simpleClientStatic.close();
+
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				startForegroundService(new Intent(this, BackgroundService.class));
 			}
