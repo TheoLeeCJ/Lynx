@@ -9,10 +9,20 @@ const createNewScreenstreamWindow = (deviceAddress) => {
   const { imageWidth, imageHeight } = device.deviceMetadata
       .screenstreamImageDimensions;
 
+  let winWidth;
+  let winHeight;
+  if (device.deviceMetadata.orientation === "portrait") {
+    winWidth = Math.round(0.9 * primaryDisplayHeight * (imageWidth / imageHeight));
+    winHeight = Math.round(0.9 * primaryDisplayHeight);
+  } else {
+    winWidth = Math.round(0.9 * primaryDisplayHeight);
+    winHeight = Math.round(0.9 * primaryDisplayHeight * (imageHeight / imageWidth));
+  }
+
   let screenstreamNewWindow = new BrowserWindow({
     // BrowserWindow dimensions can only be integers
-    width: Math.round(0.9 * primaryDisplayHeight * (imageWidth / imageHeight)),
-    height: Math.round(0.9 * primaryDisplayHeight),
+    width: winWidth,
+    height: winHeight,
     title: `Lynx - Screen stream from ${deviceAddress}`,
     useContentSize: true,
     resizable: false,

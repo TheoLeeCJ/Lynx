@@ -179,6 +179,10 @@ const routeMessage = (message, ws, req) => {
       if (device.screenstreamPoppedOut) {
         // swap window's width & height
         const [currentWidth] = device.screenstreamNewWindow.getSize();
+        // TODO: use
+        // device.deviceMetadata.screenstreamImageDimensions[device
+        //     .deviceMetadata.orientation]
+        // after it's implemented
         const { imageWidth, imageHeight } = device.deviceMetadata
             .screenstreamImageDimensions;
         const newWidth = Math.round(currentWidth * (
