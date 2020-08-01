@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/TheoLeeCJ/Lynx#readme",
   "devDependencies": {
-    "electron": "^7.1.7",
+    "electron": "^7.3.2",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0"
   },
@@ -26,9 +26,9 @@
     "@types/ws": "^6.0.4",
     "mime": "^2.4.6",
     "qrcode-generator": "^1.4.4",
-    "uuid": "^3.3.3",
+    "uuid": "^3.4.0",
     "webdav-server": "^2.6.2",
-    "ws": "^7.2.1"
+    "ws": "^7.3.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1",
