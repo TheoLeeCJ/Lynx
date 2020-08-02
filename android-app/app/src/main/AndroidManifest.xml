@@ -28,7 +28,8 @@
 		<activity
 			android:name=".FirstRun"
 			android:configChanges="orientation"
-			android:screenOrientation="portrait"></activity>
+			android:screenOrientation="portrait">
+		</activity>
 
 		<activity
 			android:name=".QRCodeScanner"
@@ -48,30 +49,31 @@
 				android:value="com.lynx.dev.MainActivity" />
 		</activity>
 
-		<activity android:name=".MainActivity">
+		<activity
+			android:name=".MainActivity"
+			android:configChanges="orientation"
+			android:screenOrientation="portrait">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
-
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
 
-		<activity android:name=".ShareReceive">
-			<!-- Will add more MIME types later -->
+		<activity
+			android:name=".ShareReceive"
+			android:configChanges="orientation"
+			android:label="Send to PC"
+			android:screenOrientation="portrait">
 			<intent-filter>
 				<action android:name="android.intent.action.SEND" />
 				<category android:name="android.intent.category.DEFAULT" />
-				<data android:mimeType="image/*" />
+				<data android:mimeType="*/*" />
 			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.SEND" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<data android:mimeType="text/plain" />
-			</intent-filter>
+
 			<intent-filter>
 				<action android:name="android.intent.action.SEND_MULTIPLE" />
 				<category android:name="android.intent.category.DEFAULT" />
-				<data android:mimeType="image/*" />
+				<data android:mimeType="*/*" />
 			</intent-filter>
 		</activity>
 

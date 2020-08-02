@@ -1,13 +1,19 @@
 package com.lynx.dev;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +35,10 @@ public class FileActions {
 	public static Map<String, String> receiveState;
 	public static BufferedOutputStream currentFileBuffer;
 	public static OutputStream currentFileOutputStream;
+
+	public static Notification largeFileProgressNotif;
+	public static int numberOfChunksPending;
+	public static int numberOfChunksReceived;
 
 	public static void receiveBinaryFileChunk(ByteBuffer fileChunk) {
 		if ((receiveState == null) || (!transferOpen)) return;
@@ -66,6 +76,18 @@ public class FileActions {
 
 			try {
 				currentFileBuffer.write(bytes);
+
+				if (numberOfChunksPending != 0) {
+					numberOfChunksReceived += 1;
+
+					NotificationCompat.Builder builder = new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "file_receive_progress")
+						.setSmallIcon(R.mipmap.lynx_raw)
+						.setContentTitle("Receiving File(s) from PC")
+						.setProgress(numberOfChunksPending, numberOfChunksReceived, false)
+						.setPriority(NotificationCompat.PRIORITY_LOW);
+
+					((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(32, builder.build());
+				}
 			}
 			catch (Exception e) {
 				System.out.println(e);
@@ -82,6 +104,8 @@ public class FileActions {
 				currentFileOutputStream.close();
 				currentFileBuffer = null;
 				currentFileOutputStream = null;
+
+				((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).cancel(32);
 			}
 			catch (Exception e) {
 				System.out.println(e);
@@ -90,6 +114,27 @@ public class FileActions {
 
 		// open new file
 		receiveState = newReceiveState;
+
+		// show progress if it's a large file
+		int size = Integer.parseInt(receiveState.get("fileSize"));
+		numberOfChunksPending = 0;
+
+		if (size > Utility.FILETRANSFER_SEND_CHUNK_SIZE) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				BackgroundService.backgroundServiceStatic.createNotificationChannel("file_receive_progress", "File Receive Progress", NotificationManager.IMPORTANCE_LOW);
+			}
+
+			numberOfChunksPending = (int) size / Utility.FILETRANSFER_SEND_CHUNK_SIZE;
+			System.out.println(numberOfChunksPending + " chunks expected");
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "file_send_progress")
+				.setSmallIcon(R.mipmap.lynx_raw)
+				.setContentTitle("Receiving File(s) from PC")
+				.setProgress(numberOfChunksPending, 0, false)
+				.setPriority(NotificationCompat.PRIORITY_LOW);
+
+			((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(32, builder.build());
+		}
 	}
 
 	public static void beginBatch() {
@@ -108,6 +153,7 @@ public class FileActions {
 
 			// indicate to PC to start file transfer
 			JSONObject transferStart = new JSONObject();
+
 			try {
 				transferStart.put("type", "filetransfer_file_start");
 				JSONObject messageData = new JSONObject();
