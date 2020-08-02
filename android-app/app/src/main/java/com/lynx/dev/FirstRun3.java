@@ -36,6 +36,11 @@ public class FirstRun3 extends Fragment {
 			public void onClick(View view1) {
 				Intent chooseFolder;
 				chooseFolder = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+				chooseFolder.addFlags(
+					Intent.FLAG_GRANT_READ_URI_PERMISSION
+					| Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+					| Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+					| Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
 				startActivityForResult(chooseFolder, Utility.ACTIVITY_RESULT_SAVELOCATIONCHOSEN);
 			}
 		});
@@ -64,6 +69,8 @@ public class FirstRun3 extends Fragment {
 
 				String docId = DocumentsContract.getTreeDocumentId(uri);
 				Uri dirUri = DocumentsContract.buildDocumentUriUsingTree(uri, docId);
+
+				FirstRun.firstRun.getContentResolver().takePersistableUriPermission(uri, (Intent.FLAG_GRANT_WRITE_URI_PERMISSION + Intent.FLAG_GRANT_READ_URI_PERMISSION));
 
 				try {
 					JSONObject currentSettings = Utility.readSettings(FirstRun.firstRun);
