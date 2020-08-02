@@ -23,7 +23,8 @@
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme"
 		android:usesCleartextTraffic="true"
-		tools:targetApi="q">
+		tools:targetApi="q"
+		android:requestLegacyExternalStorage="true" > <!-- required to provide directory listings on devices older than Android 11... -->
 
 		<activity
 			android:name=".FirstRun"

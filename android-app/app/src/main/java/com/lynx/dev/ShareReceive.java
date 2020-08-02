@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ public class  ShareReceive extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.share_receive);
+
+        if (SimpleClient.simpleClientStatic == null) {
+            ((TextView) findViewById(R.id.textView2)).setText("You must be connected to a PC in order to send files.");
+            return;
+        }
 
         // get intent, action, MIME type
         Intent intent = getIntent();
@@ -39,7 +45,13 @@ public class  ShareReceive extends AppCompatActivity {
                 // Update UI to reflect image being shared
                 FileActions.files = new ArrayList<Uri>();
                 FileActions.files.add(imageUri);
-                FileActions.sendFiles(new Intent(), true);
+                try {
+                    FileActions.sendFiles(new Intent(), true);
+                }
+                catch (Exception e) {
+                    ((TextView) findViewById(R.id.textView2)).setText("You must be connected to a PC in order to send files.");
+                    return;
+                }
             }
             else {
                 ((TextView) findViewById(R.id.textView2)).setText("You may only share files using Lynx.");
@@ -61,7 +73,13 @@ public class  ShareReceive extends AppCompatActivity {
             if (imageUri != null) {
                 FileActions.files = new ArrayList<Uri>();
                 FileActions.files = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                FileActions.sendFiles(new Intent(), true);
+                try {
+                    FileActions.sendFiles(new Intent(), true);
+                }
+                catch (Exception e) {
+                    ((TextView) findViewById(R.id.textView2)).setText("You must be connected to a PC in order to send files.");
+                    return;
+                }
             }
             else {
                 ((TextView) findViewById(R.id.textView2)).setText("You may only share files using Lynx.");

@@ -104,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
 
 		// Set mainActivityStatic
 		mainActivityStatic = this;
+
+		// Debug
+		System.out.println("persisted " + getContentResolver().getPersistedUriPermissions().toString());
 	}
 
 	// UI - File Picker

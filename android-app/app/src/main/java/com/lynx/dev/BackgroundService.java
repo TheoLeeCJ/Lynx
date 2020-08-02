@@ -79,7 +79,7 @@ public class BackgroundService extends AccessibilityService {
 
 	public static float screenWidth, screenHeight;
 	public static float streamWidth, streamHeight;
-	public static float resolution = (float) 480.0;
+	public static float resolution = (float) 540.0;
 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {}
