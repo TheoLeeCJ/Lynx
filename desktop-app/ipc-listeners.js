@@ -74,8 +74,8 @@ ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddr
 ipcMain.handle("filetransfer-choose-files", async (_, deviceAddress) => {
   const { filePaths } = await dialog.showOpenDialog({
     properties: ["openFile", "multiSelections"],
-    title: "Choose File(s) to Send to Device",
-    buttonLabel: "Send File(s)",
+    title: `Choose file(s) to send to ${deviceAddress}`,
+    buttonLabel: "Send file(s)",
   });
 
   handleChosenFilesResult(filePaths, deviceAddress);
