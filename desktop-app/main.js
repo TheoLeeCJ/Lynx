@@ -30,7 +30,7 @@ const createMainWindow = () => {
     mainWindow = null;
   });
 
-  mainWindow.loadFile("webpages/index.html");
+  mainWindow.loadFile("webpages/main-window.html");
 
   global.mainWindow = mainWindow;
   global.screenstreamWindow = mainWindow;

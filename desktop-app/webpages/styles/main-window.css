@@ -1,0 +1,280 @@
+@import "./colors.css";
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  box-sizing: border-box;
+  border-top: 6px solid var(--lynx-purple);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+h1 {
+  margin: 0 0 15px;
+  font-size: 30px;
+  font-weight: normal;
+  color: var(--lynx-purple);
+}
+
+.pane {
+  padding: 20px 22px;
+}
+
+#sidebar, #status-section {
+  height: 100%;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 25%;
+  border-right: 1.5px solid #bbb;
+}
+
+#connected-devices {
+  flex: 1 0;
+  border-bottom: 1.5px solid #bbb;
+}
+
+#connected-devices .connected-device {
+  margin: 0 -22px;
+  padding: 10px 0;
+}
+
+#connected-devices .connected-device::after {
+  content: "";
+  display: block;
+  position: relative;
+  top: 0.5px;
+  left: 50%;
+  width: calc(100% - 44px);
+  height: 1px;
+  background-color: #000;
+  transform: translate(-50%, 10px);
+}
+
+#connected-devices .connected-device.device-selected {
+  background-color: #6f30a03a;
+}
+
+#connected-devices .connected-device > * {
+  padding: 0 20px;
+}
+
+#connected-devices .connected-device .device-address {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--lynx-purple);
+}
+
+#connected-devices .connected-device .extra-info {
+  margin-top: 2px;
+}
+
+#connected-devices .connected-device .extra-info > * {
+  display: block;
+}
+
+#connect {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0;
+}
+
+#connect :not(h1) {
+  align-self: center;
+  text-align: center;
+}
+
+#connect #connect-qr-code {
+  width: 12.5vw;
+  height: 12.5vw;
+  margin-top: -5px;
+}
+
+#connect span {
+  margin-bottom: 1.7vh;
+}
+
+#status-section {
+  display: flex;
+  flex: 1;
+}
+
+#status-section #status-section-left {
+  flex: 0 0 50%;
+  border-right: 1.5px solid #bbb;
+}
+
+#device-status {
+  border-bottom: 1.5px solid #bbb;
+}
+
+#device-status #connected-green-light {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin: 0 1px 2.5px 2px;
+  vertical-align: middle;
+  border-radius: 50%;
+  font-size: 16px;
+  background-color: #0f0;
+}
+
+#file-transfer #send-files {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 7.5px;
+  font-size: 17px;
+  font-family: inherit;
+  background-color: var(--lynx-purple);
+  color: #fff;
+  box-shadow: 0 2px 10px 0 #7030a082;
+}
+
+#file-transfer #send-files span {
+  position: relative;
+  top: -1px;
+}
+
+#file-transfer #file-transfer-progress-bar {
+  width: 100%;
+  height: 8px;
+  margin: 11px 0 9px;
+  border: 1px solid #707070;
+  border-radius: 999999px;
+}
+
+#file-transfer #file-transfer-progress-bar #file-transfer-progress-bar-filler {
+  position: relative;
+  left: -1px;
+  top: -1px;
+  width: 12%;
+  height: 10px;
+  border-radius: 999999px 0 0 999999px;
+  background-color: var(--lynx-purple);
+}
+
+#file-transfer #file-transfer-files-list {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px solid #000;
+  border-radius: 7.5px;
+  border-spacing: 0;
+}
+
+/* border radius on table */
+#file-transfer #file-transfer-files-list th:first-child {
+  border-top-left-radius: 7.5px;
+}
+#file-transfer #file-transfer-files-list th:last-child {
+  border-top-right-radius: 7.5px;
+}
+#file-transfer #file-transfer-files-list tr:last-child td:first-child {
+  border-bottom-left-radius: 7.5px;
+}
+#file-transfer #file-transfer-files-list tr:last-child td:last-child {
+  border-bottom-right-radius: 7.5px;
+}
+
+#file-transfer #file-transfer-files-list * {
+  text-align: left;
+}
+
+#file-transfer #file-transfer-files-list tr * {
+  padding: 5px 7px;
+}
+
+#file-transfer #file-transfer-files-list tr:not(:last-child) * {
+  border-bottom: 1px solid #000;
+}
+
+#file-transfer #file-transfer-files-list tr :not(:first-child) {
+  border-left: 1px solid #000;
+}
+
+#file-transfer #file-transfer-files-list th {
+  text-align: left;
+  font-weight: 500;
+  background-color: #ccc;
+}
+
+#file-transfer #file-transfer-files-list th:first-child {
+  width: 18em;
+}
+
+#file-transfer #file-transfer-files-list td:first-child {
+  display: block;
+  width: 18em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#screen-sharing {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0;
+}
+
+#screen-sharing #phone-screen-and-controls {
+  /* if height greater than width, flex-direction: row; max-width: 90%; */
+  display: flex;
+  flex-direction: column;
+  max-width: 60%;
+  max-height: calc(100% - 215px);
+  margin: 30px 0 25px;
+  align-self: center;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 0 10px 0 #888;
+}
+
+#screen-sharing #phone-screen-and-controls #phone-screen {
+  /* if height greater than width, max-width: calc(100% - 42px); max-height: 100%; */
+  display: block;
+  max-width: 100%;
+  max-height: calc(100% - 42px);
+}
+
+#screen-sharing #phone-screen-and-controls #phone-controls {
+  /* if height greater than width, flex-direction: column-reverse; width: 42px; height: 100%; padding: 9% 10px; */
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 42px;
+  padding: 10px 19%;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-radius: 0 0 10px 10px;
+}
+
+#screen-sharing #screen-sharing-actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+#screen-sharing #screen-sharing-actions button {
+  padding: 12px 14px;
+  border: 2px solid var(--lynx-purple);
+  border-radius: 7.5px;
+  font-size: 17px;
+  font-family: inherit;
+  background-color: #fff;
+  color: var(--lynx-purple);
+  box-shadow: 0 2px 10px 0 #7030a033;
+}
+
+#screen-sharing #screen-sharing-actions button:not(:last-child) {
+  margin-right: 17px;
+}
+
+#screen-sharing #screen-sharing-actions button span {
+  position: relative;
+  top: -1px;
+}

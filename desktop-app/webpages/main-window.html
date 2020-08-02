@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles/main-window.css">
+  <title>Lynx</title>
+</head>
+<body>
+  <div id="sidebar">
+    <div id="connected-devices" class="pane">
+      <h1>Connected devices</h1>
+      <div class="connected-device">
+        <div class="device-address">192.168.1.1</div>
+      </div>
+      <div class="connected-device">
+        <div class="device-address">192.168.1.2</div>
+        <div class="extra-info">
+          <span class="screen-sharing-status">Screen sharing in progress (remote control disabled)</span>
+          <span class="file-transfer-in-progress">File transfer in progress (outbound)</span>
+          <span class="file-transfer-status">
+            <span class="current-file">Sending file 12 of 15</span>
+            <span class="progress">(27%) - 2.7GB / 10GB</span>
+          </span>
+        </div>
+      </div>
+      <div class="connected-device device-selected">
+        <div class="device-address">192.168.1.3</div>
+        <div class="extra-info">
+          <span class="screen-sharing-status">Screen sharing in progress (remote control enabled)</span>
+          <span class="file-transfer-in-progress">File transfer in progress (inbound)</span>
+          <span class="file-transfer-status">
+            <span class="current-file">Receiving file 2 of 2</span>
+            <span class="progress">(12%) - 120KB / 1MB</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div id="connect" class="pane">
+      <h1>Connect</h1>
+      <img id="connect-qr-code" src="data:image/gif;base64,R0lGODdhWgBaAIAAAAAAAP///ywAAAAAWgBaAAAC/4yPqcvtD6OctNqLs968+w+G4kiW5ommHcC2rmu8gAIfLHIHch3vMuX76V60Fm5mQwaRvWVO8lxEa7kqc3i09o6OKMSbmBqxZHFWieY2wF009bqN8MLusfUNrGvp0HGxaaeXNnEXCBh3dlgGRxYnxLYm6GhIVzj5lwS416c5yDA3h2m5iEco2SjlNwR5uTr4yNgmm9oZykfqSWs6Kxo0O8qK+uW0V/x63Fq4lEecjLzoPNlcYibsalutwgtdSXSLSH0KJgQuTTl+FfzrjQ7KqPysVn4RvPmQnQRcx1Gfu92+D5cFWMSMdVID6Q05UwoLOnM3T5GPPAif4WsoZtS2Yf8Vo2XKd0qiqk+x5KRjF5JbtYyq7A08WWqhwY8sV5bkdC8guFKJuNW6mZOjK3lDrcWE6a2PPXhCSbaBaO1pLqZBI0m1yQyluZ4XA6nTpVSrQJA7kSqiuCsVvnnGll07N7JqkbVGj7mdOBZnxFs8ixLt2O0r0a/6ev6l+S5pWpaDFTv9ODexYL5mIb9tGtUvWYaJSbqDVzAuuqyYIjN+G3r0N5PY/G2+OnXH3rCqE8Y1HRuWBt2bG57Nqfow7dwBfbPuvBrt6c+KMcquixfn8pbPRd6VXP247X7XfwqdfGY70GmggbZ6iZt5xZpIF/7WC1Im9d/yo79eTLzsekF9PZvt17UUJfoV1R1w/zWmUV6ooWTLVpphZpyDPzn3WIT4NejTggjC1Rh6lwHY3nzxxYMKeBmeR6BX/DXnhHBW1VWWPuUxZ5+JyrkG2H7BWQbCTBUi5x6MnLmFYmFCHnXQkL4gth+KDrZ124s/elcigyyWxqNcIFLJHpVsISedWKfFiB17BB2IGJL3jTlieM9h+GN/qznHW4D2fSfWY9Yt6eOCJlIlY2UupaminOsclaCavdCJo5RgqZUSXnTRhRmWkSXJ5UlY2uinY91wFaWkokXpH5GQgiqehe9pw2qrrr4Ka6yyzkprrbbeimuuJRQAADs=" alt="Scan this QR code in the Lynx mobile app to connect your phone.">
+      <span>Scan this QR code in the Lynx mobile app to connect.</span>
+    </div>
+  </div>
+
+  <div id="status-section">
+    <div id="status-section-left">
+      <div id="device-status" class="pane">
+        <h1>Device status</h1>
+        <div>Address: 192.168.1.3</div>
+        <div>Status:&nbsp;<span id="connected-green-light"></span>&nbsp;Connected</div>
+      </div>
+      <div id="file-transfer" class="pane">
+        <h1>File transfer</h1>
+        <button id="send-files"><span>Send files to 192.168.1.3</span></button>
+        <div id="file-transfer-status">
+          <span id="current-file">Receiving file 2 of 2</span>
+          <span id="progress">(12%) - 120KB / 1MB</span>
+        </div>
+        <div id="file-transfer-progress-bar">
+          <div id="file-transfer-progress-bar-filler"></div>
+        </div>
+        <div id="file-transfer-current-file-filename">longAssFilenameThatIsSuperFreakingLong.png</div>
+        
+        <table id="file-transfer-files-list">
+          <tr>
+            <th>Filename</th>
+            <th>Size</th>
+            <th>Status</th>
+          </tr>
+          <tr>
+            <td>a.zip</td>
+            <td>2.7GB</td>
+            <td>Received</td>
+          </tr>
+          <tr>
+            <td>longAssFilenameThatIsSuperFreakingLong.png</td>
+            <td>100.0MB</td>
+            <td>Receiving (100%)</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="screen-sharing" class="pane">
+      <h1>Screen sharing</h1>
+      <!-- if remote control disabled, below div has red text colour -->
+      <div id="remote-control-status">Remote control enabled</div>
+      <div id="phone-screen-and-controls">
+        <!--
+          if stream popped out, replace phone screen + controls with
+          ---------------------------------
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          |       Stream popped out       |
+          |  ---------------------------  |
+          |  |  Display in this window |  |
+          |  ---------------------------  |
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          |                               |
+          ---------------------------------
+          "Display in this window" is a button.
+        -->
+        <img id="phone-screen" src="https://picsum.photos/1080/1920" alt="Phone screen">
+        <div id="phone-controls">
+          <!-- replace B, H & R with back, home & recents icons under img/ -->
+          <button id="back">B</button>
+          <button id="home">H</button>
+          <button id="recents">R</button>
+        </div>
+      </div>
+      <div id="screen-sharing-actions">
+        <button><span>Hide controls</span></button>
+        <button><span>Display stream in separate window</span></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
