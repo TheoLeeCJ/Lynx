@@ -14,9 +14,7 @@ const createNewScreenstreamWindow =
     require("./screenstream-new-window/create-new-screenstream-window");
 const { handleChosenFilesResult } = require("./filetransfer/send");
 
-ipcMain.once("ready", (event) => {
-  event.reply("update-connection-info-qr-code", makeConnectionInfoQrCode());
-});
+ipcMain.handle("get-connection-info-qr-code", () => makeConnectionInfoQrCode());
 
 // toggle screen stream window
 ipcMain.on("screenstream-toggle-window", (_, windowSetting, deviceAddress) => {

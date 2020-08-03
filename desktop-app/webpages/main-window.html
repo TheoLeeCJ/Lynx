@@ -39,12 +39,13 @@
 
     <div id="connect" class="pane">
       <h1>Connect</h1>
-      <img id="connect-qr-code" src="data:image/gif;base64,R0lGODdhWgBaAIAAAAAAAP///ywAAAAAWgBaAAAC/4yPqcvtD6OctNqLs968+w+G4kiW5ommHcC2rmu8gAIfLHIHch3vMuX76V60Fm5mQwaRvWVO8lxEa7kqc3i09o6OKMSbmBqxZHFWieY2wF009bqN8MLusfUNrGvp0HGxaaeXNnEXCBh3dlgGRxYnxLYm6GhIVzj5lwS416c5yDA3h2m5iEco2SjlNwR5uTr4yNgmm9oZykfqSWs6Kxo0O8qK+uW0V/x63Fq4lEecjLzoPNlcYibsalutwgtdSXSLSH0KJgQuTTl+FfzrjQ7KqPysVn4RvPmQnQRcx1Gfu92+D5cFWMSMdVID6Q05UwoLOnM3T5GPPAif4WsoZtS2Yf8Vo2XKd0qiqk+x5KRjF5JbtYyq7A08WWqhwY8sV5bkdC8guFKJuNW6mZOjK3lDrcWE6a2PPXhCSbaBaO1pLqZBI0m1yQyluZ4XA6nTpVSrQJA7kSqiuCsVvnnGll07N7JqkbVGj7mdOBZnxFs8ixLt2O0r0a/6ev6l+S5pWpaDFTv9ODexYL5mIb9tGtUvWYaJSbqDVzAuuqyYIjN+G3r0N5PY/G2+OnXH3rCqE8Y1HRuWBt2bG57Nqfow7dwBfbPuvBrt6c+KMcquixfn8pbPRd6VXP247X7XfwqdfGY70GmggbZ6iZt5xZpIF/7WC1Im9d/yo79eTLzsekF9PZvt17UUJfoV1R1w/zWmUV6ooWTLVpphZpyDPzn3WIT4NejTggjC1Rh6lwHY3nzxxYMKeBmeR6BX/DXnhHBW1VWWPuUxZ5+JyrkG2H7BWQbCTBUi5x6MnLmFYmFCHnXQkL4gth+KDrZ124s/elcigyyWxqNcIFLJHpVsISedWKfFiB17BB2IGJL3jTlieM9h+GN/qznHW4D2fSfWY9Yt6eOCJlIlY2UupaminOsclaCavdCJo5RgqZUSXnTRhRmWkSXJ5UlY2uinY91wFaWkokXpH5GQgiqehe9pw2qrrr4Ka6yyzkprrbbeimuuJRQAADs=" alt="Scan this QR code in the Lynx mobile app to connect your phone.">
+      <img id="connect-qr-code" alt="Scan this QR code in the Lynx mobile app to connect.">
       <span>Scan this QR code in the Lynx mobile app to connect.</span>
     </div>
   </div>
 
   <div id="status-section">
+    <!-- if no device is selected, or selected device got removed, show grey div saying 'No device selected.<br>Select a device under "Connected devices".' -->
     <div id="status-section-left">
       <div id="device-status" class="pane">
         <h1>Device status</h1>
@@ -54,6 +55,7 @@
       <div id="file-transfer" class="pane">
         <h1>File transfer</h1>
         <button id="send-files"><span>Send files to 192.168.1.3</span></button>
+        <span id="no-file-transfer">No file transfer in progress</span>
         <div id="file-transfer-status">
           <span id="current-file">Receiving file 2 of 2</span>
           <span id="progress">(12%) - 120KB / 1MB</span>
@@ -70,13 +72,18 @@
             <th>Status</th>
           </tr>
           <tr>
+            <td>b.txt</td>
+            <td>11KB</td>
+            <td>Sent</td>
+          </tr>
+          <tr>
             <td>a.zip</td>
             <td>2.7GB</td>
             <td>Received</td>
           </tr>
           <tr>
             <td>longAssFilenameThatIsSuperFreakingLong.png</td>
-            <td>100.0MB</td>
+            <td>1MB</td>
             <td>Receiving (100%)</td>
           </tr>
         </table>
@@ -86,6 +93,7 @@
     <div id="screen-sharing" class="pane">
       <h1>Screen sharing</h1>
       <!-- if remote control disabled, below div has red text colour -->
+      <div id="screen-sharing-status">Screen sharing in progress</div>
       <div id="remote-control-status">Remote control enabled</div>
       <div id="phone-screen-and-controls">
         <!--
@@ -124,5 +132,9 @@
       </div>
     </div>
   </div>
+
+  <!-- scripts -->
+  <script src="scripts/utility/filesize.min.js"></script>
+  <script src="scripts/general/main-window.js"></script>
 </body>
 </html>

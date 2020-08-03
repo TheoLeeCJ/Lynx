@@ -1,3 +1,7 @@
+// TODO: keep a record of all files sent to & received from each device
+// assign a unique UUID to each file
+// and keep renderer process updated on the file list
+
 const path = require("path");
 const fs = require("fs");
 const mime = require("mime");

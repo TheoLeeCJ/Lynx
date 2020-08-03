@@ -24,6 +24,10 @@ h1 {
   padding: 20px 22px;
 }
 
+.hidden {
+  display: none;
+}
+
 #sidebar, #status-section {
   height: 100%;
 }
@@ -32,7 +36,7 @@ h1 {
   display: flex;
   flex-direction: column;
   flex: 0 0 25%;
-  border-right: 1.5px solid #bbb;
+  /* border-right: 1.5px solid #bbb; */
 }
 
 #connected-devices {
@@ -43,6 +47,10 @@ h1 {
 #connected-devices .connected-device {
   margin: 0 -22px;
   padding: 10px 0;
+  cursor: pointer;
+}
+#connected-devices .connected-device:hover {
+  background-color: #ddd;
 }
 
 #connected-devices .connected-device::after {
@@ -58,7 +66,7 @@ h1 {
 }
 
 #connected-devices .connected-device.device-selected {
-  background-color: #6f30a03a;
+  background-color: #7030a03a;
 }
 
 #connected-devices .connected-device > * {
@@ -103,6 +111,7 @@ h1 {
 #status-section {
   display: flex;
   flex: 1;
+  box-shadow: 0 0 10px #bbb;
 }
 
 #status-section #status-section-left {
@@ -227,7 +236,7 @@ h1 {
   display: flex;
   flex-direction: column;
   max-width: 60%;
-  max-height: calc(100% - 215px);
+  max-height: calc(100% - 230px);
   margin: 30px 0 25px;
   align-self: center;
   border-radius: 0 0 10px 10px;
