@@ -239,7 +239,7 @@ h1 {
 #screen-sharing {
   display: flex;
   flex-direction: column;
-  /* flex: 1 0; */
+  width: 50%;
 }
 
 #screen-sharing #phone-screen-and-controls {
