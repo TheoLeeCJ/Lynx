@@ -21,8 +21,8 @@ const updateStatusPane = (deviceAddress) => {
           elem.classList.remove("hidden");
         });
 
-    const { filename, totalFileSize, transferredSize, fileNumber } = device.
-        fileTransferCurrentFile;
+    const { filename, totalFileSize, transferredSize, fileNumber } =
+        device.fileTransferCurrentFile;
 
     document.getElementById("current-file").textContent =
         `Receiving file ${fileNumber} of ${device.fileTransferTotalFiles}`;
@@ -107,7 +107,7 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
 
   const newDeviceDiv = document.createElement("div");
   newDeviceDiv.className = "connected-device";
-  newDeviceDiv.id = `device-${deviceAddress}`;
+  newDeviceDiv.id = `device-${deviceToken}`;
   newDeviceDiv.addEventListener("click", () => {
     document.querySelector(".device-selected").classList
         .remove("device-selected");
@@ -188,8 +188,8 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   // document.getElementById("devices-list").append(newDeviceDiv);
 });
 
-ipcRenderer.on("remove-device", (_, deviceAddress) => {
-  document.querySelector(`#device-${deviceAddress}`).remove();
+ipcRenderer.on("remove-device", (_, deviceAddress, deviceToken) => {
+  document.querySelector(`#device-${deviceToken}`).remove();
   delete window.connectedDevices[deviceAddress];
 });
 
