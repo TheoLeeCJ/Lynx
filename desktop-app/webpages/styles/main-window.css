@@ -22,6 +22,17 @@ h1 {
 
 .pane {
   padding: 20px 22px;
+  overflow: overlay;
+}
+.pane::-webkit-scrollbar {
+  width: 5px;
+}
+.pane::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.pane::-webkit-scrollbar-thumb {
+  border-radius: 999999px;
+  background-color: #999;
 }
 
 .hidden {
@@ -90,7 +101,6 @@ h1 {
 #connect {
   display: flex;
   flex-direction: column;
-  flex: 0 0;
 }
 
 #connect :not(h1) {
@@ -115,7 +125,7 @@ h1 {
 }
 
 #status-section #status-section-left {
-  flex: 0 0 50%;
+  width: 50%;
   border-right: 1.5px solid #bbb;
 }
 
@@ -135,6 +145,7 @@ h1 {
 }
 
 #file-transfer #send-files {
+  display: block;
   margin-bottom: 20px;
   padding: 12px 14px;
   border: none;
@@ -228,7 +239,7 @@ h1 {
 #screen-sharing {
   display: flex;
   flex-direction: column;
-  flex: 1 0;
+  /* flex: 1 0; */
 }
 
 #screen-sharing #phone-screen-and-controls {
