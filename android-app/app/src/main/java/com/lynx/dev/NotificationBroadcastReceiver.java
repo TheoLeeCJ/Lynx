@@ -46,12 +46,12 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver {
 			((NotificationManager) BackgroundService.backgroundServiceStatic.getSystemService(Context.NOTIFICATION_SERVICE)).notify(24, builder.build());
 			System.out.println(e);
 
-			SimpleClient.simpleClientStatic.sendText("{\"type\":\"filetransfer_batch_request_reply\",\"status\":403,\"success\":false,\"message\":\"Forbidden\"}");
+			SimpleClient.simpleClientStatic.sendText("{\"type\":\"filetransfer_batch_request_reply\",\"status\":403,\"data\":{\"success\":false},\"message\":\"Forbidden\"}");
 			return;
 		}
 
 		// setup file transfer
 		FileActions.transferOpen = true;
-		SimpleClient.simpleClientStatic.sendText("{\"type\":\"filetransfer_batch_request_reply\",\"status\":200,\"success\":true,\"message\":\"Success\"}");
+		SimpleClient.simpleClientStatic.sendText("{\"type\":\"filetransfer_batch_request_reply\",\"status\":200,\"data\":{\"success\":true},\"message\":\"Success\"}");
 	}
 }

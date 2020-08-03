@@ -166,7 +166,7 @@ const routeMessage = (message, ws, req) => {
 
     case FILETRANSFER_BATCH_REQUEST_REPLY:
       console.log(FILETRANSFER_BATCH_REQUEST_REPLY);
-      if (message.success) sendFiles();
+      if (message.data.success) sendFiles();
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
