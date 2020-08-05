@@ -208,29 +208,23 @@
 				android:onClick="fixedSwipe"
 				android:text="Fixed Swipe Test to the right (5s delay)" />
 
-			<EditText
-				android:id="@+id/JSONMessage"
-				style="@style/Widget.MaterialComponents.TextInputEditText.FilledBox"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:drawableTint="#FFFFFF"
-				android:drawableTintMode="screen"
-				android:ems="10"
-				android:gravity="start|top"
-				android:inputType="textMultiLine"
-				android:selectAllOnFocus="true"
-				android:shadowColor="#FFFFFF"
-				android:singleLine="false"
-				android:textColor="#FFFFFF"
-				android:textColorHint="#FFFFFF"
-				tools:text="JSON message to send to Android App MessageHandler" />
-
 			<Button
-				android:id="@+id/Debug3"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:onClick="debugSendToMessageHandler"
-				android:text="Send to MessageHandler" />
+				android:onClick="mediaStoreTest"
+				android:text="MediaStore Test / Directory List Test (refer to FileMediaBrowsing.whatever())" />
+
+			<LinearLayout
+				android:id="@+id/thumbnailList"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textColor="#FFFFFFFF"
+					android:text="THUMBNAILS" />
+			</LinearLayout>
 		</LinearLayout>
 	</androidx.constraintlayout.widget.ConstraintLayout>
 

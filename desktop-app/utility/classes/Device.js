@@ -1,4 +1,5 @@
 const { BrowserWindow } = require("electron");
+const { shutdownPhoneDriveServer } = require("./../../filetransfer/drive");
 
 class Device {
   constructor({ address, token, webSocketConnection }) {
@@ -20,6 +21,9 @@ class Device {
       this.screenstreamNewWindow.close();
     }
     this.screenstreamNewWindow = null;
+
+    // shutdown the phone's WebDAV server / drive
+    shutdownPhoneDriveServer(this.address);
 
     // add more cleanup operations as necessary
   }
