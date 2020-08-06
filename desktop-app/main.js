@@ -3,6 +3,7 @@ const uuid = require("uuid").v4;
 const path = require("path");
 const startWebSocketServer = require("./websocket-server");
 const sendJsonMessage = require("./utility/send-json-message");
+const { clearAllLynxDrives } = require("./filetransfer/drive");
 
 /* ---------------------- APP INIT ---------------------- */
 
@@ -27,6 +28,7 @@ const createMainWindow = () => {
   });
   mainWindow.on("ready-to-show", mainWindow.maximize);
   mainWindow.on("closed", () => {
+    clearAllLynxDrives();
     mainWindow = null;
   });
 

@@ -3,6 +3,8 @@ const { BrowserWindow, dialog } = require("electron");
 const { setFileReceiveState } = require("./filetransfer/receive");
 const { sendFiles } = require("./filetransfer/send");
 const path = require("path");
+const fs = require("fs");
+const { startPhoneDriveServer, folderListingReady } = require("./filetransfer/drive");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -31,6 +33,9 @@ const {
     FILETRANSFER_BATCH_REQUEST_REPLY,
     SCREENSTREAM_REQUEST_REPLY,
     META_SENDINFO_REPLY,
+    FILETRANSFER_DRIVE_LIST_DIR_REPLY,
+    FILETRANSFER_DRIVE_PULL_FILE_REPLY,
+    FILETRANSFER_DRIVE_PUSH_FILE_REPLY,
   },
 } = require("./utility/message-types");
 const sendJsonMessage = require("./utility/send-json-message");
@@ -71,10 +76,23 @@ const routeMessage = (message, ws, req) => {
         global.mainWindow.webContents.send("update-connection-info-qr-code",
             makeConnectionInfoQrCode());
 
+        // start the WebDAV server responsible for mapping drive to phone's filesystem
+        startPhoneDriveServer(req.socket.remoteAddress, ws);
+
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
       } else {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...INVALID_TOKEN }, ws);
       }
+      break;
+
+    case FILETRANSFER_DRIVE_LIST_DIR_REPLY:
+      folderListingReady(req.socket.remoteAddress, ws, message);
+      break;
+
+    case FILETRANSFER_DRIVE_PULL_FILE_REPLY:
+      break;
+
+    case FILETRANSFER_DRIVE_PUSH_FILE_REPLY:
       break;
 
     case SCREENSTREAM_REQUEST:

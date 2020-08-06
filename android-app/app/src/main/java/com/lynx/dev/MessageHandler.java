@@ -80,6 +80,17 @@ public class MessageHandler {
         }
 
         switch (messageType) {
+            case "filetransfer_drive_list_dir":
+                try {
+                    FileMediaBrowsing.sendDirectory(
+                      message.getJSONObject("data").getString("path"),
+                      message.getJSONObject("data").getInt("resourceIndex")
+                    );
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
             case "filetransfer_file_start":
                 if (!FileActions.transferOpen) return;
                 try {

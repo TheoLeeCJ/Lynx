@@ -21,6 +21,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -46,6 +47,8 @@ import android.webkit.WebView;
 import android.content.res.AssetManager;
 import android.media.Image.Plane;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -237,6 +240,27 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	// Testing - MediaStore
+	public void mediaStoreTest(View view) {
+		FileMediaBrowsing.whatever();
+		LinearLayout a = ((LinearLayout) findViewById(R.id.thumbnailList));
+
+		for (int i = 0; i < FileMediaBrowsing.thumbnails.size(); i++) {
+			ImageView b = new ImageView(this);
+			b.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+			b.setImageBitmap(FileMediaBrowsing.thumbnails.get(i));
+			a.addView(b);
+		}
+
+		for (int i = 0; i < FileMediaBrowsing.files.size(); i++) {
+			TextView b = new TextView(this);
+			b.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+			b.setText(FileMediaBrowsing.files.get(i));
+			b.setTextColor(Color.WHITE);
+			a.addView(b);
+		}
+	}
+
 	// Testing - Fixed Swipes via AccessibilityService
 	public void fixedSwipe(View view) {
 		Runnable emulateSwipe = new Runnable() {
@@ -246,7 +270,6 @@ public class MainActivity extends AppCompatActivity {
 		};
 
 		Handler handler3 = new Handler();
-
 		handler3.postDelayed(emulateSwipe,5000);
 	}
 
@@ -326,23 +349,6 @@ public class MainActivity extends AppCompatActivity {
 		DialogFragment newFragment = new ConfirmAddDevice();
 		newFragment.setArguments(bundle);
 		newFragment.show(getSupportFragmentManager(), "ConfirmAddDevice");
-	}
-
-	// Debug - Send message to MessageHandler
-	public void debugSendToMessageHandler(View view) {
-		// Parse JSON
-		try {
-			String text = ((EditText) findViewById(R.id.JSONMessage)).getText().toString();
-			System.out.println(text);
-			JSONObject messageJSON = new JSONObject(text);
-			MessageHandler.handleMessage(messageJSON);
-		}
-		catch (Exception e) {
-			Toast.makeText(mainActivity,
-				"Message isn't valid JSON!",
-				Toast.LENGTH_LONG).show();
-			return;
-		}
 	}
 
 	public static boolean isAccessServiceEnabled(Context context, Class accessibilityServiceClass)

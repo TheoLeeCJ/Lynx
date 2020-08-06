@@ -21,6 +21,9 @@ module.exports = {
     FILETRANSFER_BATCH_REQUEST: "filetransfer_batch_request",
     FILETRANSFER_FILE_START: "filetransfer_file_start",
     FILETRANSFER_FILE_END: "filetransfer_file_end",
+    FILETRANSFER_DRIVE_LIST_DIR: "filetransfer_drive_list_dir",
+    FILETRANSFER_DRIVE_PULL_FILE: "filetransfer_drive_pull_file",
+    FILETRANSFER_DRIVE_PUSH_FILE: "filetransfer_drive_push_file",
   },
   responseTypes: {
     GENERIC_MESSAGE_REPLY: "generic_message_reply",
@@ -32,5 +35,8 @@ module.exports = {
 
     // file transfer
     FILETRANSFER_BATCH_REQUEST_REPLY: "filetransfer_batch_request_reply",
+    FILETRANSFER_DRIVE_LIST_DIR_REPLY: "filetransfer_drive_list_dir_reply",
+    FILETRANSFER_DRIVE_PULL_FILE_REPLY: "filetransfer_drive_pull_file_reply",
+    FILETRANSFER_DRIVE_PUSH_FILE_REPLY: "filetransfer_drive_push_file_reply",
   },
 };
