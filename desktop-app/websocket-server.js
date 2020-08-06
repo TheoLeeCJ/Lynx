@@ -19,7 +19,7 @@ const startWebSocketServer = () => {
       try {
         // file transfer
         if (typeof message !== "string") {
-          receiveBinaryFileChunk(message);
+          receiveBinaryFileChunk(req.socket.remoteAddress, message);
           return;
         }
 

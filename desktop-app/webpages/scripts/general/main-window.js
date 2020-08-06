@@ -14,6 +14,7 @@ const updateStatusPane = (deviceAddress) => {
   document.querySelector("#send-files span").textContent =
       `Send files to ${deviceAddress}`;
 
+  // FIXME: rewrite file transfer UI updates
   if (device.fileTransferInProgress) {
     document.getElementById("no-file-transfer").classList.add("hidden");
     document.querySelectorAll("#no-file-transfer ~ :not(#files-transfer-files-list)")
@@ -87,23 +88,10 @@ const updateStatusPane = (deviceAddress) => {
 
 // update devices list
 ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
-  window.connectedDevices[deviceAddress] = {
+  window.connectedDevices[deviceAddress] = new Device({
     address: deviceAddress,
     token: deviceToken,
-    screenstreamAuthorised: false,
-    screenstreamInProgress: false,
-    screenstreamPoppedOut: false,
-    screenstreamControlsShown: true,
-    fileTransferInProgress: false,
-    currentFileTransferType: null, // "send" | "receive"
-    fileTransferCurrentFile: null, // { filename: String, totalFileSize: Number, transferredSize: Number, fileNumber: Number }
-    fileTransferTotalFiles: null, // Number
-
-    // FIXME: BUT WHAT IF THERE ARE 2 FILES WITH SAME NAME?
-    // set with window.connectedDevices[deviceAddress].fileTransferFiles[fileId] = { INFO }
-    // fileId is a UUID assigned by main process when a file is transferred
-    fileTransferFiles: {}, // { [fileId: String]: { filename: String, transferType: "send" | "receive", totalFileSize: Number, transferredSize: Number } }
-  };
+  });
 
   const newDeviceDiv = document.createElement("div");
   newDeviceDiv.className = "connected-device";

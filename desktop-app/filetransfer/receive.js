@@ -3,39 +3,49 @@
 // and keep renderer process updated on the file list
 
 const fs = require("fs");
+const path = require("path");
 const homeDir = require("os").homedir();
-let receiveState = false;
-let fileBuffer = new Buffer.alloc(0);
+const receivedFilesDir = path.join(homeDir, "Documents/Lynx");
+// let receiveState = false;
+// let fileBuffer = new Buffer.alloc(0);
 
-const receiveBinaryFileChunk = (fileChunk) => {
-  if (receiveState !== false) {
-    fileBuffer = Buffer.concat([fileBuffer, fileChunk]);
-    console.log(`Processed file chunk, size is now ${fileBuffer.length}`);
+const receiveBinaryFileChunk = (deviceAddress, fileChunk) => {
+  const device = global.connectedDevices[deviceAddress];
+  if (device.receiveState !== null) {
+    device.incomingFileBuffer = Buffer.concat([device.incomingFileBuffer,
+      fileChunk]);
+    console.log(`Processed file chunk for ${deviceAddress}, size is now ${device.incomingFileBuffer.length}`);
   }
 };
 
-const setFileReceiveState = (fileReceiveState) => {
-  if (fileReceiveState === false) {
+const setFileReceiveState = (deviceAddress, newReceiveState) => {
+  console.log(`Receive state for ${deviceAddress}:`, newReceiveState);
+
+  const device = global.connectedDevices[deviceAddress];
+  if (newReceiveState === null) {
     // check if can access ~/Documents/Lynx
-    // we should allow the user to choose which folder to save these to in the future
+    // TODO: let user customise where received files are saved
     try {
-      fs.accessSync(`${homeDir}/Documents/Lynx/`, fs.constants.R_OK | fs.constants.W_OK);
+      fs.accessSync(receivedFilesDir, fs.constants.R_OK | fs.constants.W_OK);
     } catch (err) {
-      fs.mkdirSync(`${homeDir}/Documents/Lynx/`);
+      fs.mkdirSync(receivedFilesDir);
     }
 
     // flush buffer to file
     console.log("Writing file");
-    const writePath = `${homeDir}/Documents/Lynx/${receiveState.filename}`;
-    fs.writeFile(writePath, fileBuffer, (err) => {
+    const writePath = path.join(receivedFilesDir, device.receiveState.filename);
+    fs.writeFile(writePath, device.incomingFileBuffer, (err) => {
       if (err) return console.error(err);
     });
     console.log(`File saved as ${writePath}`);
+
+    device.currentIncomingFiles.findIndex((file) =>
+      file.filename === device.receiveState.filename);
   }
 
   // end / if setting up a new file transfer
-  fileBuffer = new Buffer.alloc(0);
-  receiveState = fileReceiveState;
+  device.incomingFileBuffer = new Buffer.alloc(0);
+  device.receiveState = newReceiveState;
 };
 
 module.exports = { receiveBinaryFileChunk, setFileReceiveState };

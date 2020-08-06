@@ -2,7 +2,7 @@ const uuid = require("uuid").v4;
 const { BrowserWindow, dialog } = require("electron");
 const { setFileReceiveState } = require("./filetransfer/receive");
 const { sendFiles } = require("./filetransfer/send");
-const fs = require("fs");
+const path = require("path");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -36,6 +36,7 @@ const {
 const sendJsonMessage = require("./utility/send-json-message");
 const makeConnectionInfoQrCode = require("./utility/make-connection-info-qr-code");
 const Device = require("./utility/classes/Device");
+const { pathToFileURL } = require("url");
 
 const routeMessage = (message, ws, req) => {
   if (typeof message.type !== "string" || !message.type.trim()) {
@@ -139,16 +140,30 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_BATCH_REQUEST:
+      // TODO: validate file transfer request message
       // TODO: extract dialog showing to separate function & file
+      const filenames = message.data.files.map((file) => file.filename);
       dialog.showMessageBox(global.mainWindow, {
         title: "A device wants to share files",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
-                 `these files with you:\n\n${message.data.filenames.join("\n")}`,
+                 `these files with you:\n\n${filenames.join("\n")}`,
         buttons: ["&Allow", "&Deny"],
         cancelId: 1, // if user presses Esc, "Deny" is automatically selected
         noLink: true, // disable big buttons
       }).then(({ response: clickedButton }) => {
         if (clickedButton === 0) { // user clicked "Allow"
+          const homeDir = require("os").homedir();
+          const device = global.connectedDevices[req.socket.remoteAddress];
+          const newIncomingFiles = message.data.files.map(({ filename, fileSize }) => ({
+            filename,
+            filePath: path.join(homeDir, filename),
+            totalFileSize: fileSize,
+            transferredSize: 0,
+          }));
+          device.currentIncomingFiles = [...device.currentIncomingFiles,
+            ...newIncomingFiles];
+          global.mainWindow.webContents.send("incoming-files-added",
+              req.socket.remoteAddress, newIncomingFiles);
           sendJsonMessage({ type: FILETRANSFER_BATCH_REQUEST_REPLY, ...GENERIC_OK }, ws);
         } else {
           sendJsonMessage({ type: FILETRANSFER_BATCH_REQUEST_REPLY, ...FORBIDDEN }, ws);
@@ -157,11 +172,11 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_FILE_START:
-      setFileReceiveState(message.data);
+      setFileReceiveState(req.socket.remoteAddress, message.data);
       break;
 
     case FILETRANSFER_FILE_END:
-      setFileReceiveState(false);
+      setFileReceiveState(req.socket.remoteAddress, null);
       break;
 
     case FILETRANSFER_BATCH_REQUEST_REPLY:

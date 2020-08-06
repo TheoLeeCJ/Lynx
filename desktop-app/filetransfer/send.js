@@ -69,6 +69,7 @@ const handleChosenFilesResult = (chosenFiles, deviceAddress) => {
 
 const sendFiles = () => {
   try {
+    // FIXME: use traditional for loop so device.
     filePaths.forEach((filePath, fileIndex) => {
       // https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size
       const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB

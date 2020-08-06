@@ -147,7 +147,7 @@ public class FileActions {
 				MainActivity.mainActivityStatic.getContentResolver().query(uri, null, null, null, null);
 			int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
 			returnCursor.moveToFirst();
-			int size = (int) returnCursor.getLong(sizeIndex);
+			long size = returnCursor.getLong(sizeIndex);
 
 			byte[] bytes = new byte[Utility.FILETRANSFER_SEND_CHUNK_SIZE];
 
@@ -173,7 +173,7 @@ public class FileActions {
 				InputStream inputStream = MainActivity.mainActivityStatic.getContentResolver().openInputStream(uri);
 				BufferedInputStream buf = new BufferedInputStream(inputStream);
 
-				int bytesSent = 0;
+				long bytesSent = 0;
 
 				// chunking
 				while (size > bytesSent) {
@@ -184,9 +184,9 @@ public class FileActions {
 					}
 					else {
 						System.out.println(size - bytesSent);
-						bytes = new byte[size - bytesSent];
+						bytes = new byte[(int) (size - bytesSent)];
 						System.out.println("Near end of file / small file");
-						buf.read(bytes, 0, size - bytesSent);
+						buf.read(bytes, 0, (int) (size - bytesSent));
 						bytesSent += Utility.FILETRANSFER_SEND_CHUNK_SIZE;
 					}
 
@@ -252,13 +252,23 @@ public class FileActions {
 		try {
 			permissionRequest.put("type", "filetransfer_batch_request");
 			JSONObject messageData = new JSONObject();
-			JSONArray filenames = new JSONArray();
+			JSONArray filesToSend = new JSONArray();
 
 			for (int i = 0; i < files.size(); i++) {
-				filenames.put(getFileName(files.get(i)));
+				JSONObject fileInfo = new JSONObject();
+				fileInfo.put("filename", getFileName(files.get(i)));
+
+				Cursor fileCursor = BackgroundService.backgroundServiceStatic.getContentResolver()
+						.query(files.get(i), null, null, null, null);
+				fileCursor.moveToFirst();
+				long fileSize = fileCursor.getLong(fileCursor.getColumnIndex(OpenableColumns.SIZE));
+				fileCursor.close();
+				fileInfo.put("fileSize", fileSize);
+
+				filesToSend.put(fileInfo);
 			}
 
-			messageData.put("filenames", filenames);
+			messageData.put("files", filesToSend);
 			permissionRequest.put("data", messageData);
 		}
 		catch (JSONException e) {
