@@ -24,7 +24,7 @@ const {
 } = require("./../utility/message-types");
 
 let currentPort = 13601;
-let currentDriveLetter = 90;
+let currentDriveLetter = 90; // starts from 'Z' and goes down through the alphabet
 const allResources = [];
 const currentWebdavCallbacks = {};
 const drives = {};
@@ -57,7 +57,7 @@ const startPhoneDriveServer = (key, websocketConnection) => {
     // mount localhost drive in File Explorer
     exec(`net use ${String.fromCharCode(currentDriveLetter)}: "http://127.0.0.1:${currentPort}"`, () => {
       exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = 'Phone (EXPERIMENTAL)'"`, () => {
-        exec(`explorer.exe Z:\\`, () => {});
+        exec("explorer.exe Z:\\", () => {});
         currentPort++;
         currentDriveLetter--;
       });
