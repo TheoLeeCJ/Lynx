@@ -1,11 +1,11 @@
 const sendJsonMessage = require("../utility/send-json-message");
 const sendRawMessage = require("../utility/send-raw-message");
 const webdav = require("webdav-server").v2;
-const uuid = require("uuid").v4;
 const fs = require("fs");
 const path = require("path");
 const mime = require("mime");
-const { exec, execSync } = require("child_process");
+const streamLib = require("stream");
+const { exec } = require("child_process");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -24,10 +24,17 @@ const {
 } = require("./../utility/message-types");
 const { VirtualFileSystem } = require("webdav-server/lib/index.v2");
 const Path_1 = require("./../node_modules/webdav-server/lib/manager/v2/Path");
+const { count } = require("console");
 
 let currentPort = 13601;
 let currentDriveLetter = 90;
 const drives = {};
+let expectingFileReceive = false;
+const counterActWindowsExplorer = 0;
+
+const checkDriveTriggeredFileReceive = () => {
+  return expectingFileReceive;
+};
 
 const startPhoneDriveServer = (key, websocketConnection) => {
   const userManager = new webdav.SimpleUserManager();
@@ -37,9 +44,13 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   privilegeManager.setRights(userObj, "/", ["all"]);
 
   drives[key] = {};
+  drives[key].websocket = websocketConnection;
   drives[key].started = false;
   drives[key].driveLetter = currentDriveLetter;
   drives[key].currentDirListReady = {};
+  drives[key].currentFileBuffer = null;
+  drives[key].fileSizes = {};
+  drives[key].pendingFileReceives = []; // unused as of now
 
   drives[key].server = new webdav.WebDAVServer({
     httpAuthentication: new webdav.HTTPDigestAuthentication(userManager, "Lynx Phone Drive"),
@@ -47,9 +58,44 @@ const startPhoneDriveServer = (key, websocketConnection) => {
     port: currentPort,
   });
 
-  // VirtualFileSystem.prototype._openReadStream = (path, ctx, callback) => {
+  drives[key].server.lynxKey = key;
 
-  // };
+  VirtualFileSystem.prototype._openReadStream = (path, ctx, callback) => {
+    const vfs = ctx.context.server.rootFileSystem();
+
+    const resource = vfs.resources[path.toString()];
+    if (resource === undefined) {
+      return callback(Errors_1.Errors.ResourceNotFound);
+    }
+
+    sendJsonMessage({
+      type: FILETRANSFER_DRIVE_PULL_FILE,
+      path: path.toString(),
+    }, drives[ctx.context.server.lynxKey].websocket);
+
+    expectingFileReceive = ctx.context.server.lynxKey;
+    drives[key].currentFileBuffer = null;
+
+    function checkFileBufferReady() {
+      if (drives[key].currentFileBuffer) {
+        // console.log(drives[key].currentFileBuffer);
+        // resource.content = new Buffer.from(drives[key].currentFileBuffer);
+        callback(null, new streamLib.Readable({
+          read() {
+            this.push(drives[key].currentFileBuffer);
+          },
+        }));
+      } else {
+        setTimeout(checkFileBufferReady, 100);
+      }
+    }
+
+    setTimeout(checkFileBufferReady, 100);
+  };
+
+  VirtualFileSystem.prototype._size = (path, ctx, callback) => {
+    callback(null, drives[ctx.context.server.lynxKey].fileSizes[path]);
+  };
 
   VirtualFileSystem.prototype._readDir = (path, ctx, callback) => {
     drives[key].currentDirListReady[path] = 0;
@@ -67,7 +113,6 @@ const startPhoneDriveServer = (key, websocketConnection) => {
 
     function checkDirListReady() {
       console.log("CHECK DIR LIST READY?!");
-      console.log(drives[key].currentDirListReady);
       if (drives[key].currentDirListReady[path] >= 2) {
         const base = path.toString(true);
         const children = [];
@@ -101,6 +146,12 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   });
 };
 
+const passReceivedBuffer = (buffer) => {
+  console.log("WebDAV script has received buffer...");
+  drives[expectingFileReceive].currentFileBuffer = buffer;
+  expectingFileReceive = false;
+};
+
 const folderListingReady = (key, websocketConnection, fullMessage) => {
   console.log("receive folder listing");
   if (drives[key] === undefined) return;
@@ -121,6 +172,7 @@ const folderListingReady = (key, websocketConnection, fullMessage) => {
         if (!exists) {
           drives[key].server.rootFileSystem().create(drives[key].server.createExternalContext(), `${fullMessage.path}/${item[0]}`, webdav.ResourceType.File, (e) => {
             if (e) console.log(e);
+            drives[key].fileSizes[`${fullMessage.path}/${item[0]}`] = item[3];
             itemsProcessed++;
 
             if (itemsProcessed === fullMessage.data.length) {
@@ -134,7 +186,6 @@ const folderListingReady = (key, websocketConnection, fullMessage) => {
     }
   });
 
-  console.log(subTreeToAdd);
   drives[key].server.rootFileSystem().addSubTree(drives[key].server.createExternalContext(), `${fullMessage.path}`, subTreeToAdd, (e) => {
     if (e) console.log(e);
     drives[key].currentDirListReady[fullMessage.path]++;
@@ -154,4 +205,4 @@ const clearAllLynxDrives = () => {
   });
 };
 
-module.exports = { startPhoneDriveServer, shutdownPhoneDriveServer, folderListingReady, clearAllLynxDrives };
+module.exports = { startPhoneDriveServer, shutdownPhoneDriveServer, folderListingReady, clearAllLynxDrives, checkDriveTriggeredFileReceive, passReceivedBuffer };

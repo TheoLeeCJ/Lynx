@@ -6,6 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const homeDir = require("os").homedir();
 const receivedFilesDir = path.join(homeDir, "Documents/Lynx");
+const { checkDriveTriggeredFileReceive, passReceivedBuffer } = require("./drive");
 // let receiveState = false;
 // let fileBuffer = new Buffer.alloc(0);
 
@@ -31,16 +32,25 @@ const setFileReceiveState = (deviceAddress, newReceiveState) => {
       fs.mkdirSync(receivedFilesDir);
     }
 
-    // flush buffer to file
-    console.log("Writing file");
-    const writePath = path.join(receivedFilesDir, device.receiveState.filename);
-    fs.writeFile(writePath, device.incomingFileBuffer, (err) => {
-      if (err) return console.error(err);
-    });
-    console.log(`File saved as ${writePath}`);
-
-    device.currentIncomingFiles.findIndex((file) =>
-      file.filename === device.receiveState.filename);
+    // flush buffer to file or send to WebDAV drive interface
+    console.log(checkDriveTriggeredFileReceive());
+    if (checkDriveTriggeredFileReceive()) {
+      fs.writeFile(path.join(receivedFilesDir, "temp.png"), Buffer.concat([device.incomingFileBuffer]), (err) => {
+        if (err) return console.error(err);
+      });
+      console.log(checkDriveTriggeredFileReceive() + " file received.");
+      passReceivedBuffer(Buffer.concat([device.incomingFileBuffer]));
+    } else {
+      console.log("Writing file");
+      const writePath = path.join(receivedFilesDir, device.receiveState.filename);
+      fs.writeFile(writePath, device.incomingFileBuffer, (err) => {
+        if (err) return console.error(err);
+      });
+      console.log(`File saved as ${writePath}`);
+  
+      device.currentIncomingFiles.findIndex((file) =>
+        file.filename === device.receiveState.filename);
+    }
   }
 
   // end / if setting up a new file transfer

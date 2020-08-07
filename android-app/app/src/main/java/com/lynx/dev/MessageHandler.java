@@ -96,6 +96,7 @@ public class MessageHandler {
                 break;
             case "filetransfer_drive_pull_file":
                 try {
+                    FileActions.sendWasRequestedFromDriveMapping = true;
                     FileActions.files = new ArrayList<>();
                     FileActions.files.add(Uri.parse("http://pwupload.uk.to"));
                     FileActions.filesInPathForm = new ArrayList<>();

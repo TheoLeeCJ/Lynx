@@ -31,13 +31,14 @@ public class FileMediaBrowsing {
 		File folder = new File(Environment.getExternalStorageDirectory().toString() + path); // just get a folder with a ton of files; I'm testing performance!
 		File[] filesInFolder = folder.listFiles();
 
-		// Object Name, Object Type (File / Folder), Last Modified
+		// Object Name, Object Type (File / Folder), Last Modified, Size
 		for (File file : filesInFolder) {
 			if (!file.isDirectory()) {
 				JSONArray processedFile = new JSONArray();
 				processedFile.put(file.getName());
 				processedFile.put("file");
 				processedFile.put(file.lastModified());
+				processedFile.put(file.length());
 				directoryListing.put(processedFile);
 			}
 			else {
@@ -45,6 +46,7 @@ public class FileMediaBrowsing {
 				processedFile.put(file.getName());
 				processedFile.put("folder");
 				processedFile.put(file.lastModified());
+				processedFile.put(0);
 				directoryListing.put(processedFile);
 			}
 		}
