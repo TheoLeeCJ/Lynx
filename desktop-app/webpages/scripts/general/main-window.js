@@ -1,12 +1,20 @@
 window.connectedDevices = {};
 
 // receive connection info QR code
-ipcRenderer.invoke("get-connection-info-qr-code").then((qrCode) => {
+// ipcRenderer.invoke("get-connection-info-qr-code").then((qrCode) => {
+//   console.log("Connection info QR code updated.");
+//   document.getElementById("connect-qr-code").src = qrCode;
+// });
+
+// tell main process that renderer process is ready for messages
+ipcRenderer.send("ready");
+
+ipcRenderer.on("update-connection-info-qr-code", (_, qrCode) => {
   console.log("Connection info QR code updated.");
   document.getElementById("connect-qr-code").src = qrCode;
 });
 
-const updateStatusPane = (deviceAddress) => {
+const updateUi = (deviceAddress) => {
   const device = window.connectedDevices[deviceAddress];
 
   document.querySelector("#device-status div:first-of-type")
@@ -100,7 +108,7 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
     document.querySelector(".device-selected").classList
         .remove("device-selected");
     newDeviceDiv.classList.add("device-selected");
-    updateStatusPane(deviceAddress);
+    updateUi(deviceAddress);
   });
 
   const deviceAddressDiv = document.createElement("div");
@@ -186,4 +194,30 @@ ipcRenderer.on("screenstream-new-window-closed", (_, deviceAddress) => {
   document.querySelector(`#device-${window.connectedDevices[deviceAddress].token}
       .screenstream-window-toggle-button`)
       .textContent = "Display screen stream in new window";
+});
+
+ipcRenderer.on("filetransfer-new-incoming-files",
+    (_, deviceAddress, newIncomingFiles) => {
+      const device = window.connectedDevices[deviceAddress];
+      device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
+
+      // updateUi(deviceAddress);
+      console.log(`New incoming files from ${deviceAddress}:`, newIncomingFiles);
+    });
+
+ipcRenderer.on("filetransfer-incoming-file-start", (_, deviceAddress) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.receivingFiles = true;
+
+  // updateUi(deviceAddress);
+  console.log(`Device at ${deviceAddress} started transferring ${device.incomingFiles[0].filename}`);
+});
+
+ipcRenderer.on("filetransfer-incoming-file-end", (_, deviceAddress) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.receivingFiles = false;
+  device.receivedFiles.push(device.incomingFiles.shift());
+
+  // updateUi(deviceAddress);
+  console.log(`Device at ${deviceAddress} finished transferring ${device.receivedFiles[device.receivedFiles.length - 1].filename}`);
 });

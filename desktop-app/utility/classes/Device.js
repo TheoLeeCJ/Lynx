@@ -12,13 +12,14 @@ class Device {
     this.screenstreamWindow = null;
     this.screenstreamNewWindow = null;
     this.screenstreamPoppedOut = false;
-    this.fileTransferInProgress = false;
+    this.sendingFiles = false;
+    this.receivingFiles = false;
     this.sentFiles = []; // { filename: String, filePath, String }[]
     this.receivedFiles = []; // { filename: String, filePath, String }[]
-    this.currentOutgoingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
-    this.currentIncomingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
-    this.currentOutgoingFile = null; // Number (references an index in outgoingFiles)
-    this.currentIncomingFile = null; // Number (references an index in incomingFiles)
+    this.outgoingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
+    this.incomingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
+    // this.outgoingFile = null; // Number (references an index in outgoingFiles)
+    // this.incomingFile = null; // Number (references an index in incomingFiles)
     this.incomingFileBuffer = Buffer.alloc(0);
     this.fileReceiveState = null;
   }

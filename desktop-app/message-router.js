@@ -48,6 +48,12 @@ const routeMessage = (message, ws, req) => {
     sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...BAD_REQUEST }, ws);
   }
 
+  if (!(req.socket.remoteAddress in global.connectedDevices) &&
+        message.type !== INITIAL_AUTH) {
+    console.log("Received message from UNAUTHENTICATED DEVICE (should not happen):", message);
+    return;
+  }
+
   if (message.type === SCREENSTREAM_FRAME) {
     console.log("Received screen stream frame");
   } else if (message.type === FILETRANSFER_TESTRECEIVE) {
@@ -174,13 +180,13 @@ const routeMessage = (message, ws, req) => {
           const device = global.connectedDevices[req.socket.remoteAddress];
           const newIncomingFiles = message.data.files.map(({ filename, fileSize }) => ({
             filename,
-            filePath: path.join(homeDir, filename),
-            totalFileSize: fileSize,
-            transferredSize: 0,
+            // TODO: let user customise file save destination
+            filePath: path.join(homeDir, "Documents/Lynx", filename),
+            totalFileSize: null,
+            transferredSize: null,
           }));
-          device.currentIncomingFiles = [...device.currentIncomingFiles,
-            ...newIncomingFiles];
-          global.mainWindow.webContents.send("incoming-files-added",
+          device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
+          global.mainWindow.webContents.send("filetransfer-new-incoming-files",
               req.socket.remoteAddress, newIncomingFiles);
           sendJsonMessage({ type: FILETRANSFER_BATCH_REQUEST_REPLY, ...GENERIC_OK }, ws);
         } else {

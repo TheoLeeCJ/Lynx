@@ -14,7 +14,11 @@ const createNewScreenstreamWindow =
     require("./screenstream-new-window/create-new-screenstream-window");
 const { handleChosenFilesResult } = require("./filetransfer/send");
 
-ipcMain.handle("get-connection-info-qr-code", () => makeConnectionInfoQrCode());
+// ipcMain.handle("get-connection-info-qr-code", () => global.);
+
+ipcMain.once("ready", (event) => {
+  event.reply("update-connection-info-qr-code", makeConnectionInfoQrCode());
+});
 
 // toggle screen stream window
 ipcMain.on("screenstream-toggle-window", (_, windowSetting, deviceAddress) => {
@@ -51,10 +55,9 @@ ipcMain.on("remotecontrol-recents", (_, deviceAddress) => {
 });
 
 ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddress) => {
-  const { screenWidth, screenHeight } = global.connectedDevices[deviceAddress]
-      .deviceMetadata.screenDimensions;
-  const deviceOrientation = global.connectedDevices[deviceAddress]
-      .deviceMetadata.orientation;
+  const device = global.connectedDevices[deviceAddress];
+  const { screenWidth, screenHeight } = device.deviceMetadata.screenDimensions;
+  const deviceOrientation = device.deviceMetadata.orientation;
 
   sendJsonMessage({
     type: REMOTECONTROL_TAP,
@@ -66,7 +69,7 @@ ipcMain.on("remotecontrol-tap", (_, { xOffsetFactor, yOffsetFactor }, deviceAddr
           screenHeight :
           screenWidth),
     },
-  }, global.connectedDevices[deviceAddress].webSocketConnection);
+  }, device.webSocketConnection);
 });
 
 ipcMain.handle("filetransfer-choose-files", async (_, deviceAddress) => {
