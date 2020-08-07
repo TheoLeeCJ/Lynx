@@ -1,6 +1,6 @@
 const sendJsonMessage = require("../utility/send-json-message");
 const sendRawMessage = require("../utility/send-raw-message");
-const webdav = require("webdav-server").v1;
+const webdav = require("webdav-server").v2;
 const uuid = require("uuid").v4;
 const fs = require("fs");
 const path = require("path");
@@ -22,42 +22,78 @@ const {
     FILETRANSFER_DRIVE_PUSH_FILE,
   },
 } = require("./../utility/message-types");
+const { VirtualFileSystem } = require("webdav-server/lib/index.v2");
+const Path_1 = require("./../node_modules/webdav-server/lib/manager/v2/Path");
 
 let currentPort = 13601;
 let currentDriveLetter = 90;
-const allResources = [];
-const currentWebdavCallbacks = {};
 const drives = {};
 
 const startPhoneDriveServer = (key, websocketConnection) => {
-  const user = uuid();
-  const pass = uuid();
+  const userManager = new webdav.SimpleUserManager();
+  const userObj = userManager.addUser("lynx", "lynxpass", false);
 
-  // const userManager = new webdav.SimpleUserManager();
-  // const userObj = userManager.addUser(user, pass, false);
+  const privilegeManager = new webdav.SimplePathPrivilegeManager();
+  privilegeManager.setRights(userObj, "/", ["all"]);
 
   drives[key] = {};
   drives[key].started = false;
+  drives[key].driveLetter = currentDriveLetter;
+  drives[key].currentDirListReady = {};
+
   drives[key].server = new webdav.WebDAVServer({
-    // httpAuthentication: new webdav.HTTPDigestAuthentication(userManager, "Lynx Phone Drive"),
+    httpAuthentication: new webdav.HTTPDigestAuthentication(userManager, "Lynx Phone Drive"),
+    privilegeManager: privilegeManager,
     port: currentPort,
   });
 
-  drives[key].driveLetter = currentDriveLetter;
+  // VirtualFileSystem.prototype._openReadStream = (path, ctx, callback) => {
 
-  sendJsonMessage({
-    type: FILETRANSFER_DRIVE_LIST_DIR,
-    data: {
-      path: "/",
-      resourceIndex: -1,
-    },
-  }, websocketConnection);
+  // };
+
+  VirtualFileSystem.prototype._readDir = (path, ctx, callback) => {
+    drives[key].currentDirListReady[path] = 0;
+    console.log("Request " + path);
+
+    const vfs = ctx.context.server.rootFileSystem();
+
+    sendJsonMessage({
+      type: FILETRANSFER_DRIVE_LIST_DIR,
+      data: {
+        path: path.toString(),
+        resourceIndex: -1,
+      },
+    }, websocketConnection);
+
+    function checkDirListReady() {
+      console.log("CHECK DIR LIST READY?!");
+      console.log(drives[key].currentDirListReady);
+      if (drives[key].currentDirListReady[path] >= 2) {
+        const base = path.toString(true);
+        const children = [];
+        for (const subPath in vfs.resources) {
+          if (subPath.startsWith(base)) {
+            const pSubPath = new Path_1.Path(subPath);
+            if (pSubPath.paths.length === path.paths.length + 1) {
+              children.push(pSubPath);
+            }
+          }
+        }
+
+        callback(null, children);
+      } else {
+        setTimeout(checkDirListReady, 100);
+      }
+    }
+
+    setTimeout(checkDirListReady, 100);
+  };
 
   drives[key].server.start(() => {
     // mount localhost drive in File Explorer
-    exec(`net use ${String.fromCharCode(currentDriveLetter)}: "http://127.0.0.1:${currentPort}"`, () => {
+    exec(`net use ${String.fromCharCode(currentDriveLetter)}: "http://127.0.0.1:${currentPort}" lynxpass /user:lynx`, () => {
       exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = 'Phone (EXPERIMENTAL)'"`, () => {
-        exec(`explorer.exe Z:\\`, () => {});
+        exec(`explorer.exe ${String.fromCharCode(currentDriveLetter)}:\\`, () => {});
         currentPort++;
         currentDriveLetter--;
       });
@@ -66,85 +102,45 @@ const startPhoneDriveServer = (key, websocketConnection) => {
 };
 
 const folderListingReady = (key, websocketConnection, fullMessage) => {
+  console.log("receive folder listing");
   if (drives[key] === undefined) return;
   const folderListing = fullMessage.data;
+  let itemsProcessed = 0;
 
-  if (!drives[key].started) {
-    console.log("Creating initial root directory");
-    drives[key].started = true;
+  const subTreeToAdd = {};
+  folderListing.forEach((item) => {
+    if (item[1] === "folder") {
+      drives[key].server.rootFileSystem().fastExistCheck(drives[key].server.createExternalContext(), `${fullMessage.path + item[0]}`, (exists) => {
+        if (!exists) {
+          subTreeToAdd[item[0]] = {};
+        }
+        itemsProcessed++;
+      });
+    } else {
+      drives[key].server.rootFileSystem().fastExistCheck(drives[key].server.createExternalContext(), `${fullMessage.path}/${item[0]}`, (exists) => {
+        if (!exists) {
+          drives[key].server.rootFileSystem().create(drives[key].server.createExternalContext(), `${fullMessage.path}/${item[0]}`, webdav.ResourceType.File, (e) => {
+            if (e) console.log(e);
+            itemsProcessed++;
 
-    drives[key].resourceTree = [];
+            if (itemsProcessed === fullMessage.data.length) {
+              drives[key].currentDirListReady[fullMessage.path]++;
+            }
+          });
+        } else {
+          itemsProcessed++;
+        }
+      });
+    }
+  });
 
-    folderListing.forEach((item, index) => {
-      if (item[1] === "folder") {
-        const folder = new webdav.VirtualFolder(item[0].replace(/ /g, "__"));
-        folder.lynxPath = "/" + folder.name.replace(/__/g, " ");
-        folder.dateLastModified = new Date(item[2]);
+  console.log(subTreeToAdd);
+  drives[key].server.rootFileSystem().addSubTree(drives[key].server.createExternalContext(), `${fullMessage.path}`, subTreeToAdd, (e) => {
+    if (e) console.log(e);
+    drives[key].currentDirListReady[fullMessage.path]++;
+  });
 
-        folder.resourceIndex = allResources.length;
-        allResources.push(folder);
-
-        folder.getChildren = (childrenCallback) => {
-          console.log("Request directory listing for " + folder.lynxPath);
-          sendJsonMessage({
-            type: FILETRANSFER_DRIVE_LIST_DIR,
-            data: {
-              path: folder.lynxPath,
-              resourceIndex: folder.resourceIndex,
-            },
-          }, websocketConnection);
-          currentWebdavCallbacks[folder.resourceIndex] = childrenCallback;
-        };
-
-        drives[key].resourceTree.push({
-          r: folder,
-        });
-      } else {
-        const file = new webdav.VirtualFile(item[0]);
-        file.dateLastModified = new Date(item[2]);
-        drives[key].resourceTree.push({
-          r: file,
-        });
-      }
-    });
-
-    drives[key].resourceTree.push(new webdav.VirtualFolder("__CURRENTLY ONLY SUPPORT FOLDER BROWSING DUE TO LIMITATIONS OF LIBRARY"));
-    drives[key].server.addResourceTree(drives[key].resourceTree);
-  } else {
-    const resourceList = [];
-
-    folderListing.forEach((item, index) => {
-      if (item[1] === "folder") {
-        const folder = new webdav.VirtualFolder(item[0].replace(/ /g, "__"));
-        folder.lynxPath = fullMessage.path + "/" + folder.name.replace(/__/g, " ");
-        folder.parent = allResources[fullMessage.resourceIndex];
-        folder.dateLastModified = new Date(item[2]);
-
-        folder.resourceIndex = allResources.length;
-        allResources.push(folder);
-
-        folder.getChildren = (childrenCallback) => {
-          console.log("Request directory listing for " + folder.lynxPath);
-          sendJsonMessage({
-            type: FILETRANSFER_DRIVE_LIST_DIR,
-            data: {
-              path: folder.lynxPath,
-              resourceIndex: folder.resourceIndex,
-            },
-          }, websocketConnection);
-          currentWebdavCallbacks[folder.resourceIndex] = childrenCallback;
-        };
-        resourceList.push(folder);
-      } else {
-        const file = new webdav.VirtualFile(item[0]);
-        file.dateLastModified = new Date(item[2]);
-        file.parent = allResources[fullMessage.resourceIndex];
-        resourceList.push(file);
-      }
-    });
-
-    currentWebdavCallbacks[fullMessage.resourceIndex](null, resourceList);
-  }
+  drives[key].currentDirListReady[fullMessage.path]++;
 };
 
 const shutdownPhoneDriveServer = (key, websocketConnection) => {
