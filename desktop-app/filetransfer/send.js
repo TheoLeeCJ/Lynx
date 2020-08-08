@@ -59,124 +59,70 @@ const handleChosenFilesResult = (chosenFiles, deviceAddress) => {
 };
 
 const sendFiles = async (deviceAddress) => {
+  const device = global.connectedDevices[deviceAddress];
+  device.fileIndex = 0;
+
+  await sendCurrentFile(deviceAddress);
+};
+
+const sendCurrentFile = async (deviceAddress) => {
+  const device = global.connectedDevices[deviceAddress];
+
+  console.log("send current file " + deviceAddress);
+  if (device.outgoingFiles.length === 0) return;
+
+  const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+  const buffer = Buffer.alloc(CHUNK_SIZE);
+
+  const outgoingFile = device.outgoingFiles[0];
+  const { filename, filePath } = outgoingFile;
+  outgoingFile.fileSize = (await fsPromises.stat(filePath)).size;
+  outgoingFile.transferredSize = 0;
+
+  sendJsonMessage({
+    type: FILETRANSFER_FILE_START,
+    data: {
+      filename,
+      fileIndex: device.fileIndex,
+      fileSize: outgoingFile.fileSize,
+      mimeType: mime.getType(filename),
+    },
+  }, device.webSocketConnection);
+
   try {
-    const device = global.connectedDevices[deviceAddress];
+    console.log(`Reading from ${filePath}`);
+    const fileHandle = await fsPromises.open(filePath);
+    const readNextChunk = async () => {
+      const { bytesRead } = await fileHandle.read(buffer, 0, CHUNK_SIZE, null);
+      if (bytesRead === 0) {
+        console.log("Read done");
 
-    let fileIndex = 0;
-    while (device.outgoingFiles.length > 0) {
-      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-      const buffer = Buffer.alloc(CHUNK_SIZE);
+        sendJsonMessage({
+          type: FILETRANSFER_FILE_END,
+        }, device.webSocketConnection, () => {
+          console.log("FILE IS DONE");
+          device.sentFiles.push(device.outgoingFiles.shift());
+          device.fileIndex++;
+          sendCurrentFile(deviceAddress);
+        });
 
-      const outgoingFile = device.outgoingFiles[0];
-      const { filename, filePath } = outgoingFile;
-      outgoingFile.fileSize = (await fsPromises.stat(filePath)).size;
-      outgoingFile.transferredSize = 0;
-
-      sendJsonMessage({
-        type: FILETRANSFER_FILE_START,
-        data: {
-          filename,
-          fileIndex,
-          fileSize: outgoingFile.fileSize,
-          mimeType: mime.getType(filename),
-        },
-      }, device.webSocketConnection);
-
-      try {
-        console.log(`Reading from ${filePath}`);
-        const fileHandle = await fsPromises.open(filePath);
-        const readNextChunk = async () => {
-          const { bytesRead } = await fileHandle.read(buffer, 0, CHUNK_SIZE, null);
-          if (bytesRead === 0) {
-            console.log("Read done");
-            sendJsonMessage({
-              type: FILETRANSFER_FILE_END,
-            }, device.webSocketConnection);
-
-            await fileHandle.close();
-            return;
-          }
-
-          let data;
-          if (bytesRead < CHUNK_SIZE) {
-            data = buffer.slice(0, bytesRead);
-          } else {
-            data = buffer;
-          }
-          console.log(data.length);
-          sendRawMessage(data, device.webSocketConnection, readNextChunk);
-          outgoingFile.transferredSize += bytesRead;
-        };
-        await readNextChunk();
-      } catch (err) {
-        console.error(err);
+        await fileHandle.close();
+        return;
       }
 
-      device.sentFiles.push(device.outgoingFiles.shift());
-      fileIndex++;
-    }
-
-    // device.outgoingFiles.forEach((outgoingFile, fileIndex) => {
-    //   const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-    //   const buffer = Buffer.alloc(CHUNK_SIZE);
-
-    //   const { filename, filePath } = outgoingFile;
-    //   outgoingFile.fileSize = fs.statSync(filePath).size;
-    //   outgoingFile.transferredSize = 0;
-
-    //   sendJsonMessage({
-    //     type: FILETRANSFER_FILE_START,
-    //     data: {
-    //       filename,
-    //       fileIndex,
-    //       fileSize: outgoingFile.fileSize,
-    //       mimeType: mime.getType(filename),
-    //     },
-    //   }, device.webSocketConnection);
-
-    //   fs.open(filePath, "r", function(err, fd) {
-    //     console.log(`Reading from ${filePath}`);
-    //     if (err) throw err;
-    //     function readNextChunk() {
-    //       fs.read(fd, buffer, 0, CHUNK_SIZE, null, function(err, nread) {
-    //         if (err) throw err;
-
-    //         if (nread === 0) {
-    //           console.log("Read done");
-
-    //           // TODO: remove first element of device.outgoingFiles and add to device.sentFiles
-
-    //           // done reading file, do any necessary finalization steps
-    //           sendJsonMessage({
-    //             type: FILETRANSFER_FILE_END,
-    //           }, device.webSocketConnection);
-
-    //           fs.close(fd, function(err) {
-    //             if (err) throw err;
-    //           });
-
-    //           return;
-    //         }
-
-    //         let data;
-    //         if (nread < CHUNK_SIZE) {
-    //           data = buffer.slice(0, nread);
-    //         } else {
-    //           data = buffer;
-    //         }
-
-    //         // do something with `data`, then call `readNextChunk();`
-    //         console.log(data.length);
-
-    //         // readNextChunk will be executed ONLY AFTER THE CURRENT CHUNK HAS BEEN SENT
-    //         sendRawMessage(data, device.webSocketConnection, readNextChunk);
-    //       });
-    //     }
-    //     readNextChunk();
-    //   });
-    // });
+      let data;
+      if (bytesRead < CHUNK_SIZE) {
+        data = buffer.slice(0, bytesRead);
+      } else {
+        data = buffer;
+      }
+      console.log(data.length);
+      sendRawMessage(data, device.webSocketConnection, readNextChunk);
+      outgoingFile.transferredSize += bytesRead;
+    };
+    await readNextChunk();
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
