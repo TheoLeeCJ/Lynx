@@ -11,6 +11,8 @@ module.exports = {
     SCREENSTREAM_STOP: "screenstream_stop",
 
     // remote control
+    REMOTECONTROL_ENABLED: "remotecontrol_enabled",
+    REMOTECONTROL_DISABLED: "remotecontrol_disabled",
     REMOTECONTROL_TAP: "remotecontrol_tap",
     REMOTECONTROL_BACK: "remotecontrol_back",
     REMOTECONTROL_HOME: "remotecontrol_home",

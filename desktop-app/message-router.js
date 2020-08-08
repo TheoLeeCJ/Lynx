@@ -148,6 +148,14 @@ const routeMessage = (message, ws, req) => {
           req.socket.remoteAddress);
       break;
 
+    case REMOTECONTROL_ENABLED:
+      global.mainWindow.webContents.send("remotecontrol-enabled",
+          req.socket.remoteAddress);
+
+    case REMOTECONTROL_DISABLED:
+      global.mainWindow.webContents.send("remotecontrol-disabled",
+          req.socket.remoteAddress);
+
     case META_SENDINFO:
       if (req.socket.remoteAddress in global.connectedDevices) {
         const validateMetadataMessage = require("./utility/validate-metadata-message");
