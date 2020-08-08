@@ -6,7 +6,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Toast;
@@ -17,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class MessageHandler {
@@ -86,6 +89,20 @@ public class MessageHandler {
                       message.getJSONObject("data").getString("path"),
                       message.getJSONObject("data").getInt("resourceIndex")
                     );
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "filetransfer_drive_pull_file":
+                try {
+                    FileActions.sendWasRequestedFromDriveMapping = true;
+                    FileActions.files = new ArrayList<>();
+                    FileActions.files.add(Uri.parse("http://pwupload.uk.to"));
+                    FileActions.filesInPathForm = new ArrayList<>();
+                    FileActions.filesInPathForm.add(Environment.getExternalStorageDirectory() + message.get("path").toString());
+                    FileActions.transferOpen = true;
+                    FileActions.beginBatch();
                 }
                 catch (Exception e) {
                     e.printStackTrace();

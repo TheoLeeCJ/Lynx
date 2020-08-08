@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,6 +32,7 @@ import java.util.Map;
 
 public class FileActions {
 	public static ArrayList<Uri> files;
+	public static ArrayList<String> filesInPathForm;
 	public static Boolean transferOpen = false;
 	public static Map<String, String> receiveState;
 	public static BufferedOutputStream currentFileBuffer;
@@ -39,6 +41,8 @@ public class FileActions {
 	public static Notification largeFileProgressNotif;
 	public static int numberOfChunksPending;
 	public static int numberOfChunksReceived;
+
+	public static boolean sendWasRequestedFromDriveMapping = false;
 
 	public static void receiveBinaryFileChunk(ByteBuffer fileChunk) {
 		if ((receiveState == null) || (!transferOpen)) return;
@@ -140,14 +144,22 @@ public class FileActions {
 	public static void beginBatch() {
 		for (int i = 0; i < files.size(); i++) {
 			Uri uri = files.get(i);
-			String fileName = getFileName(uri);
-			System.out.println(fileName);
+			String filename;
 
-			Cursor returnCursor =
-				MainActivity.mainActivityStatic.getContentResolver().query(uri, null, null, null, null);
-			int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
-			returnCursor.moveToFirst();
-			long size = returnCursor.getLong(sizeIndex);
+			long size = 0;
+
+			if (!sendWasRequestedFromDriveMapping) { // use Storage Access Framework
+				Cursor returnCursor =
+					MainActivity.mainActivityStatic.getContentResolver().query(uri, null, null, null, null);
+				int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+				returnCursor.moveToFirst();
+				size = returnCursor.getLong(sizeIndex);
+				filename = getFileName(uri);
+			}
+			else { // use File APIs
+				size = new File(filesInPathForm.get(i)).length();
+				filename = filesInPathForm.get(i);
+			}
 
 			byte[] bytes = new byte[Utility.FILETRANSFER_SEND_CHUNK_SIZE];
 
@@ -158,7 +170,7 @@ public class FileActions {
 				transferStart.put("type", "filetransfer_file_start");
 				JSONObject messageData = new JSONObject();
 				messageData.put("fileIndex", i);
-				messageData.put("filename", getFileName(uri));
+				messageData.put("filename", filename);
 				messageData.put("fileSize", size);
 				transferStart.put("data", messageData);
 			}
@@ -170,7 +182,15 @@ public class FileActions {
 
 			// actually read file and start sending data
 			try {
-				InputStream inputStream = MainActivity.mainActivityStatic.getContentResolver().openInputStream(uri);
+				InputStream inputStream;
+
+				if (!sendWasRequestedFromDriveMapping) { // use Storage Access Framework
+					inputStream = MainActivity.mainActivityStatic.getContentResolver().openInputStream(uri);
+				}
+				else { // use File APIs
+					inputStream = new FileInputStream(filename);
+				}
+
 				BufferedInputStream buf = new BufferedInputStream(inputStream);
 
 				long bytesSent = 0;
@@ -226,6 +246,7 @@ public class FileActions {
 		// ^ weird hack to get around Java's lack of default arguments
 
 		transferOpen = true;
+		sendWasRequestedFromDriveMapping = false;
 
 		if (!useFileArrayDirectly) {
 			System.out.println("OI");
