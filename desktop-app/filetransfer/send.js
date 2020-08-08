@@ -72,7 +72,7 @@ const sendFiles = () => {
     // FIXME: use traditional for loop so device.
     filePaths.forEach((filePath, fileIndex) => {
       // https://stackoverflow.com/questions/25110983/node-reading-file-in-specified-chunk-size
-      const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
       const buffer = Buffer.alloc(CHUNK_SIZE);
       const pathElements = filePath.split("\\");
       const filename = pathElements[pathElements.length - 1];
