@@ -90,6 +90,7 @@ const routeMessage = (message, ws, req) => {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...AUTH_OK }, ws);
       } else {
         sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...INVALID_TOKEN }, ws);
+        ws.close();
       }
       break;
 
