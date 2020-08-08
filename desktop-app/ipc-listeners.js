@@ -1,4 +1,6 @@
 const { ipcMain, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs");
 const {
   messageTypes: {
     REMOTECONTROL_BACK,
@@ -79,6 +81,13 @@ ipcMain.handle("filetransfer-choose-files", async (_, deviceAddress) => {
     buttonLabel: "Send file(s)",
   });
 
-  handleChosenFilesResult(filePaths, deviceAddress);
-  return filePaths;
+  const chosenFiles = filePaths.map((filePath) => ({
+    filename: path.basename(filePath),
+    filePath,
+    fileSize: null,
+    transferredSize: null,
+  }));
+  handleChosenFilesResult(chosenFiles, deviceAddress);
+
+  return chosenFiles;
 });
