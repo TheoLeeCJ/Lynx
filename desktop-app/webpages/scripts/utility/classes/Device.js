@@ -4,18 +4,20 @@ class Device {
     this.address = address;
     this.token = token;
 
-    this.screenstreamAuthorised = false;
+    // this.screenstreamAuthorised = false;
     this.screenstreamInProgress = false;
     this.screenstreamPoppedOut = false;
     this.screenstreamControlsShown = true;
-    this.fileTransferInProgress = false;
+    this.remoteControlEnabled = false;
+    this.sendingFiles = false;
+    this.receivingFiles = false;
     this.sentFiles = []; // { filename: String, filePath, String }[]
     this.receivedFiles = []; // { filename: String, filePath, String }[]
-    this.outgoingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
-    this.incomingFiles = []; // { filename: String, filePath: String, totalFileSize: Number, transferredSize: Number }[]
-    // this.outgoingBatchSize = 0; // Number
-    // this.incomingBatchSize = 0; // Number
-    // this.outgoingFile = null; // Number (out of batch size - is not an index)
-    // this.incomingFile = null; // Number (out of batch size - is not an index)
+    this.outgoingFiles = []; // { filename: String, filePath: String, fileSize: Number, transferredSize: Number }[]
+    this.incomingFiles = []; // { filename: String, filePath: String, fileSize: Number, transferredSize: Number }[]
+    this.outgoingFilesBatchSize = 0; // Number
+    this.incomingFilesBatchSize = 0; // Number
+    this.outgoingFileNumber = 0; // Number (out of batch size - is not an index)
+    this.incomingFileNumber = 0; // Number (out of batch size - is not an index)
   }
 }

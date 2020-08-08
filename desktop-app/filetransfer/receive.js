@@ -11,6 +11,11 @@ const receiveBinaryFileChunk = (deviceAddress, fileChunk) => {
   if (device.fileReceiveState !== null) {
     device.incomingFileBuffer = Buffer.concat([device.incomingFileBuffer,
       fileChunk]);
+
+    const numBytesReceived = fileChunk.length;
+    device.incomingFiles[0].transferredSize += numBytesReceived;
+    global.mainWindow.webContents.send("filetransfer-incoming-file-progress",
+        deviceAddress, numBytesReceived);
     console.log(`Processed file chunk for ${deviceAddress}, size is now ${device.incomingFileBuffer.length}`);
   }
 };
@@ -25,12 +30,12 @@ const setFileReceiveState = (deviceAddress, newFileReceiveState) => {
       throw Error(`Device at ${deviceAddress} sent a different file from what was previously specified in the request. Expected ${device.incomingFiles[0]}, got ${newFileReceiveState.filename}.`);
     }
     const incomingFile = device.incomingFiles[0];
-    incomingFile.totalFileSize = newFileReceiveState.fileSize;
+    incomingFile.fileSize = newFileReceiveState.fileSize;
     incomingFile.transferredSize = 0;
 
-    device.fileTransferInProgress = true;
+    device.receivingFiles = true;
     global.mainWindow.webContents.send("filetransfer-incoming-file-start",
-        deviceAddress);
+        deviceAddress, incomingFile.fileSize);
   } else if (newFileReceiveState === null) {
     // check if can access ~/Documents/Lynx
     // TODO: let user customise where received files are saved

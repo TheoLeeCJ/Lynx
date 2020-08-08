@@ -21,6 +21,8 @@ const {
     SCREENSTREAM_FRAME,
     SCREENSTREAM_ORIENTATIONCHANGE,
     SCREENSTREAM_STOP,
+    REMOTECONTROL_ENABLED,
+    REMOTECONTROL_DISABLED,
     META_SENDINFO,
     FILETRANSFER_TESTRECEIVE,
     FILETRANSFER_BATCH_REQUEST,
@@ -149,12 +151,12 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case REMOTECONTROL_ENABLED:
-      global.mainWindow.webContents.send("remotecontrol-enabled",
-          req.socket.remoteAddress);
+      global.mainWindow.webContents.send("remotecontrol-setting-changed",
+          req.socket.remoteAddress, true);
 
     case REMOTECONTROL_DISABLED:
-      global.mainWindow.webContents.send("remotecontrol-disabled",
-          req.socket.remoteAddress);
+      global.mainWindow.webContents.send("remotecontrol-setting-changed",
+          req.socket.remoteAddress, false);
 
     case META_SENDINFO:
       if (req.socket.remoteAddress in global.connectedDevices) {
@@ -190,7 +192,7 @@ const routeMessage = (message, ws, req) => {
             filename,
             // TODO: let user customise file save destination
             filePath: path.join(homeDir, "Documents/Lynx", filename),
-            totalFileSize: null,
+            fileSize: null,
             transferredSize: null,
           }));
           device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
@@ -213,7 +215,7 @@ const routeMessage = (message, ws, req) => {
 
     case FILETRANSFER_BATCH_REQUEST_REPLY:
       console.log(FILETRANSFER_BATCH_REQUEST_REPLY);
-      if (message.data.success) sendFiles();
+      if (message.data.success) sendFiles(req.socket.remoteAddress);
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
