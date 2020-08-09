@@ -209,18 +209,18 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_FILE_START:
-      if (message.fileID === undefined) {
-        setDriveReceiveState(req.socket.remoteAddress, message.data);
-      } else {
+      if (message.data.fileID === undefined) {
         setFileReceiveState(req.socket.remoteAddress, message.data);
+      } else {
+        setDriveReceiveState(req.socket.remoteAddress, message.data);
       }
       break;
 
     case FILETRANSFER_FILE_END:
-      if (message.fileID === undefined) {
-        setDriveReceiveState(req.socket.remoteAddress, null);
-      } else {
+      if (message.data.fileID === undefined) {
         setFileReceiveState(req.socket.remoteAddress, null);
+      } else {
+        setDriveReceiveState(req.socket.remoteAddress, null);
       }
       break;
 

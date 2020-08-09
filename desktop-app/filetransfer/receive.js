@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const homeDir = require("os").homedir();
 const receivedFilesDir = path.join(homeDir, "Documents/Lynx");
-const { checkDriveTriggeredFileReceive, passReceivedBuffer } = require("./drive");
 // let receiveState = false;
 // let fileBuffer = new Buffer.alloc(0);
 
@@ -46,28 +45,19 @@ const setFileReceiveState = (deviceAddress, newFileReceiveState) => {
     }
 
     // flush buffer to file or send to WebDAV drive interface
-    console.log(checkDriveTriggeredFileReceive());
-    if (checkDriveTriggeredFileReceive()) {
-      fs.writeFile(path.join(receivedFilesDir, "temp.png"), Buffer.concat([device.incomingFileBuffer]), (err) => {
-        if (err) return console.error(err);
-      });
-      console.log(checkDriveTriggeredFileReceive() + " file received.");
-      passReceivedBuffer(Buffer.concat([device.incomingFileBuffer]));
-    } else {
-      console.log("Writing file");
-      const writePath = path.join(receivedFilesDir, device.fileReceiveState
-          .filename);
-      console.log("writePath:", writePath);
-      fs.writeFile(writePath, device.incomingFileBuffer, (err) => {
-        if (err) return console.error(err);
-      });
-      console.log(`File saved as ${writePath}`);
+    console.log("Writing file");
+    const writePath = path.join(receivedFilesDir, device.fileReceiveState
+        .filename);
+    console.log("writePath:", writePath);
+    fs.writeFile(writePath, device.incomingFileBuffer, (err) => {
+      if (err) return console.error(err);
+    });
+    console.log(`File saved as ${writePath}`);
 
-      device.receivedFiles.push(device.incomingFiles.shift());
-      global.mainWindow.webContents.send("filetransfer-incoming-file-end",
-          deviceAddress);
-    }
-  }
+    device.receivedFiles.push(device.incomingFiles.shift());
+    global.mainWindow.webContents.send("filetransfer-incoming-file-end",
+        deviceAddress);
+}
 
   // end / if setting up a new file transfer
   device.incomingFileBuffer = Buffer.alloc(0);
