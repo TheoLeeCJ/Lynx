@@ -1,6 +1,7 @@
 const WebSocket = require("ws");
 const routeMessage = require("./message-router");
 const { receiveBinaryFileChunk } = require("./filetransfer/receive");
+const { getWebdavIDs, receiveWebdavFileChunk } = require("./filetransfer/drive");
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("./utility/responses");
 const {
   responseTypes: {
@@ -19,7 +20,12 @@ const startWebSocketServer = () => {
       try {
         // file transfer
         if (typeof message !== "string") {
-          receiveBinaryFileChunk(req.socket.remoteAddress, message);
+          const testForFileID = Buffer.from(message, 0, 36);
+          if (!getWebdavIDs().includes(testForFileID.toString("utf-8").substring(0, 36))) {
+            receiveBinaryFileChunk(req.socket.remoteAddress, message);
+          } else {
+            receiveWebdavFileChunk(req.socket.remoteAddress, message.subarray(36, message.length));
+          }
           return;
         }
 

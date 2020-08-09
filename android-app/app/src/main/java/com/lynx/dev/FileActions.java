@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -43,6 +45,7 @@ public class FileActions {
 	public static int numberOfChunksReceived;
 
 	public static boolean sendWasRequestedFromDriveMapping = false;
+	public static String fileID = null;
 
 	public static void receiveBinaryFileChunk(ByteBuffer fileChunk) {
 		if ((receiveState == null) || (!transferOpen)) return;
@@ -172,6 +175,7 @@ public class FileActions {
 				messageData.put("fileIndex", i);
 				messageData.put("filename", filename);
 				messageData.put("fileSize", size);
+				if (fileID != null) messageData.put("fileID", fileID);
 				transferStart.put("data", messageData);
 			}
 			catch (JSONException e) {
@@ -211,7 +215,17 @@ public class FileActions {
 					}
 
 					try {
-						SimpleClient.simpleClientStatic.send(bytes);
+						if (fileID != null) {
+							byte[] specialBytes = fileID.getBytes(StandardCharsets.UTF_8);
+							System.out.println(specialBytes.length);
+							byte[] bytesToSend = new byte[bytes.length + specialBytes.length];
+							System.arraycopy(specialBytes, 0, bytesToSend, 0, specialBytes.length);
+							System.arraycopy(bytes, 0, bytesToSend, specialBytes.length, bytes.length);
+							SimpleClient.simpleClientStatic.send(bytesToSend);
+						}
+						else {
+							SimpleClient.simpleClientStatic.send(bytes);
+						}
 					}
 					catch (Exception e) {
 						System.out.println(e.toString());
@@ -231,6 +245,7 @@ public class FileActions {
 					Toast.makeText(MainActivity.mainActivityStatic, "Error in generating JSON object; this should never happen.", Toast.LENGTH_SHORT);
 					return;
 				}
+				fileID = null;
 				SimpleClient.simpleClientStatic.sendText(transferEnd.toString());
 			} catch (Exception e) {
 				e.printStackTrace();

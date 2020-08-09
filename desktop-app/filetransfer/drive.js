@@ -1,6 +1,7 @@
 const sendJsonMessage = require("../utility/send-json-message");
 const sendRawMessage = require("../utility/send-raw-message");
 const webdav = require("webdav-server").v2;
+const uuid = require("uuid").v4;
 const fs = require("fs");
 const path = require("path");
 const mime = require("mime");
@@ -29,10 +30,10 @@ const { count } = require("console");
 let currentPort = 13601;
 let currentDriveLetter = 90; // starts from 'Z', goes down through the alphabet
 const drives = {};
-let expectingFileReceive = false;
 const counterActWindowsExplorer = 0;
+const webdavIDs = [];
 
-const checkDriveTriggeredFileReceive = () => expectingFileReceive;
+const getWebdavIDs = () => webdavIDs;
 
 const startPhoneDriveServer = (key, websocketConnection) => {
   const userManager = new webdav.SimpleUserManager();
@@ -47,8 +48,11 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   drives[key].driveLetter = currentDriveLetter;
   drives[key].currentDirListReady = {};
   drives[key].currentFileBuffer = null;
+  drives[key].currentFileBufferReady = false;
   drives[key].fileSizes = {};
-  drives[key].pendingFileReceives = []; // unused as of now
+  drives[key].pendingFileReceives = [];
+  drives[key].uuid = uuid();
+  webdavIDs.push(drives[key].uuid);
 
   drives[key].server = new webdav.WebDAVServer({
     httpAuthentication: new webdav.HTTPDigestAuthentication(userManager, "Lynx Phone Drive"),
@@ -66,29 +70,21 @@ const startPhoneDriveServer = (key, websocketConnection) => {
       return callback(Errors_1.Errors.ResourceNotFound);
     }
 
-    sendJsonMessage({
-      type: FILETRANSFER_DRIVE_PULL_FILE,
-      path: path.toString(),
-    }, drives[ctx.context.server.lynxKey].websocket);
+    drives[ctx.context.server.lynxKey].pendingFileReceives.push({
+      path,
+      callback,
+    });
 
-    expectingFileReceive = ctx.context.server.lynxKey;
-    drives[key].currentFileBuffer = null;
+    drives[key].currentFileBufferReady = false;
 
-    function checkFileBufferReady() {
-      if (drives[key].currentFileBuffer) {
-        // console.log(drives[key].currentFileBuffer);
-        // resource.content = new Buffer.from(drives[key].currentFileBuffer);
-        callback(null, new streamLib.Readable({
-          read() {
-            this.push(drives[key].currentFileBuffer);
-          },
-        }));
-      } else {
-        setTimeout(checkFileBufferReady, 100);
-      }
+    if (drives[key].pendingFileReceives.length === 1) {
+      sendJsonMessage({
+        type: FILETRANSFER_DRIVE_PULL_FILE,
+        path: path.toString(),
+        fileID: drives[ctx.context.server.lynxKey].uuid,
+        requestSource: "webdav",
+      }, drives[ctx.context.server.lynxKey].websocket);
     }
-
-    setTimeout(checkFileBufferReady, 100);
   };
 
   VirtualFileSystem.prototype._size = (path, ctx, callback) => {
@@ -110,7 +106,7 @@ const startPhoneDriveServer = (key, websocketConnection) => {
     }, websocketConnection);
 
     function checkDirListReady() {
-      console.log("CHECK DIR LIST READY?!");
+      // console.log("CHECK DIR LIST READY?!");
       if (drives[key].currentDirListReady[path] >= 2) {
         const base = path.toString(true);
         const children = [];
@@ -203,11 +199,49 @@ const clearAllLynxDrives = () => {
   });
 };
 
+const receiveWebdavFileChunk = (key, chunk) => {
+  const drive = drives[key];
+  if (drive.receiveState !== null) {
+    drive.currentFileBuffer = Buffer.concat([drive.currentFileBuffer,
+      chunk]);
+    console.log("received file chunk on webdav side");
+  }
+};
+
+const setDriveReceiveState = (key, receiveState) => {
+  drives[key].receiveState = receiveState;
+  if (receiveState !== null) {
+    drives[key].currentFileBuffer = Buffer.alloc(0);
+    console.log("start new file on webdav side");
+  } else {
+    drives[key].currentFileBufferReady = true;
+    console.log("end file on webdav side, serving to client now");
+    drives[key].pendingFileReceives[0].callback(null, new streamLib.Readable({
+      read() {
+        this.push(drives[key].currentFileBuffer);
+      },
+    }));
+    console.log(drives[key].pendingFileReceives);
+    drives[key].pendingFileReceives.shift();
+
+    console.log("now pulling " + drives[key].pendingFileReceives[0].path.toString());
+
+    sendJsonMessage({
+      type: FILETRANSFER_DRIVE_PULL_FILE,
+      path: drives[key].pendingFileReceives[0].path.toString(),
+      fileID: drives[key].uuid,
+      requestSource: "webdav",
+    }, drives[key].websocket);
+  }
+};
+
 module.exports = {
+  setDriveReceiveState,
+  receiveWebdavFileChunk,
+  getWebdavIDs,
   startPhoneDriveServer,
   shutdownPhoneDriveServer,
   folderListingReady,
   clearAllLynxDrives,
-  checkDriveTriggeredFileReceive,
   passReceivedBuffer,
 };
