@@ -1,69 +1,6 @@
 fileSizeToString = filesize.partial({ spacer: "" });
 
-window.connectedDevices = {
-  "test-device": {
-    address: "test-address",
-    token: "aaaaaaaaaaaa",
-
-    screenstreamPoppedOut: false,
-    screenstreamControlsShown: true,
-    sendingFiles: false,
-    receivingFiles: true,
-    sentFiles: [
-      {
-        filename: "a.txt",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\a.txt",
-        fileSize: 11000,
-        transferredSize: 11000,
-      },
-      {
-        filename: "longAssFilenameThatIsSuperFreakingLong.png",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\longAssFilenameThatIsSuperFreakingLong.png",
-        fileSize: 2700000000,
-        transferredSize: 2700000000,
-      },
-    ],
-    receivedFiles: [
-      {
-        filename: "a.txt",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\a.txt",
-        fileSize: 11000,
-        transferredSize: 11000,
-      },
-      {
-        filename: "longAssFilenameThatIsSuperFreakingLong.png",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\longAssFilenameThatIsSuperFreakingLong.png",
-        fileSize: 2700000000,
-        transferredSize: 2700000000,
-      },
-    ],
-    outgoingFiles: [],
-    incomingFiles: [
-      {
-        filename: "a.txt",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\a.txt",
-        fileSize: 12000,
-        transferredSize: 24000,
-      },
-      {
-        filename: "longAssFilenameThatIsSuperFreakingLong.png",
-        filePath: "C:\\Users\\yip\\Documents\\Lynx\\longAssFilenameThatIsSuperFreakingLong.png",
-        fileSize: 2800000000,
-        transferredSize: 3800000000,
-      },
-    ],
-  },
-};
-
-// const escapeForCssSelector = (str) => str
-//     .replace(/[\~\!\@\$\%\^\&\*\(\)\+\=\,\.\/\'\;\:\"\?\>\<\[\]\\\{\}\|\`\#]/g,
-//         "\\$&")
-
-// receive connection info QR code
-// ipcRenderer.invoke("get-connection-info-qr-code").then((qrCode) => {
-//   console.log("Connection info QR code updated.");
-//   document.getElementById("connect-qr-code").src = qrCode;
-// });
+window.connectedDevices = {};
 
 // tell main process that renderer process is ready for messages
 ipcRenderer.send("ready");
@@ -185,7 +122,7 @@ const updateUi = (deviceAddress) => {
         fileStatusCell.textContent = "Waiting to send";
       } else {
         fileStatusCell.textContent =
-            `Sending (${transferredSize / fileSize * 100}%)`;
+            `Sending (${(transferredSize / fileSize * 100).toFixed(1)}%)`;
       }
 
       outgoingFileRow.append(filenameCell, fileSizeCell, fileStatusCell);
@@ -301,7 +238,7 @@ const updateUi = (deviceAddress) => {
         fileStatusCell.textContent = "Waiting to receive";
       } else {
         fileStatusCell.textContent =
-            `Receiving (${transferredSize / fileSize * 100}%)`;
+            `Receiving (${(transferredSize / fileSize * 100).toFixed(1)}%)`;
       }
 
       incomingFileRow.append(filenameCell, fileSizeCell, fileStatusCell);

@@ -56,7 +56,7 @@ const setFileReceiveState = (deviceAddress, newFileReceiveState) => {
     device.receivedFiles.push(device.incomingFiles.shift());
     global.mainWindow.webContents.send("filetransfer-incoming-file-end",
         deviceAddress);
-}
+  }
 
   // end / if setting up a new file transfer
   device.incomingFileBuffer = Buffer.alloc(0);
