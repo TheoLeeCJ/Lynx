@@ -96,11 +96,23 @@ public class MessageHandler {
                 break;
             case "filetransfer_drive_pull_file":
                 try {
-                    FileActions.sendWasRequestedFromDriveMapping = true;
-                    FileActions.files = new ArrayList<>();
-                    FileActions.files.add(Uri.parse("http://pwupload.uk.to"));
-                    FileActions.filesInPathForm = new ArrayList<>();
-                    FileActions.filesInPathForm.add(Environment.getExternalStorageDirectory() + message.get("path").toString());
+                    FileActions.fileID = message.getString("fileID");
+
+                    if (message.getString("requestSource").equals("webdav")) {
+                        FileActions.sendWasRequestedFromDriveMapping = true;
+                        FileActions.files = new ArrayList<>();
+                        FileActions.files.add(Uri.parse("http://pwupload.uk.to"));
+                        FileActions.filesInPathForm = new ArrayList<>();
+                        FileActions.filesInPathForm.add(Environment.getExternalStorageDirectory() + message.getString("path"));
+                    }
+                    else {
+                        FileActions.sendWasRequestedFromDriveMapping = false;
+                        FileActions.files = new ArrayList<>();
+                        FileActions.files.add(Uri.parse(message.getString("path")));
+                        FileActions.filesInPathForm = new ArrayList<>();
+                        FileActions.filesInPathForm.add("");
+                    }
+
                     FileActions.transferOpen = true;
                     FileActions.beginBatch();
                 }
