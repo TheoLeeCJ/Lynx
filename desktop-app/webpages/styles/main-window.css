@@ -22,10 +22,11 @@ h1 {
 
 .pane {
   padding: 20px 22px;
-  overflow: overlay;
+  overflow: auto;
 }
 .pane::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 .pane::-webkit-scrollbar-track {
   background-color: transparent;
@@ -125,11 +126,14 @@ h1 {
 }
 
 #status-section #status-section-left {
+  display: flex;
+  flex-direction: column;
   width: 50%;
   border-right: 1.5px solid #bbb;
 }
 
 #device-status {
+  flex-shrink: 0;
   border-bottom: 1.5px solid #bbb;
 }
 
@@ -146,7 +150,7 @@ h1 {
 
 #file-transfer #send-files {
   display: block;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   padding: 12px 14px;
   border: none;
   border-radius: 7.5px;
@@ -162,7 +166,25 @@ h1 {
   top: -1px;
 }
 
-#file-transfer #file-transfer-progress-bar {
+#file-transfer .file-transfer-section:not(:last-of-type) {
+  margin: 20px 0;
+}
+/* #file-transfer .file-transfer-section:not(:last-of-type)::after {
+  content: "";
+  display: block;
+  position: relative;
+  left: 50%;
+  width: 100%;
+  height: 1px;
+  background-color: #000;
+  transform: translate(-50%, 25px);
+} */
+
+#file-transfer .file-transfer-section:last-of-type {
+  margin-top: 20px;
+}
+
+#file-transfer .file-transfer-section .file-transfer-progress-bar {
   width: 100%;
   height: 8px;
   margin: 11px 0 9px;
@@ -170,17 +192,17 @@ h1 {
   border-radius: 999999px;
 }
 
-#file-transfer #file-transfer-progress-bar #file-transfer-progress-bar-filler {
+#file-transfer .file-transfer-section .file-transfer-progress-bar .file-transfer-progress-bar-filler {
   position: relative;
   left: -1px;
   top: -1px;
-  width: 12%;
+  width: 0;
   height: 10px;
   border-radius: 999999px 0 0 999999px;
   background-color: var(--lynx-purple);
 }
 
-#file-transfer #file-transfer-files-list {
+#file-transfer .file-transfer-section .file-transfer-files-list {
   width: 100%;
   margin-top: 20px;
   border: 1px solid #000;
@@ -189,51 +211,49 @@ h1 {
 }
 
 /* border radius on table */
-#file-transfer #file-transfer-files-list th:first-child {
+#file-transfer .file-transfer-section .file-transfer-files-list th:first-child {
   border-top-left-radius: 7.5px;
 }
-#file-transfer #file-transfer-files-list th:last-child {
+#file-transfer .file-transfer-section .file-transfer-files-list th:last-child {
   border-top-right-radius: 7.5px;
 }
-#file-transfer #file-transfer-files-list tr:last-child td:first-child {
+#file-transfer .file-transfer-section .file-transfer-files-list tr:last-child td:first-child {
   border-bottom-left-radius: 7.5px;
 }
-#file-transfer #file-transfer-files-list tr:last-child td:last-child {
+#file-transfer .file-transfer-section .file-transfer-files-list tr:last-child td:last-child {
   border-bottom-right-radius: 7.5px;
 }
 
-#file-transfer #file-transfer-files-list * {
+#file-transfer .file-transfer-section .file-transfer-files-list * {
   text-align: left;
 }
 
-#file-transfer #file-transfer-files-list tr * {
+#file-transfer .file-transfer-section .file-transfer-files-list tr * {
   padding: 5px 7px;
 }
 
-#file-transfer #file-transfer-files-list tr:not(:last-child) * {
+#file-transfer .file-transfer-section .file-transfer-files-list tr:not(:last-child) * {
   border-bottom: 1px solid #000;
 }
 
-#file-transfer #file-transfer-files-list tr :not(:first-child) {
+#file-transfer .file-transfer-section .file-transfer-files-list tr :not(:first-child) {
   border-left: 1px solid #000;
 }
 
-#file-transfer #file-transfer-files-list th {
+#file-transfer .file-transfer-section .file-transfer-files-list th {
   text-align: left;
   font-weight: 500;
   background-color: #ccc;
 }
 
-#file-transfer #file-transfer-files-list th:first-child {
+#file-transfer .file-transfer-section .file-transfer-files-list th:first-child {
   width: 18em;
 }
 
-#file-transfer #file-transfer-files-list td:first-child {
+#file-transfer .file-transfer-section .file-transfer-files-list td:first-child {
   display: block;
   width: 18em;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  word-break: break-all;
 }
 
 #screen-sharing {
