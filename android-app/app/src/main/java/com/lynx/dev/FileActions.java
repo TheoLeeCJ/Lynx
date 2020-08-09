@@ -241,7 +241,7 @@ public class FileActions {
 				try {
 					transferEnd.put("type", "filetransfer_file_end");
 					JSONObject transferEndData = new JSONObject();
-					transferEndData.put("fileID", fileID);
+					if (fileID != null) { transferEndData.put("fileID", fileID); }
 					transferEnd.put("data", transferEndData);
 				}
 				catch (JSONException e) {
