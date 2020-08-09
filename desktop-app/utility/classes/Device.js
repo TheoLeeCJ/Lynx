@@ -18,6 +18,7 @@ class Device {
     this.sentFiles = []; // { filename: String, filePath, String }[]
     this.receivedFiles = []; // { filename: String, filePath, String }[]
     this.outgoingFiles = []; // { filename: String, filePath: String, fileSize: Number, transferredSize: Number }[]
+    this.outgoingFileIndex = null;
     this.incomingFiles = []; // { filename: String, filePath: String, fileSize: Number, transferredSize: Number }[]
     // this.outgoingFile = null; // Number (references an index in outgoingFiles)
     // this.incomingFile = null; // Number (references an index in incomingFiles)

@@ -24,27 +24,6 @@ const {
 } = require("./../utility/message-types");
 const sendRawMessage = require("../utility/send-raw-message");
 
-// ipcMain.on("filetransfer-send", (_, messageData) => {
-//   if (messageData.fileDialogResult.canceled) return;
-
-//   // extract filenames from filepaths
-//   const filenames = [];
-//   filePaths = messageData.fileDialogResult.filePaths;
-//   console.log(filePaths);
-//   messageData.fileDialogResult.filePaths.forEach((path) => {
-//     const pathElements = path.split("\\");
-//     filenames.push(pathElements[pathElements.length - 1]);
-//   });
-
-//   // send to phone
-//   sendJsonMessage({
-//     type: FILETRANSFER_BATCH_REQUEST,
-//     data: { filenames },
-//   }, global.connectedDevices[messageData.deviceAddress].webSocketConnection);
-
-//   receiverDeviceAddresses = [messageData.deviceAddress];
-// });
-
 const handleChosenFilesResult = (chosenFiles, deviceAddress) => {
   if (chosenFiles.length === 0) return;
 
@@ -60,7 +39,7 @@ const handleChosenFilesResult = (chosenFiles, deviceAddress) => {
 
 const sendFiles = async (deviceAddress) => {
   const device = global.connectedDevices[deviceAddress];
-  device.fileIndex = 0;
+  device.outgoingFileIndex = 0;
 
   await sendCurrentFile(deviceAddress);
 };
@@ -69,27 +48,33 @@ const sendCurrentFile = async (deviceAddress) => {
   const device = global.connectedDevices[deviceAddress];
 
   console.log("send current file " + deviceAddress);
-  if (device.outgoingFiles.length === 0) return;
+  if (device.outgoingFiles.length === 0) {
+    device.outgoingFileIndex = null;
+    return;
+  }
 
   const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
   const buffer = Buffer.alloc(CHUNK_SIZE);
 
-  const outgoingFile = device.outgoingFiles[0];
-  const { filename, filePath } = outgoingFile;
-  outgoingFile.fileSize = (await fsPromises.stat(filePath)).size;
-  outgoingFile.transferredSize = 0;
-
-  sendJsonMessage({
-    type: FILETRANSFER_FILE_START,
-    data: {
-      filename,
-      fileIndex: device.fileIndex,
-      fileSize: outgoingFile.fileSize,
-      mimeType: mime.getType(filename),
-    },
-  }, device.webSocketConnection);
-
   try {
+    const outgoingFile = device.outgoingFiles[0];
+    const { filename, filePath } = outgoingFile;
+    outgoingFile.fileSize = (await fsPromises.stat(filePath)).size;
+    outgoingFile.transferredSize = 0;
+
+    sendJsonMessage({
+      type: FILETRANSFER_FILE_START,
+      data: {
+        filename,
+        fileIndex: device.outgoingFileIndex,
+        fileSize: outgoingFile.fileSize,
+        mimeType: mime.getType(filename),
+      },
+    }, device.webSocketConnection);
+
+    global.mainWindow.webContents.send("filetransfer-outgoing-file-start",
+        deviceAddress, outgoingFile.fileSize);
+
     console.log(`Reading from ${filePath}`);
     const fileHandle = await fsPromises.open(filePath);
     const readNextChunk = async () => {
@@ -102,7 +87,10 @@ const sendCurrentFile = async (deviceAddress) => {
         }, device.webSocketConnection, () => {
           console.log("FILE IS DONE");
           device.sentFiles.push(device.outgoingFiles.shift());
-          device.fileIndex++;
+          device.outgoingFileIndex++;
+          global.mainWindow.webContents.send("filetransfer-outgoing-file-end",
+              deviceAddress);
+
           sendCurrentFile(deviceAddress);
         });
 
@@ -119,6 +107,9 @@ const sendCurrentFile = async (deviceAddress) => {
       console.log(data.length);
       sendRawMessage(data, device.webSocketConnection, readNextChunk);
       outgoingFile.transferredSize += bytesRead;
+
+      global.mainWindow.webContents.send("filetransfer-outgoing-file-progress",
+          deviceAddress, bytesRead);
     };
     await readNextChunk();
   } catch (err) {

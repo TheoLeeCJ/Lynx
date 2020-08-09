@@ -1,6 +1,6 @@
 const { ipcMain, dialog } = require("electron");
 const path = require("path");
-const fs = require("fs");
+const fsPromises = require("fs").promises;
 const {
   messageTypes: {
     REMOTECONTROL_BACK,
@@ -81,13 +81,20 @@ ipcMain.handle("filetransfer-choose-files", async (_, deviceAddress) => {
     buttonLabel: "Send file(s)",
   });
 
-  const chosenFiles = filePaths.map((filePath) => ({
-    filename: path.basename(filePath),
-    filePath,
-    fileSize: null,
-    transferredSize: null,
-  }));
-  handleChosenFilesResult(chosenFiles, deviceAddress);
+  try {
+    const chosenFiles = await Promise.all(filePaths.map(async (filePath) => ({
+      filename: path.basename(filePath),
+      filePath,
+      fileSize: (await fsPromises.stat(filePath)).size,
+      transferredSize: 0,
+    })));
 
-  return chosenFiles;
+    global.mainWindow.webContents.send("filetransfer-new-outgoing-files",
+        deviceAddress, chosenFiles);
+    handleChosenFilesResult(chosenFiles, deviceAddress);
+
+    return chosenFiles;
+  } catch (err) {
+    console.error(err);
+  }
 });
