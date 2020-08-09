@@ -30,7 +30,6 @@ const setFileReceiveState = (deviceAddress, newFileReceiveState) => {
     }
     const incomingFile = device.incomingFiles[0];
     incomingFile.fileSize = newFileReceiveState.fileSize;
-    incomingFile.transferredSize = 0;
 
     device.receivingFiles = true;
     global.mainWindow.webContents.send("filetransfer-incoming-file-start",
@@ -62,7 +61,7 @@ const setFileReceiveState = (deviceAddress, newFileReceiveState) => {
   // end / if setting up a new file transfer
   device.incomingFileBuffer = Buffer.alloc(0);
   device.fileReceiveState = newFileReceiveState;
-  device.fileTransferInProgress = false;
+  device.receivingFiles = false;
 };
 
 module.exports = { receiveBinaryFileChunk, setFileReceiveState };
