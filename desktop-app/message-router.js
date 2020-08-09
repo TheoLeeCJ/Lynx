@@ -193,8 +193,8 @@ const routeMessage = (message, ws, req) => {
             filename,
             // TODO: let user customise file save destination
             filePath: path.join(homeDir, "Documents/Lynx", filename),
-            fileSize: null,
-            transferredSize: null,
+            fileSize,
+            transferredSize: 0,
           }));
           device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
           global.mainWindow.webContents.send("filetransfer-new-incoming-files",
