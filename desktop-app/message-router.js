@@ -4,7 +4,7 @@ const { setFileReceiveState } = require("./filetransfer/receive");
 const { sendFiles } = require("./filetransfer/send");
 const path = require("path");
 const fs = require("fs");
-const { startPhoneDriveServer, folderListingReady } = require("./filetransfer/drive");
+const { startPhoneDriveServer, folderListingReady, setDriveReceiveState } = require("./filetransfer/drive");
 const {
   AUTH_OK,
   GENERIC_OK,
@@ -72,6 +72,8 @@ const routeMessage = (message, ws, req) => {
           token: global.connectionToken,
           webSocketConnection: ws,
         });
+
+        global.connectedDevices[req.socket.remoteAddress].deviceName = message.data.identification;
 
         // add device to app window's devices list (addresses and tokens only)
         global.mainWindow.webContents.send("add-device", req.socket.remoteAddress,
@@ -207,11 +209,19 @@ const routeMessage = (message, ws, req) => {
       break;
 
     case FILETRANSFER_FILE_START:
-      setFileReceiveState(req.socket.remoteAddress, message.data);
+      if (message.fileID === undefined) {
+        setDriveReceiveState(req.socket.remoteAddress, message.data);
+      } else {
+        setFileReceiveState(req.socket.remoteAddress, message.data);
+      }
       break;
 
     case FILETRANSFER_FILE_END:
-      setFileReceiveState(req.socket.remoteAddress, null);
+      if (message.fileID === undefined) {
+        setDriveReceiveState(req.socket.remoteAddress, null);
+      } else {
+        setFileReceiveState(req.socket.remoteAddress, null);
+      }
       break;
 
     case FILETRANSFER_BATCH_REQUEST_REPLY:

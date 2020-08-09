@@ -1,10 +1,12 @@
 package com.lynx.dev;
 
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -41,6 +43,7 @@ public class SimpleClient extends WebSocketClient {
 			json.put("type", "initial_auth");
 			JSONObject messageData = new JSONObject();
 			messageData.put("token", connectionToken);
+			messageData.put("identification", Build.MANUFACTURER + " " + Build.MODEL);
 			json.put("data", messageData);
 			send(json.toString());
 		}
@@ -80,7 +83,6 @@ public class SimpleClient extends WebSocketClient {
 
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
-		BackgroundService.backgroundServiceStatic.tearDownVirtualDisplay();
 		System.out.println("closed with exit code " + code + " additional info: " + reason);
 
 		// reset variables
@@ -95,14 +97,8 @@ public class SimpleClient extends WebSocketClient {
 		BackgroundService.fixAppliedInSession = false;
 
 		// update notification
-		BackgroundService.backgroundServiceStatic.notification =
-			new NotificationCompat.Builder(BackgroundService.backgroundServiceStatic, "connectedToPc")
-				.setContentTitle("Lynx Dev")
-				.setContentText("Lynx is connected to 0 PCs, using reduced battery.")
-				.setContentIntent(BackgroundService.backgroundServiceStatic.pendingIntent)
-				.setTicker("ticker")
-				.build();
-		BackgroundService.backgroundServiceStatic.notificationManager.notify(8, BackgroundService.backgroundServiceStatic.notification);
+		BackgroundService.backgroundServiceStatic.tearDownVirtualDisplay();
+		BackgroundService.backgroundServiceStatic.stopSelf();
 	}
 
 	@Override
