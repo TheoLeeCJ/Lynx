@@ -73,6 +73,8 @@ const routeMessage = (message, ws, req) => {
           webSocketConnection: ws,
         });
 
+        global.connectedDevices[req.socket.remoteAddress].deviceName = message.data.identification;
+
         // add device to app window's devices list (addresses and tokens only)
         global.mainWindow.webContents.send("add-device", req.socket.remoteAddress,
             global.connectionToken);

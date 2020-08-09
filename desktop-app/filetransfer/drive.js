@@ -28,7 +28,7 @@ const Path_1 = require("./../node_modules/webdav-server/lib/manager/v2/Path");
 const { count } = require("console");
 
 let currentPort = 13601;
-let currentDriveLetter = 90; // starts from 'Z', goes down through the alphabet
+let currentDriveLetter = 89; // starts from 'Y', goes down through the alphabet
 const drives = {};
 const counterActWindowsExplorer = 0;
 const webdavIDs = [];
@@ -75,9 +75,9 @@ const startPhoneDriveServer = (key, websocketConnection) => {
       callback,
     });
 
-    drives[key].currentFileBufferReady = false;
+    drives[ctx.context.server.lynxKey].currentFileBufferReady = false;
 
-    if (drives[key].pendingFileReceives.length === 1) {
+    if (drives[ctx.context.server.lynxKey].pendingFileReceives.length === 1) {
       sendJsonMessage({
         type: FILETRANSFER_DRIVE_PULL_FILE,
         path: path.toString(),
@@ -92,8 +92,8 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   };
 
   VirtualFileSystem.prototype._readDir = (path, ctx, callback) => {
-    drives[key].currentDirListReady[path] = 0;
-    console.log("Request " + path);
+    drives[ctx.context.server.lynxKey].currentDirListReady[path] = 0;
+    console.log("Request " + path + " from " + ctx.context.server.lynxKey);
 
     const vfs = ctx.context.server.rootFileSystem();
 
@@ -103,11 +103,11 @@ const startPhoneDriveServer = (key, websocketConnection) => {
         path: path.toString(),
         resourceIndex: -1,
       },
-    }, websocketConnection);
+    }, drives[ctx.context.server.lynxKey].websocket);
 
     function checkDirListReady() {
       // console.log("CHECK DIR LIST READY?!");
-      if (drives[key].currentDirListReady[path] >= 2) {
+      if (drives[ctx.context.server.lynxKey].currentDirListReady[path] >= 2) {
         const base = path.toString(true);
         const children = [];
         for (const subPath in vfs.resources) {
@@ -131,19 +131,13 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   drives[key].server.start(() => {
     // mount localhost drive in File Explorer
     exec(`net use ${String.fromCharCode(currentDriveLetter)}: "http://127.0.0.1:${currentPort}" lynxpass /user:lynx`, () => {
-      exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = 'Phone (EXPERIMENTAL)'"`, () => {
+      exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = '${global.connectedDevices[key].deviceName} - Lynx'"`, () => {
         exec(`explorer.exe ${String.fromCharCode(currentDriveLetter)}:\\`, () => {});
         currentPort++;
         currentDriveLetter--;
       });
     });
   });
-};
-
-const passReceivedBuffer = (buffer) => {
-  console.log("WebDAV script has received buffer...");
-  drives[expectingFileReceive].currentFileBuffer = buffer;
-  expectingFileReceive = false;
 };
 
 const folderListingReady = (key, websocketConnection, fullMessage) => {
@@ -243,5 +237,4 @@ module.exports = {
   shutdownPhoneDriveServer,
   folderListingReady,
   clearAllLynxDrives,
-  passReceivedBuffer,
 };
