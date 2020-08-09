@@ -240,6 +240,9 @@ public class FileActions {
 				JSONObject transferEnd = new JSONObject();
 				try {
 					transferEnd.put("type", "filetransfer_file_end");
+					JSONObject transferEndData = new JSONObject();
+					transferEndData.put("fileID", fileID);
+					transferEnd.put("data", transferEndData);
 				}
 				catch (JSONException e) {
 					Toast.makeText(MainActivity.mainActivityStatic, "Error in generating JSON object; this should never happen.", Toast.LENGTH_SHORT);

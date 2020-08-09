@@ -22,8 +22,10 @@ const startWebSocketServer = () => {
         if (typeof message !== "string") {
           const testForFileID = Buffer.from(message, 0, 36);
           if (!getWebdavIDs().includes(testForFileID.toString("utf-8").substring(0, 36))) {
+            console.log("directing chunk to normal receive handler");
             receiveBinaryFileChunk(req.socket.remoteAddress, message);
           } else {
+            console.log("directing chunk to webdav receive handler");
             receiveWebdavFileChunk(req.socket.remoteAddress, message.subarray(36, message.length));
           }
           return;
