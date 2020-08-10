@@ -237,6 +237,23 @@ public class BackgroundService extends AccessibilityService {
 	};
 
 	@Override
+	public void onServiceConnected() {
+		System.out.println("CREATED");
+		if (SimpleClient.simpleClientStatic != null) {
+			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
+		}
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		System.out.println("CREATED");
+		if (SimpleClient.simpleClientStatic != null) {
+			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
+		}
+		return false;
+	}
+
+	@Override
 	public void onCreate() {
 		super.onCreate();
 		backgroundServiceStatic = this;
