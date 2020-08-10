@@ -164,8 +164,9 @@ const routeMessage = async (message, ws, req) => {
       if (req.socket.remoteAddress in global.connectedDevices) {
         const validateMetadataMessage = require("./utility/validate-metadata-message");
         if (validateMetadataMessage(message)) {
-          global.connectedDevices[req.socket.remoteAddress].deviceMetadata =
-              message.data;
+          const device = global.connectedDevices[req.socket.remoteAddress];
+          device.deviceMetadata = { ...device.deviceMetadata, ...message.data };
+
           sendJsonMessage({ type: META_SENDINFO_REPLY, ...GENERIC_OK }, ws);
         } else {
           sendJsonMessage({ type: META_SENDINFO_REPLY, ...BAD_REQUEST }, ws);

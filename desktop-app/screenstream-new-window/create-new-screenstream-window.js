@@ -23,7 +23,7 @@ const createNewScreenstreamWindow = (deviceAddress) => {
     // BrowserWindow dimensions can only be integers
     width: winWidth,
     height: winHeight,
-    title: `Lynx - Screen stream from ${deviceAddress}`,
+    title: `Lynx - Screen stream from ${device.deviceMetadata.deviceName}`,
     useContentSize: true,
     resizable: false,
     webPreferences: {
@@ -31,6 +31,8 @@ const createNewScreenstreamWindow = (deviceAddress) => {
           "screenstream-new-window/screenstream-new-window-preload.js"),
     },
   });
+
+  screenstreamNewWindow.setMenu(null);
 
   const newWindowUrl = url.format({
     protocol: "file",
@@ -40,7 +42,6 @@ const createNewScreenstreamWindow = (deviceAddress) => {
       token: device.token,
     },
   });
-
   screenstreamNewWindow.loadURL(newWindowUrl);
 
   screenstreamNewWindow.on("closed", () => {
