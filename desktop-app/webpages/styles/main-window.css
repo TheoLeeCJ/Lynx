@@ -85,7 +85,7 @@ h1 {
   padding: 0 20px;
 }
 
-#connected-devices .connected-device .device-address {
+#connected-devices .connected-device .device-name {
   font-size: 18px;
   font-weight: 500;
   color: var(--lynx-purple);
@@ -135,6 +135,10 @@ h1 {
 #device-status {
   flex-shrink: 0;
   border-bottom: 1.5px solid #bbb;
+}
+
+#device-status div:first-of-type {
+  white-space: pre-wrap;
 }
 
 #device-status #connected-green-light {
@@ -200,6 +204,7 @@ h1 {
   height: 10px;
   border-radius: 999999px 0 0 999999px;
   background-color: var(--lynx-purple);
+  transition: width 0.2s;
 }
 
 #file-transfer .file-transfer-section .file-transfer-files-list {
