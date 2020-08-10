@@ -231,6 +231,17 @@ public class BackgroundService extends AccessibilityService {
 				Thread.sleep(500);
 				SimpleClient.simpleClientStatic.sendText("{ \"type\": \"screenstream_orientationchange\", \"data\": { \"orientation\": \"portrait\" } }");
 				System.out.println("This should only run once");
+
+				boolean remoteControlAccessibilityAllowed = MainActivity.isAccessServiceEnabled(BackgroundService.backgroundServiceStatic.getApplicationContext(), BackgroundService.class);
+
+				System.out.println(remoteControlAccessibilityAllowed);
+
+				if (remoteControlAccessibilityAllowed) {
+					SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
+				}
+				else {
+					SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
+				}
 			}
 			catch (Exception e) {}
 		}
@@ -246,7 +257,7 @@ public class BackgroundService extends AccessibilityService {
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		System.out.println("CREATED");
+		System.out.println("ACCESSIBILITY PORTION STOPPED");
 		if (SimpleClient.simpleClientStatic != null) {
 			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
 		}
