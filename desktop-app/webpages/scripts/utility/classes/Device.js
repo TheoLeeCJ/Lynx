@@ -21,14 +21,4 @@ class Device {
     this.outgoingFileNumber = 0; // Number (out of batch size - is not an index)
     this.incomingFileNumber = 0; // Number (out of batch size - is not an index)
   }
-
-  cleanup() {
-    document.getElementById(`device-${this.token}`).remove();
-    // TODO: if device currently selected, display "No device selected" screen
-  }
-
-  delete() {
-    this.cleanup();
-    delete window.connectedDevices[this.address];
-  }
 }

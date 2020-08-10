@@ -29,19 +29,17 @@ const prevEventListeners = {
 
 const updateUi = (deviceAddress) => {
   const device = window.connectedDevices[deviceAddress];
-  const deviceIsSelected = document.getElementById(`device-${device.token}`)
-      .classList.contains("device-selected");
+  const deviceDiv = document.getElementById(`device-${device.token}`);
+  const deviceIsSelected = deviceDiv.classList.contains("device-selected");
 
   if (deviceIsSelected) {
     document.querySelector("#device-status div:first-of-type").textContent =
         `Name: ${device.deviceMetadata.deviceName}\nAddress: ${deviceAddress}`;
   }
 
-  const sidebarDevice = document.getElementById(`device-${device.token}`);
-
   /* ------------------ SCREEN SHARING ------------------ */
 
-  const sidebarScreenSharingStatus = sidebarDevice
+  const sidebarScreenSharingStatus = deviceDiv
       .getElementsByClassName("screen-sharing-status")[0];
   const statusPaneScreenSharingStatus = document
       .getElementById("screen-sharing-status");
@@ -184,7 +182,7 @@ const updateUi = (deviceAddress) => {
     }
   }
 
-  const sidebarFileTransferInProgress = sidebarDevice
+  const sidebarFileTransferInProgress = deviceDiv
       .getElementsByClassName("file-transfer-in-progress")[0];
   if (device.sendingFiles && device.receivingFiles) {
     sidebarFileTransferInProgress.textContent =
@@ -201,7 +199,7 @@ const updateUi = (deviceAddress) => {
 
   /* ------------------ FILE TRANSFER ------------------ */
 
-  const sidebarFileTransferSendStatus = sidebarDevice
+  const sidebarFileTransferSendStatus = deviceDiv
       .getElementsByClassName("file-transfer-send-status")[0];
   const statusPaneSendFilesButton = document.getElementById("send-files");
   const statusPaneOutgoingFiles = document.getElementById("outgoing-files");
@@ -210,20 +208,20 @@ const updateUi = (deviceAddress) => {
   const outgoingAndSentFilesTable = statusPaneOutgoingFiles
       .querySelector(".file-transfer-files-list tbody");
 
-  // edit textContent of span within button, not that of the button itself
-  statusPaneSendFilesButton.firstChild.textContent =
-      `Send files to ${device.deviceMetadata.deviceName}`;
-  // set new click event listener
-  const newSendFilesClickListener = async () => {
-    const chosenFiles = await ipcRenderer.invoke("filetransfer-choose-files",
-        deviceAddress);
-  };
-  statusPaneSendFilesButton.removeEventListener("click",
-      prevEventListeners.fileTransfer.sendFilesButton);
-  statusPaneSendFilesButton.addEventListener("click", newSendFilesClickListener);
-  prevEventListeners.fileTransfer.sendFilesButton = newSendFilesClickListener;
-
   if (deviceIsSelected) {
+    // edit textContent of span within button, not that of the button itself
+    statusPaneSendFilesButton.firstChild.textContent =
+        `Send files to ${device.deviceMetadata.deviceName}`;
+    // set new click event listener
+    const newSendFilesClickListener = async () => {
+      const chosenFiles = await ipcRenderer.invoke("filetransfer-choose-files",
+          deviceAddress);
+    };
+    statusPaneSendFilesButton.removeEventListener("click",
+        prevEventListeners.fileTransfer.sendFilesButton);
+    statusPaneSendFilesButton.addEventListener("click", newSendFilesClickListener);
+    prevEventListeners.fileTransfer.sendFilesButton = newSendFilesClickListener;
+
     outgoingAndSentFilesTable.querySelectorAll("tr:not(:first-child)")
         .forEach((row) => {
           row.remove();
@@ -331,7 +329,7 @@ const updateUi = (deviceAddress) => {
     }
   }
 
-  const sidebarFileTransferReceiveStatus = sidebarDevice
+  const sidebarFileTransferReceiveStatus = deviceDiv
       .getElementsByClassName("file-transfer-receive-status")[0];
   const statusPaneIncomingFiles = document.getElementById("incoming-files");
   const statusPaneFileTransferReceiveStatus = statusPaneIncomingFiles
@@ -449,6 +447,11 @@ const updateUi = (deviceAddress) => {
 
 // update devices list
 ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
+  const noDevicesConnectedDiv = document.getElementById("no-devices-connected");
+  if (noDevicesConnectedDiv !== null) {
+    noDevicesConnectedDiv.remove();
+  }
+
   window.connectedDevices[deviceAddress] = new Device({
     address: deviceAddress,
     token: deviceToken,
@@ -464,6 +467,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
       prevSelectedDevice.classList.remove("device-selected");
     }
     newDeviceDiv.classList.add("device-selected");
+
+    document.getElementById("no-device-selected").classList.add("hidden");
+    document.getElementById("status-section").classList.remove("hidden");
+
     updateUi(deviceAddress);
   });
 
@@ -492,54 +499,23 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
   document.getElementById("connected-devices").append(newDeviceDiv);
 
   updateUi(deviceAddress);
-
-  // const deviceInfoDiv = document.createElement("div");
-  // deviceInfoDiv.className = "device-info";
-  // deviceInfoDiv.textContent = `Address: ${deviceAddress}\nToken: ${deviceToken}`;
-
-  // const deviceScreenstreamFrame = document.createElement("img");
-  // deviceScreenstreamFrame.className = "screenstream-frame";
-  // deviceScreenstreamFrame.onclick = (event) => {
-  //   const position = getRemoteControlTapPosition(event, deviceScreenstreamFrame);
-  //   ipcRenderer.send("remotecontrol-tap", position, deviceAddress);
-  // };
-
-  // // navigation buttons for device
-  // const backButton = document.createElement("button");
-  // backButton.textContent = "Back";
-  // backButton.onclick = () => {
-  //   ipcRenderer.send("remotecontrol-back", deviceAddress);
-  // };
-
-  // const homeButton = document.createElement("button");
-  // homeButton.textContent = "Home";
-  // homeButton.onclick = () => {
-  //   ipcRenderer.send("remotecontrol-home", deviceAddress);
-  // };
-
-  // const recentsButton = document.createElement("button");
-  // recentsButton.textContent = "Recents";
-  // recentsButton.onclick = () => {
-  //   ipcRenderer.send("remotecontrol-recents", deviceAddress);
-  // };
-
-  // const sendFilesButton = document.createElement("button");
-  // sendFilesButton.textContent = "Send Files to Device";
-  // sendFilesButton.onclick = async () => {
-  //   // get filePaths for later use
-  //   ipcRenderer.invoke("filetransfer-choose-files", deviceAddress)
-  //       .then((filePaths) => {
-
-  //       });
-  // };
-
-  // newDeviceDiv.append(deviceInfoDiv, deviceScreenstreamFrame,
-  //     backButton, homeButton, recentsButton, sendFilesButton);
-  // document.getElementById("devices-list").append(newDeviceDiv);
 });
 
 ipcRenderer.on("remove-device", (_, deviceAddress) => {
-  window.connectedDevices[deviceAddress].delete();
+  const device = window.connectedDevices[deviceAddress];
+  const deviceDiv = document.getElementById(`device-${device.token}`);
+  const deviceIsSelected = deviceDiv.classList.contains("device-selected");
+
+  deviceDiv.remove();
+  if (deviceIsSelected) {
+    document.getElementById("status-section").classList.add("hidden");
+    document.getElementById("no-device-selected").classList.remove("hidden");
+  }
+
+  delete window.connectedDevices[deviceAddress];
+  if (Object.keys(window.connectedDevices).length === 0) {
+    document.getElementById("no-devices-connected").classList.remove("hidden");
+  }
 });
 
 ipcRenderer.on("authorise-screenstream", (_, deviceAddress) => {
@@ -588,9 +564,10 @@ ipcRenderer.on("orientation-change", (_, deviceAddress, newOrientation) => {
 
 ipcRenderer.on("remotecontrol-setting-changed",
     (_, deviceAddress, newRemoteControlSetting) => {
-      const device = global.connectedDevices[deviceAddress];
+      const device = window.connectedDevices[deviceAddress];
       device.remoteControlEnabled = newRemoteControlSetting;
       updateUi(deviceAddress);
+      console.log(`Device at ${deviceAddress} changed remote control setting to ${newRemoteControlSetting}`);
     });
 
 ipcRenderer.on("filetransfer-new-outgoing-files",

@@ -146,10 +146,17 @@ h1 {
   margin-bottom: 1.7vh;
 }
 
-#status-section {
+#no-device-selected, #status-section {
   display: flex;
   flex: 1;
   box-shadow: 0 0 10px #bbb;
+}
+
+#no-device-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 #status-section #status-section-left {
