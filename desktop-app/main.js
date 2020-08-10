@@ -35,7 +35,6 @@ const createMainWindow = () => {
   mainWindow.loadFile("webpages/main-window.html");
 
   global.mainWindow = mainWindow;
-  global.screenstreamWindow = mainWindow;
 };
 
 app.on("ready", () => {
