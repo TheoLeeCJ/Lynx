@@ -23,7 +23,7 @@ ipcMain.once("ready", (event) => {
 });
 
 // toggle screen stream window
-ipcMain.on("screenstream-toggle-window", (_, windowSetting, deviceAddress) => {
+ipcMain.on("screenstream-toggle-window", (_, deviceAddress, windowSetting) => {
   const device = global.connectedDevices[deviceAddress];
   if (windowSetting === "sameWindow") {
     if (device.screenstreamWindow !== null &&

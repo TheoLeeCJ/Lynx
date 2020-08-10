@@ -1,5 +1,5 @@
-const getRemoteControlTapPosition = (event, deviceScreenstreamFrame) => {
-  const bounds = deviceScreenstreamFrame.getBoundingClientRect();
+const getRemoteControlTapPosition = (event, phoneScreen) => {
+  const bounds = phoneScreen.getBoundingClientRect();
 
   const xPixels = Math.round(event.clientX - bounds.x);
   const yPixels = Math.round(event.clientY - bounds.y);

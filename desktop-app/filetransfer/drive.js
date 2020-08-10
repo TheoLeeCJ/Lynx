@@ -131,7 +131,7 @@ const startPhoneDriveServer = (key, websocketConnection) => {
   drives[key].server.start(() => {
     // mount localhost drive in File Explorer
     exec(`net use ${String.fromCharCode(currentDriveLetter)}: "http://127.0.0.1:${currentPort}" lynxpass /user:lynx`, () => {
-      exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = '${global.connectedDevices[key].deviceName} - Lynx'"`, () => {
+      exec(`powershell -command "(New-Object -ComObject shell.application).NameSpace('${String.fromCharCode(currentDriveLetter)}:\\').self.name = '${global.connectedDevices[key].deviceMetadata.deviceName} - Lynx'"`, () => {
         exec(`explorer.exe ${String.fromCharCode(currentDriveLetter)}:\\`, () => {});
         currentPort++;
         currentDriveLetter--;

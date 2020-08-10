@@ -37,7 +37,34 @@ h1 {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
+}
+
+.primary-button {
+  padding: 12px 14px;
+  border: none;
+  border-radius: 7.5px;
+  font-size: 17px;
+  font-family: inherit;
+  background-color: var(--lynx-purple);
+  color: #fff;
+  box-shadow: 0 2px 10px 0 #7030a082;
+}
+
+.secondary-button {
+  padding: 12px 14px;
+  border: 2px solid var(--lynx-purple);
+  border-radius: 7.5px;
+  font-size: 17px;
+  font-family: inherit;
+  background-color: #fff;
+  color: var(--lynx-purple);
+  box-shadow: 0 2px 10px 0 #7030a033;
+}
+
+.primary-button span, .secondary-button span {
+  position: relative;
+  top: -1px;
 }
 
 #sidebar, #status-section {
@@ -154,15 +181,6 @@ h1 {
 
 #file-transfer #send-files {
   display: block;
-  /* margin-bottom: 20px; */
-  padding: 12px 14px;
-  border: none;
-  border-radius: 7.5px;
-  font-size: 17px;
-  font-family: inherit;
-  background-color: var(--lynx-purple);
-  color: #fff;
-  box-shadow: 0 2px 10px 0 #7030a082;
 }
 
 #file-transfer #send-files span {
@@ -298,28 +316,51 @@ h1 {
   border-radius: 0 0 10px 10px;
 }
 
+#screen-sharing.stream-popped-out #phone-screen-and-controls {
+  width: 60%;
+  height: calc(100% - 230px);
+  align-items: center;
+  justify-content: center;
+}
+
+#screen-sharing #phone-screen-and-controls span {
+  display: none;
+  margin-bottom: 15px;
+}
+#screen-sharing.stream-popped-out #phone-screen-and-controls span {
+  display: initial;
+}
+
+#screen-sharing #phone-screen-and-controls #display-stream-in-main-window {
+  display: none;
+}
+#screen-sharing.stream-popped-out #phone-screen-and-controls #display-stream-in-main-window {
+  display: initial;
+}
+
+#screen-sharing.stream-popped-out #phone-screen-and-controls #phone-screen,
+#screen-sharing.stream-popped-out #phone-screen-and-controls #phone-controls {
+  display: none;
+}
+
 #screen-sharing #screen-sharing-actions {
   display: flex;
   width: 100%;
   justify-content: center;
 }
 
-#screen-sharing #screen-sharing-actions button {
-  padding: 12px 14px;
-  border: 2px solid var(--lynx-purple);
-  border-radius: 7.5px;
-  font-size: 17px;
-  font-family: inherit;
-  background-color: #fff;
-  color: var(--lynx-purple);
-  box-shadow: 0 2px 10px 0 #7030a033;
+#screen-sharing.stream-popped-out #screen-sharing-actions {
+  display: none;
 }
 
 #screen-sharing #screen-sharing-actions button:not(:last-child) {
   margin-right: 17px;
 }
 
-#screen-sharing #screen-sharing-actions button span {
-  position: relative;
-  top: -1px;
+#screen-sharing #display-stream-in-main-window-message {
+  display: none;
+  text-align: center;
+}
+#screen-sharing.stream-popped-out #display-stream-in-main-window-message {
+  display: initial;
 }
