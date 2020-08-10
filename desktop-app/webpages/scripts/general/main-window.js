@@ -62,7 +62,7 @@ const updateUi = (deviceAddress) => {
   if (device.screenstreamInProgress) {
     if (deviceIsSelected) {
       statusPaneScreenSharingStatus.textContent = "Screen sharing in progress";
-      document.querySelectorAll("#remote-control-status ~ *").forEach((elem) => {
+      document.querySelectorAll("#screen-sharing-status ~ *").forEach((elem) => {
         elem.classList.remove("hidden");
       });
 
