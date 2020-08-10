@@ -155,10 +155,12 @@ const routeMessage = async (message, ws, req) => {
     case REMOTECONTROL_ENABLED:
       global.mainWindow.webContents.send("remotecontrol-setting-changed",
           req.socket.remoteAddress, true);
+      break;
 
     case REMOTECONTROL_DISABLED:
       global.mainWindow.webContents.send("remotecontrol-setting-changed",
           req.socket.remoteAddress, false);
+      break;
 
     case META_SENDINFO:
       if (req.socket.remoteAddress in global.connectedDevices) {
