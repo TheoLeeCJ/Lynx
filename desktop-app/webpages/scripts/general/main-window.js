@@ -10,19 +10,36 @@ ipcRenderer.on("update-connection-info-qr-code", (_, qrCode) => {
   document.getElementById("connect-qr-code").src = qrCode;
 });
 
-let prevSendFilesClickListener;
+const prevEventListeners = {
+  fileTransfer: {
+    sendFilesButton: null,
+  },
+  screenSharing: {
+    toggleControls: null,
+    popStreamOut: null,
+    displayStreamInMainWindow: null,
+  },
+  remoteControl: {
+    phoneScreen: null,
+    back: null,
+    home: null,
+    recents: null,
+  },
+};
 
 const updateUi = (deviceAddress) => {
   const device = window.connectedDevices[deviceAddress];
-  const deviceIsSelected = document.querySelector(`#device-${device.token}`)
+  const deviceIsSelected = document.getElementById(`device-${device.token}`)
       .classList.contains("device-selected");
 
   if (deviceIsSelected) {
-    document.querySelector("#device-status div:first-of-type")
-        .textContent = `Address: ${deviceAddress}`;
+    document.querySelector("#device-status div:first-of-type").textContent =
+        `Name: ${device.deviceMetadata.deviceName}\nAddress: ${deviceAddress}`;
   }
 
   const sidebarDevice = document.getElementById(`device-${device.token}`);
+
+  /* ------------------ SCREEN SHARING ------------------ */
 
   const sidebarScreenSharingStatus = sidebarDevice
       .getElementsByClassName("screen-sharing-status")[0];
@@ -30,9 +47,85 @@ const updateUi = (deviceAddress) => {
       .getElementById("screen-sharing-status");
   const statusPaneRemoteControlStatus = document
       .getElementById("remote-control-status");
+  const screenSharingPane = document.getElementById("screen-sharing");
+  const phoneScreen = document.getElementById("phone-screen");
+
+  if (device.screenstreamAuthorised && !device.screenstreamInProgress) {
+    sidebarScreenSharingStatus.textContent = "Screen sharing authorised, awaiting stream start";
+
+    if (deviceIsSelected) {
+      statusPaneScreenSharingStatus.textContent =
+          "Screen sharing authorised, awaiting stream start";
+    }
+  }
+
   if (device.screenstreamInProgress) {
     if (deviceIsSelected) {
       statusPaneScreenSharingStatus.textContent = "Screen sharing in progress";
+      document.querySelectorAll("#remote-control-status ~ *").forEach((elem) => {
+        elem.classList.remove("hidden");
+      });
+
+      if (device.screenstreamPoppedOut) {
+        screenSharingPane.classList.add("stream-popped-out");
+
+        const displayStreamInMainWindowButton = document
+            .getElementById("display-stream-in-main-window");
+        displayStreamInMainWindowButton.removeEventListener("click",
+            prevEventListeners.screenSharing.displayStreamInMainWindow);
+        const newDisplayStreamInMainWindowEventListener = () => {
+          device.screenstreamPoppedOut = false;
+          ipcRenderer.send("screenstream-toggle-window", deviceAddress,
+              "sameWindow");
+          updateUi(deviceAddress);
+        };
+        displayStreamInMainWindowButton.addEventListener("click",
+            newDisplayStreamInMainWindowEventListener);
+        prevEventListeners.screenSharing.displayStreamInMainWindow =
+            newDisplayStreamInMainWindowEventListener;
+      } else {
+        screenSharingPane.classList.remove("stream-popped-out");
+
+        const toggleControlsButton = document
+            .getElementById("hide-screen-sharing-controls");
+        if (device.screenstreamControlsShown) {
+          toggleControlsButton.textContent = "Hide controls";
+        } else {
+          toggleControlsButton.textContent = "Show controls";
+        }
+        toggleControlsButton.removeEventListener("click", prevEventListeners
+            .screenSharing.toggleControls);
+        const newToggleControlsEventListener = () => {
+          device.screenstreamControlsShown = !device.screenstreamControlsShown;
+          updateUi(deviceAddress);
+        };
+        toggleControlsButton.addEventListener("click",
+            newToggleControlsEventListener);
+        prevEventListeners.screenSharing.toggleControls =
+            newToggleControlsEventListener;
+
+        const popStreamOutButton = document.getElementById("pop-stream-out");
+        popStreamOutButton.removeEventListener("click", prevEventListeners
+            .screenSharing.popStreamOut);
+        const newPopStreamOutEventListener = () => {
+          device.screenstreamPoppedOut = true;
+          ipcRenderer.send("screenstream-toggle-window", deviceAddress,
+              "newWindow");
+          updateUi(deviceAddress);
+        };
+        popStreamOutButton.addEventListener("click", newPopStreamOutEventListener);
+        prevEventListeners.screenSharing.popStreamOut =
+            newPopStreamOutEventListener;
+
+        const phoneControls = document.getElementById("phone-controls");
+        if (device.screenstreamControlsShown) {
+          phoneControls.classList.remove("hidden");
+          phoneScreen.style.maxHeight = "calc(100% - 42px)";
+        } else {
+          phoneControls.classList.add("hidden");
+          phoneScreen.style.maxHeight = "100%";
+        }
+      }
     }
 
     if (device.remoteControlEnabled) {
@@ -42,6 +135,35 @@ const updateUi = (deviceAddress) => {
         statusPaneRemoteControlStatus.style.color = "#000";
         statusPaneRemoteControlStatus.textContent =
             "Remote control enabled";
+
+        // remove previous event listeners, add current ones for this device
+        const remoteControlButtons = {
+          back: document.getElementById("back-button"),
+          home: document.getElementById("home-button"),
+          recents: document.getElementById("recents-button"),
+        };
+        for (const buttonName in remoteControlButtons) {
+          if (Object.prototype.hasOwnProperty.call(remoteControlButtons,
+              buttonName)) {
+            remoteControlButtons[buttonName].removeEventListener("click",
+                prevEventListeners.remoteControl[buttonName]);
+            const newButtonEventListener = () => {
+              console.log(`${buttonName} button clicked`);
+              ipcRenderer.send(`remotecontrol-${buttonName}`, deviceAddress);
+            };
+            remoteControlButtons[buttonName].addEventListener("click",
+                newButtonEventListener);
+            prevEventListeners.remoteControl[buttonName] = newButtonEventListener;
+          }
+        }
+        phoneScreen.removeEventListener("click", prevEventListeners.remoteControl
+            .phoneScreen);
+        const newPhoneScreenEventListener = (event) => {
+          const position = getRemoteControlTapPosition(event, phoneScreen);
+          ipcRenderer.send("remotecontrol-tap", position, deviceAddress);
+        };
+        phoneScreen.addEventListener("click", newPhoneScreenEventListener);
+        prevEventListeners.remoteControl.phoneScreen = newPhoneScreenEventListener;
       }
     } else {
       sidebarScreenSharingStatus.textContent =
@@ -77,6 +199,8 @@ const updateUi = (deviceAddress) => {
     sidebarFileTransferInProgress.textContent = "";
   }
 
+  /* ------------------ FILE TRANSFER ------------------ */
+
   const sidebarFileTransferSendStatus = sidebarDevice
       .getElementsByClassName("file-transfer-send-status")[0];
   const statusPaneSendFilesButton = document.getElementById("send-files");
@@ -88,15 +212,16 @@ const updateUi = (deviceAddress) => {
 
   // edit textContent of span within button, not that of the button itself
   statusPaneSendFilesButton.firstChild.textContent =
-      `Send files to ${deviceAddress}`;
+      `Send files to ${device.deviceMetadata.deviceName}`;
   // set new click event listener
   const newSendFilesClickListener = async () => {
     const chosenFiles = await ipcRenderer.invoke("filetransfer-choose-files",
         deviceAddress);
   };
-  statusPaneSendFilesButton.removeEventListener("click", prevSendFilesClickListener);
+  statusPaneSendFilesButton.removeEventListener("click",
+      prevEventListeners.fileTransfer.sendFilesButton);
   statusPaneSendFilesButton.addEventListener("click", newSendFilesClickListener);
-  prevSendFilesClickListener = newSendFilesClickListener;
+  prevEventListeners.fileTransfer.sendFilesButton = newSendFilesClickListener;
 
   if (deviceIsSelected) {
     outgoingAndSentFilesTable.querySelectorAll("tr:not(:first-child)")
@@ -323,10 +448,11 @@ const updateUi = (deviceAddress) => {
 };
 
 // update devices list
-ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
+ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
   window.connectedDevices[deviceAddress] = new Device({
     address: deviceAddress,
     token: deviceToken,
+    deviceName,
   });
 
   const newDeviceDiv = document.createElement("div");
@@ -341,9 +467,9 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
     updateUi(deviceAddress);
   });
 
-  const deviceAddressDiv = document.createElement("div");
-  deviceAddressDiv.className = "device-address";
-  deviceAddressDiv.textContent = deviceAddress;
+  const deviceNameDiv = document.createElement("div");
+  deviceNameDiv.className = "device-name";
+  deviceNameDiv.textContent = deviceName;
 
   const extraInfoDiv = document.createElement("div");
   extraInfoDiv.className = "extra-info";
@@ -362,8 +488,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
 
   extraInfoDiv.append(screenSharingStatusSpan, fileTransferInProgressSpan,
       fileTransferSendStatusSpan, fileTransferReceiveStatusSpan);
-  newDeviceDiv.append(deviceAddressDiv, extraInfoDiv);
+  newDeviceDiv.append(deviceNameDiv, extraInfoDiv);
   document.getElementById("connected-devices").append(newDeviceDiv);
+
+  updateUi(deviceAddress);
 
   // const deviceInfoDiv = document.createElement("div");
   // deviceInfoDiv.className = "device-info";
@@ -410,16 +538,52 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken) => {
   // document.getElementById("devices-list").append(newDeviceDiv);
 });
 
-ipcRenderer.on("remove-device", (_, deviceAddress, deviceToken) => {
-  document.querySelector(`#device-${deviceToken}`).remove();
-  delete window.connectedDevices[deviceAddress];
+ipcRenderer.on("remove-device", (_, deviceAddress) => {
+  window.connectedDevices[deviceAddress].delete();
+});
+
+ipcRenderer.on("authorise-screenstream", (_, deviceAddress) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.screenstreamAuthorised = true;
+  updateUi(deviceAddress);
+});
+
+ipcRenderer.on("update-screenstream-frame", (_, deviceAddress, frame) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.screenstreamInProgress = true;
+  updateUi(deviceAddress);
+
+  const deviceIsSelected = document.getElementById(`device-${device.token}`)
+      .classList.contains("device-selected");
+  if (deviceIsSelected) {
+    document.getElementById("phone-screen").src = `data:image/png;base64,${frame}`;
+  }
+});
+
+ipcRenderer.on("screenstream-stop", (_, deviceAddress) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.screenstreamAuthorised = false;
+  device.screenstreamInProgress = false;
+  updateUi(deviceAddress);
 });
 
 ipcRenderer.on("screenstream-new-window-closed", (_, deviceAddress) => {
-  window.connectedDevices[deviceAddress].screenstreamPoppedOut = false;
-  document.querySelector(`#device-${window.connectedDevices[deviceAddress].token}
-      .screenstream-window-toggle-button`)
-      .textContent = "Display screen stream in new window";
+  const device = window.connectedDevices[deviceAddress];
+  device.screenstreamPoppedOut = false;
+  updateUi(deviceAddress);
+  // document.querySelector(`#device-${device.token}
+  //     .screenstream-window-toggle-button`)
+  //     .textContent = "Display screen stream in new window";
+});
+
+ipcRenderer.on("orientation-change", (_, deviceAddress, newOrientation) => {
+  const device = window.connectedDevices[deviceAddress];
+  device.deviceMetadata = {
+    ...device.deviceMetadata,
+    orientation: newOrientation,
+  };
+
+  updateUi(deviceAddress);
 });
 
 ipcRenderer.on("remotecontrol-setting-changed",
@@ -431,13 +595,15 @@ ipcRenderer.on("remotecontrol-setting-changed",
 
 ipcRenderer.on("filetransfer-new-outgoing-files",
     (_, deviceAddress, newOutgoingFiles) => {
-      const device = window.connectedDevices[deviceAddress];
-      device.outgoingFiles = device.outgoingFiles.concat(newOutgoingFiles);
-      device.outgoingFilesBatchSize += newOutgoingFiles.length;
-      device.sendingFiles = true;
+      if (newOutgoingFiles.length > 0) {
+        const device = window.connectedDevices[deviceAddress];
+        device.outgoingFiles = device.outgoingFiles.concat(newOutgoingFiles);
+        device.outgoingFilesBatchSize += newOutgoingFiles.length;
+        device.sendingFiles = true;
 
-      updateUi(deviceAddress);
-      console.log(`New outgoing files to ${deviceAddress}`);
+        updateUi(deviceAddress);
+        console.log(`New outgoing files to ${deviceAddress}`);
+      }
     });
 
 ipcRenderer.on("filetransfer-outgoing-file-start",
@@ -474,13 +640,15 @@ ipcRenderer.on("filetransfer-outgoing-file-end", (_, deviceAddress) => {
 
 ipcRenderer.on("filetransfer-new-incoming-files",
     (_, deviceAddress, newIncomingFiles) => {
-      const device = window.connectedDevices[deviceAddress];
-      device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
-      device.incomingFilesBatchSize += newIncomingFiles.length;
-      device.receivingFiles = true;
+      if (newIncomingFiles.length > 0) {
+        const device = window.connectedDevices[deviceAddress];
+        device.incomingFiles = device.incomingFiles.concat(newIncomingFiles);
+        device.incomingFilesBatchSize += newIncomingFiles.length;
+        device.receivingFiles = true;
 
-      updateUi(deviceAddress);
-      console.log(`New incoming files from ${deviceAddress}:`, newIncomingFiles);
+        updateUi(deviceAddress);
+        console.log(`New incoming files from ${deviceAddress}:`, newIncomingFiles);
+      }
     });
 
 ipcRenderer.on("filetransfer-incoming-file-start",

@@ -1,10 +1,11 @@
 // Device class for renderer process
 class Device {
-  constructor({ address, token }) {
+  constructor({ address, token, deviceName }) {
     this.address = address;
     this.token = token;
+    this.deviceMetadata = { deviceName };
 
-    // this.screenstreamAuthorised = false;
+    this.screenstreamAuthorised = false;
     this.screenstreamInProgress = false;
     this.screenstreamPoppedOut = false;
     this.screenstreamControlsShown = true;
@@ -19,5 +20,15 @@ class Device {
     this.incomingFilesBatchSize = 0; // Number
     this.outgoingFileNumber = 0; // Number (out of batch size - is not an index)
     this.incomingFileNumber = 0; // Number (out of batch size - is not an index)
+  }
+
+  cleanup() {
+    document.getElementById(`device-${this.token}`).remove();
+    // TODO: if device currently selected, display "No device selected" screen
+  }
+
+  delete() {
+    this.cleanup();
+    delete window.connectedDevices[this.address];
   }
 }

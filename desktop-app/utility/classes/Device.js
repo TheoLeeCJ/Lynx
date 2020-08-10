@@ -2,12 +2,12 @@ const { BrowserWindow } = require("electron");
 const { shutdownPhoneDriveServer } = require("./../../filetransfer/drive");
 
 class Device {
-  constructor({ address, token, webSocketConnection }) {
+  constructor({ address, token, deviceName, webSocketConnection }) {
     this.address = address;
     this.token = token;
+    this.deviceMetadata = { deviceName };
     this.webSocketConnection = webSocketConnection;
 
-    this.deviceMetadata = null;
     this.screenstreamAuthorised = false;
     this.screenstreamWindow = null;
     this.screenstreamNewWindow = null;
