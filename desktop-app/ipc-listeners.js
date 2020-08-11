@@ -1,4 +1,4 @@
-const { ipcMain, dialog } = require("electron");
+const { ipcMain, dialog, screen } = require("electron");
 const path = require("path");
 const fsPromises = require("fs").promises;
 const {
@@ -22,6 +22,18 @@ ipcMain.once("ready", (event) => {
   event.reply("update-connection-info-qr-code", makeConnectionInfoQrCode());
 });
 
+// fullscreen the screen stream?
+ipcMain.on("screenstream-fullscreen", (_, deviceAddress) => {
+  const device = global.connectedDevices[deviceAddress];
+  if (device.screenstreamNewWindow.isFullScreen()) {
+    device.screenstreamNewWindow.unmaximize();
+    device.screenstreamNewWindow.setFullScreen(false);
+  } else {
+    device.screenstreamNewWindow.maximize();
+    device.screenstreamNewWindow.setFullScreen(true);
+  }
+});
+
 // toggle screen stream window
 ipcMain.on("screenstream-toggle-window", (_, deviceAddress, windowSetting) => {
   const device = global.connectedDevices[deviceAddress];
@@ -35,6 +47,19 @@ ipcMain.on("screenstream-toggle-window", (_, deviceAddress, windowSetting) => {
     }
   } else if (windowSetting === "newWindow") {
     device.screenstreamNewWindow = createNewScreenstreamWindow(deviceAddress);
+
+    if (device.deviceMetadata.orientation === "portrait") {
+      device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+        width: device.deviceMetadata.screenDimensions.screenWidth,
+        height: device.deviceMetadata.screenDimensions.screenHeight,
+      });
+    } else {
+      device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+        width: device.deviceMetadata.screenDimensions.screenHeight,
+        height: device.deviceMetadata.screenDimensions.screenWidth,
+      });
+    }
+
     device.screenstreamWindow = device.screenstreamNewWindow;
     device.screenstreamPoppedOut = true;
   }

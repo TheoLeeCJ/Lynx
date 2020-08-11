@@ -253,9 +253,24 @@ const routeMessage = async (message, ws, req) => {
               imageHeight / imageWidth
         ));
         const newHeight = currentWidth;
-        // win.setSize() is broken, calling win.setMinimumSize() before it is a workaround
-        device.screenstreamNewWindow.setMinimumSize(newWidth, newHeight);
-        device.screenstreamNewWindow.setSize(newWidth, newHeight);
+
+        if (device.screenstreamNewWindow.isFullScreen()) {
+          if (message.data.orientation === "portrait") {
+            device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+              width: device.deviceMetadata.screenDimensions.screenWidth,
+              height: device.deviceMetadata.screenDimensions.screenHeight,
+            });
+          } else {
+            device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+              width: device.deviceMetadata.screenDimensions.screenHeight,
+              height: device.deviceMetadata.screenDimensions.screenWidth,
+            });
+          }
+        } else {
+          // win.setSize() is broken, calling win.setMinimumSize() before it is a workaround
+          device.screenstreamNewWindow.setMinimumSize(newWidth, newHeight);
+          device.screenstreamNewWindow.setSize(newWidth, newHeight);
+        }
       }
 
       global.mainWindow.webContents.send("orientation-change",
