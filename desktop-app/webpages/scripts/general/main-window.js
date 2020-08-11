@@ -2,6 +2,12 @@ fileSizeToString = filesize.partial({ spacer: "" });
 
 window.connectedDevices = {};
 
+Object.defineProperty(window, "numberOfConnectedDevices", {
+  get() {
+    return Object.keys(window.connectedDevices).length;
+  },
+});
+
 // tell main process that renderer process is ready for messages
 ipcRenderer.send("ready");
 
@@ -498,6 +504,10 @@ ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
   newDeviceDiv.append(deviceNameDiv, extraInfoDiv);
   document.getElementById("connected-devices").append(newDeviceDiv);
 
+  // if this is the first device, select it
+  if (numberOfConnectedDevices === 1) {
+    newDeviceDiv.click();
+  }
   updateUi(deviceAddress);
 });
 
@@ -513,7 +523,7 @@ ipcRenderer.on("remove-device", (_, deviceAddress) => {
   }
 
   delete window.connectedDevices[deviceAddress];
-  if (Object.keys(window.connectedDevices).length === 0) {
+  if (numberOfConnectedDevices === 0) {
     document.getElementById("no-devices-connected").classList.remove("hidden");
   }
 });
@@ -547,9 +557,6 @@ ipcRenderer.on("screenstream-new-window-closed", (_, deviceAddress) => {
   const device = window.connectedDevices[deviceAddress];
   device.screenstreamPoppedOut = false;
   updateUi(deviceAddress);
-  // document.querySelector(`#device-${device.token}
-  //     .screenstream-window-toggle-button`)
-  //     .textContent = "Display screen stream in new window";
 });
 
 ipcRenderer.on("orientation-change", (_, deviceAddress, newOrientation) => {
