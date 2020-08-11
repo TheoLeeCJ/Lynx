@@ -558,7 +558,7 @@ public class BackgroundService extends AccessibilityService {
 				image.close();
 
 				if (screenStreamApprovedByPC) {
-					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 45, baos);
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
 					byte[] imageBytes = baos.toByteArray();
 
 					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
