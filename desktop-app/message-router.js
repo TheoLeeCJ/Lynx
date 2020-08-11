@@ -50,10 +50,14 @@ const routeMessage = async (message, ws, req) => {
     sendJsonMessage({ type: INITIAL_AUTH_REPLY, ...BAD_REQUEST }, ws);
   }
 
+  let device;
   if (!(req.socket.remoteAddress in global.connectedDevices) &&
         message.type !== INITIAL_AUTH) {
     console.log("Received message from UNAUTHENTICATED DEVICE (should not happen):", message);
+    sendJsonMessage({ type: GENERIC_MESSAGE_REPLY, ...FORBIDDEN }, ws);
     return;
+  } else if (req.socket.remoteAddress in global.connectedDevices) {
+    device = global.connectedDevices[req.socket.remoteAddress];
   }
 
   if (message.type === SCREENSTREAM_FRAME) {
@@ -106,27 +110,27 @@ const routeMessage = async (message, ws, req) => {
       break;
 
     case SCREENSTREAM_REQUEST:
-      const { response: clickedButton } = await dialog.showMessageBox(global.mainWindow, {
+      dialog.showMessageBox(global.mainWindow, {
         title: "A device is asking to share its screen",
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
                  "its screen and enable remote control features.",
         buttons: ["&Allow", "&Deny"],
         cancelId: 1, // if user presses Esc, "Deny" is automatically selected
         noLink: true, // disable big buttons
+      }).then(({ response: clickedButton }) => {
+        if (clickedButton === 0) { // user clicked "Allow"
+          global.connectedDevices[req.socket.remoteAddress]
+              .screenstreamAuthorised = true;
+          global.connectedDevices[req.socket.remoteAddress].screenstreamWindow =
+              global.mainWindow;
+          global.mainWindow.webContents.send("authorise-screenstream",
+              req.socket.remoteAddress);
+
+          sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
+        } else {
+          sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
+        }
       });
-
-      if (clickedButton === 0) { // user clicked "Allow"
-        global.connectedDevices[req.socket.remoteAddress]
-            .screenstreamAuthorised = true;
-        global.connectedDevices[req.socket.remoteAddress].screenstreamWindow =
-            global.mainWindow;
-        global.mainWindow.webContents.send("authorise-screenstream",
-            req.socket.remoteAddress);
-
-        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...GENERIC_OK }, ws);
-      } else {
-        sendJsonMessage({ type: SCREENSTREAM_REQUEST_REPLY, ...FORBIDDEN }, ws);
-      }
       break;
 
     case SCREENSTREAM_FRAME:
@@ -166,7 +170,6 @@ const routeMessage = async (message, ws, req) => {
       if (req.socket.remoteAddress in global.connectedDevices) {
         const validateMetadataMessage = require("./utility/validate-metadata-message");
         if (validateMetadataMessage(message)) {
-          const device = global.connectedDevices[req.socket.remoteAddress];
           device.deviceMetadata = { ...device.deviceMetadata, ...message.data };
 
           sendJsonMessage({ type: META_SENDINFO_REPLY, ...GENERIC_OK }, ws);
@@ -183,7 +186,7 @@ const routeMessage = async (message, ws, req) => {
       // TODO: extract dialog showing to separate function & file
       const filenames = message.data.files.map((file) => file.filename);
       dialog.showMessageBox(global.mainWindow, {
-        title: "A device wants to share files",
+        title: `${device.deviceMetadata.deviceName} wants to share files`,
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
                  `these files with you:\n\n${filenames.join("\n")}`,
         buttons: ["&Allow", "&Deny"],
@@ -192,7 +195,6 @@ const routeMessage = async (message, ws, req) => {
       }).then(({ response: clickedButton }) => {
         if (clickedButton === 0) { // user clicked "Allow"
           const homeDir = require("os").homedir();
-          const device = global.connectedDevices[req.socket.remoteAddress];
           const newIncomingFiles = message.data.files.map(({ filename, fileSize }) => ({
             filename,
             // TODO: let user customise file save destination
@@ -219,7 +221,7 @@ const routeMessage = async (message, ws, req) => {
       break;
 
     case FILETRANSFER_FILE_END:
-      if (message.data.fileID === undefined) {
+      if (typeof message.data.fileID === "undefined") {
         setFileReceiveState(req.socket.remoteAddress, null);
       } else {
         setDriveReceiveState(req.socket.remoteAddress, null);
@@ -232,7 +234,6 @@ const routeMessage = async (message, ws, req) => {
       break;
 
     case SCREENSTREAM_ORIENTATIONCHANGE:
-      const device = global.connectedDevices[req.socket.remoteAddress];
       if (message.data.orientation === device.deviceMetadata.orientation) {
         break;
       }
