@@ -12,6 +12,7 @@ class Device {
     this.screenstreamWindow = null;
     this.screenstreamNewWindow = null;
     this.screenstreamPoppedOut = false;
+    this.prevScreenstreamNewWindowDimensions = null;
     this.remoteControlEnabled = false;
     this.sendingFiles = false;
     this.receivingFiles = false;

@@ -316,9 +316,31 @@ h1 {
   width: 100%;
   height: 42px;
   padding: 10px 19%;
+  align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   border-radius: 0 0 10px 10px;
+}
+
+#screen-sharing #phone-screen-and-controls #phone-controls button {
+  width: 17px;
+  height: 17px;
+  border: none;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#screen-sharing #phone-screen-and-controls #phone-controls #back-button {
+  background-image: url("../img/back-button.svg");
+}
+
+#screen-sharing #phone-screen-and-controls #phone-controls #home-button {
+  background-image: url("../img/home-button.svg");
+}
+
+#screen-sharing #phone-screen-and-controls #phone-controls #recents-button {
+  background-image: url("../img/recents-button.svg");
 }
 
 #screen-sharing.stream-popped-out #phone-screen-and-controls {

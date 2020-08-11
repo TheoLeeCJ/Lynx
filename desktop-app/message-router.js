@@ -111,7 +111,7 @@ const routeMessage = async (message, ws, req) => {
 
     case SCREENSTREAM_REQUEST:
       dialog.showMessageBox(global.mainWindow, {
-        title: "A device is asking to share its screen",
+        title: `${device.deviceMetadata.deviceName} is asking to share its screen`,
         message: `The device at ${req.socket.remoteAddress} is asking to share ` +
                  "its screen and enable remote control features.",
         buttons: ["&Allow", "&Deny"],
@@ -241,36 +241,50 @@ const routeMessage = async (message, ws, req) => {
       device.deviceMetadata.orientation = message.data.orientation;
       if (device.screenstreamPoppedOut) {
         // swap window's width & height
-        const [currentWidth] = device.screenstreamNewWindow.getSize();
+        const [currentWidth, currentHeight] = device.screenstreamNewWindow
+            .getSize();
         // TODO: use
         // device.deviceMetadata.screenstreamImageDimensions[device
         //     .deviceMetadata.orientation]
         // after it's implemented
-        const { imageWidth, imageHeight } = device.deviceMetadata
-            .screenstreamImageDimensions;
-        const newWidth = Math.round(currentWidth * (
-          device.deviceMetadata.orientation === "portrait" ?
-              imageWidth / imageHeight :
-              imageHeight / imageWidth
-        ));
-        const newHeight = currentWidth;
+        // const { imageWidth, imageHeight } = device.deviceMetadata
+        //     .screenstreamImageDimensions;
+        // const newWidth = Math.round(currentWidth * (
+        //   device.deviceMetadata.orientation === "portrait" ?
+        //       imageWidth / imageHeight :
+        //       imageHeight / imageWidth
+        // ));
+        // const newHeight = currentWidth;
+        [
+          device.prevScreenstreamNewWindowDimensions.width,
+          device.prevScreenstreamNewWindowDimensions.height,
+        ] = [
+          device.prevScreenstreamNewWindowDimensions.height,
+          device.prevScreenstreamNewWindowDimensions.width,
+        ];
 
         if (device.screenstreamNewWindow.isFullScreen()) {
-          if (message.data.orientation === "portrait") {
-            device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
-              width: device.deviceMetadata.screenDimensions.screenWidth,
-              height: device.deviceMetadata.screenDimensions.screenHeight,
-            });
-          } else {
-            device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
-              width: device.deviceMetadata.screenDimensions.screenHeight,
-              height: device.deviceMetadata.screenDimensions.screenWidth,
-            });
-          }
+          device.screenstreamWindow.webContents.send("resize-stream",
+              message.data.orientation, {
+                width: device.deviceMetadata.screenDimensions.screenWidth,
+                height: device.deviceMetadata.screenDimensions.screenHeight,
+              });
+
+          // if (message.data.orientation === "portrait") {
+          //   device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+          //     width: device.deviceMetadata.screenDimensions.screenWidth,
+          //     height: device.deviceMetadata.screenDimensions.screenHeight,
+          //   });
+          // } else {
+          //   device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
+          //     width: device.deviceMetadata.screenDimensions.screenHeight,
+          //     height: device.deviceMetadata.screenDimensions.screenWidth,
+          //   });
+          // }
         } else {
           // win.setSize() is broken, calling win.setMinimumSize() before it is a workaround
-          device.screenstreamNewWindow.setMinimumSize(newWidth, newHeight);
-          device.screenstreamNewWindow.setSize(newWidth, newHeight);
+          device.screenstreamNewWindow.setMinimumSize(currentHeight, currentWidth);
+          device.screenstreamNewWindow.setSize(currentHeight, currentWidth);
         }
       }
 

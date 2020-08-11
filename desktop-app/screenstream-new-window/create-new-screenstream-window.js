@@ -18,6 +18,10 @@ const createNewScreenstreamWindow = (deviceAddress) => {
     winWidth = Math.round(0.9 * primaryDisplayHeight);
     winHeight = Math.round(0.9 * primaryDisplayHeight * (imageHeight / imageWidth));
   }
+  device.prevScreenstreamNewWindowDimensions = {
+    width: winWidth,
+    height: winHeight,
+  };
 
   let screenstreamNewWindow = new BrowserWindow({
     // BrowserWindow dimensions can only be integers
@@ -32,7 +36,7 @@ const createNewScreenstreamWindow = (deviceAddress) => {
     },
   });
 
-  screenstreamNewWindow.setMenu(null);
+  // screenstreamNewWindow.setMenu(null);
 
   const newWindowUrl = url.format({
     protocol: "file",
@@ -45,11 +49,10 @@ const createNewScreenstreamWindow = (deviceAddress) => {
   screenstreamNewWindow.loadURL(newWindowUrl);
 
   screenstreamNewWindow.on("closed", () => {
-    // transfer stream back to main window
     device.screenstreamWindow = global.mainWindow;
+    device.prevScreenstreamNewWindowDimensions = null;
     screenstreamNewWindow = null;
 
-    // tell renderer process that screen stream pop-out window closed
     global.mainWindow.webContents.send("screenstream-new-window-closed",
         deviceAddress);
   });
