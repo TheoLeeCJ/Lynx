@@ -25,10 +25,22 @@ ipcMain.once("ready", (event) => {
 // fullscreen the screen stream?
 ipcMain.on("screenstream-fullscreen", (_, deviceAddress) => {
   const device = global.connectedDevices[deviceAddress];
+
+  // if un-fullscreening, set window width and height based on device orientation
+
   if (device.screenstreamNewWindow.isFullScreen()) {
     device.screenstreamNewWindow.unmaximize();
     device.screenstreamNewWindow.setFullScreen(false);
+
+    const { width, height } = device.prevScreenstreamNewWindowDimensions;
+    device.screenstreamNewWindow.setMinimumSize(width, height);
+    device.screenstreamNewWindow.setSize(width, height);
   } else {
+    const [winWidth, winHeight] = device.screenstreamNewWindow.getSize();
+    device.prevScreenstreamNewWindowDimensions = {
+      width: winWidth,
+      height: winHeight,
+    };
     device.screenstreamNewWindow.maximize();
     device.screenstreamNewWindow.setFullScreen(true);
   }
@@ -48,17 +60,11 @@ ipcMain.on("screenstream-toggle-window", (_, deviceAddress, windowSetting) => {
   } else if (windowSetting === "newWindow") {
     device.screenstreamNewWindow = createNewScreenstreamWindow(deviceAddress);
 
-    if (device.deviceMetadata.orientation === "portrait") {
-      device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
-        width: device.deviceMetadata.screenDimensions.screenWidth,
-        height: device.deviceMetadata.screenDimensions.screenHeight,
-      });
-    } else {
-      device.screenstreamNewWindow.webContents.send("set-stream-img-size", {
-        width: device.deviceMetadata.screenDimensions.screenHeight,
-        height: device.deviceMetadata.screenDimensions.screenWidth,
-      });
-    }
+    device.screenstreamWindow.webContents.send("resize-stream",
+        device.deviceMetadata.orientation, {
+          width: device.deviceMetadata.screenDimensions.screenWidth,
+          height: device.deviceMetadata.screenDimensions.screenHeight,
+        });
 
     device.screenstreamWindow = device.screenstreamNewWindow;
     device.screenstreamPoppedOut = true;

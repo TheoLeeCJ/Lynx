@@ -12,9 +12,25 @@ ipcRenderer.on("screenstream-stop", (_, deviceAddress) => {
   window.close();
 });
 
-ipcRenderer.on("set-stream-img-size", (_, streamImgSize) => {
-  deviceScreenstreamFrame.width = streamImgSize.width;
-  deviceScreenstreamFrame.height = streamImgSize.height;
+// ipcRenderer.on("set-stream-img-size", (_, streamImgSize) => {
+//   deviceScreenstreamFrame.width = streamImgSize.width;
+//   deviceScreenstreamFrame.height = streamImgSize.height;
+// });
+
+ipcRenderer.on("resize-stream", (_, orientation, { width, height }) => {
+  // if (orientation === "portrait") {
+  //   if (width < height) {
+  //     deviceScreenstreamFrame.style.height = "100%";
+  //   } else {
+  //     deviceScreenstreamFrame.style.width = "100%";
+  //   }
+  // } else {
+  //   if (width < height) {
+  //     deviceScreenstreamFrame.style.width = "100%";
+  //   } else {
+  //     deviceScreenstreamFrame.style.height = "100%";
+  //   }
+  // }
 });
 
 deviceScreenstreamFrame.onclick = (event) => {
