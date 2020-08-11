@@ -201,18 +201,18 @@
 				android:onClick="androidAccessibiitySettings"
 				android:text="Open Accessibility Settings" />
 
-			<Button
-				android:id="@+id/button"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:onClick="fixedSwipe"
-				android:text="Fixed Swipe Test to the right (5s delay)" />
+<!--			<Button-->
+<!--				android:id="@+id/button"-->
+<!--				android:layout_width="match_parent"-->
+<!--				android:layout_height="wrap_content"-->
+<!--				android:onClick="fixedSwipe"-->
+<!--				android:text="Fixed Swipe Test to the right (5s delay)" />-->
 
-			<Button
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:onClick="mediaStoreTest"
-				android:text="MediaStore Test / Directory List Test (refer to FileMediaBrowsing.whatever())" />
+<!--			<Button-->
+<!--				android:layout_width="match_parent"-->
+<!--				android:layout_height="wrap_content"-->
+<!--				android:onClick="mediaStoreTest"-->
+<!--				android:text="MediaStore Test / Directory List Test (refer to FileMediaBrowsing.whatever())" />-->
 
 			<LinearLayout
 				android:id="@+id/thumbnailList"

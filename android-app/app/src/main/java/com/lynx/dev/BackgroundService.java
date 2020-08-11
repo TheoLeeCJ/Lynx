@@ -235,6 +235,9 @@ public class BackgroundService extends AccessibilityService {
 				boolean remoteControlAccessibilityAllowed = MainActivity.isAccessServiceEnabled(BackgroundService.backgroundServiceStatic.getApplicationContext(), BackgroundService.class);
 
 				System.out.println(remoteControlAccessibilityAllowed);
+				storedRemoteControlState = remoteControlAccessibilityAllowed;
+
+				remoteControlCheckHandler.postDelayed(remoteControlCheck, 2000);
 
 				if (remoteControlAccessibilityAllowed) {
 					SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
@@ -247,22 +250,45 @@ public class BackgroundService extends AccessibilityService {
 		}
 	};
 
-	@Override
-	public void onServiceConnected() {
-		System.out.println("CREATED");
-		if (SimpleClient.simpleClientStatic != null) {
-			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
-		}
-	}
+//	@Override
+//	public void onServiceConnected() {
+//		System.out.println("CREATED");
+//		if (SimpleClient.simpleClientStatic != null) {
+//			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
+//		}
+//	}
+//
+//	@Override
+//	public boolean onUnbind(Intent intent) {
+//		System.out.println("ACCESSIBILITY PORTION STOPPED");
+//		if (SimpleClient.simpleClientStatic != null) {
+//			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
+//		}
+//		return false;
+//	}
 
-	@Override
-	public boolean onUnbind(Intent intent) {
-		System.out.println("ACCESSIBILITY PORTION STOPPED");
-		if (SimpleClient.simpleClientStatic != null) {
-			SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
+	boolean storedRemoteControlState = false;
+	Handler remoteControlCheckHandler = new Handler();
+	Runnable remoteControlCheck = new Runnable() {
+		@Override
+		public void run() {
+			boolean remoteControlAccessibilityAllowed = MainActivity.isAccessServiceEnabled(BackgroundService.backgroundServiceStatic.getApplicationContext(), BackgroundService.class);
+
+			System.out.println(remoteControlAccessibilityAllowed);
+
+			if (remoteControlAccessibilityAllowed != storedRemoteControlState) {
+				storedRemoteControlState = remoteControlAccessibilityAllowed;
+				if (remoteControlAccessibilityAllowed) {
+					SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_enabled\"}");
+				}
+				else {
+					SimpleClient.simpleClientStatic.sendText("{\"type\":\"remotecontrol_disabled\"}");
+				}
+			}
+
+			remoteControlCheckHandler.postDelayed(remoteControlCheck, 2000);
 		}
-		return false;
-	}
+	};
 
 	@Override
 	public void onCreate() {
@@ -558,7 +584,7 @@ public class BackgroundService extends AccessibilityService {
 				image.close();
 
 				if (screenStreamApprovedByPC) {
-					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+					niceCleanBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
 					byte[] imageBytes = baos.toByteArray();
 
 					base64screen = Base64.encodeToString(imageBytes, Base64.DEFAULT);
