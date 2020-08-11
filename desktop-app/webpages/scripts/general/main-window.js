@@ -453,10 +453,7 @@ const updateUi = (deviceAddress) => {
 
 // update devices list
 ipcRenderer.on("add-device", (_, deviceAddress, deviceToken, deviceName) => {
-  const noDevicesConnectedDiv = document.getElementById("no-devices-connected");
-  if (noDevicesConnectedDiv !== null) {
-    noDevicesConnectedDiv.remove();
-  }
+  document.getElementById("no-devices-connected").classList.add("hidden");
 
   window.connectedDevices[deviceAddress] = new Device({
     address: deviceAddress,
