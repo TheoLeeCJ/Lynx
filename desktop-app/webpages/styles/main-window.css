@@ -281,8 +281,6 @@ h1 {
 }
 
 #file-transfer .file-transfer-section .file-transfer-files-list td:first-child {
-  display: block;
-  width: 18em;
   word-break: break-all;
 }
 
