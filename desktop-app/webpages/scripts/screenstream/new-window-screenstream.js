@@ -12,7 +12,16 @@ ipcRenderer.on("screenstream-stop", (_, deviceAddress) => {
   window.close();
 });
 
+ipcRenderer.on("set-stream-img-size", (_, streamImgSize) => {
+  deviceScreenstreamFrame.width = streamImgSize.width;
+  deviceScreenstreamFrame.height = streamImgSize.height;
+});
+
 deviceScreenstreamFrame.onclick = (event) => {
   const position = getRemoteControlTapPosition(event, deviceScreenstreamFrame);
   ipcRenderer.send("remotecontrol-tap", position, window.deviceAddress);
+};
+
+deviceScreenstreamFrame.oncontextmenu = (event) => {
+  ipcRenderer.send("screenstream-fullscreen", window.deviceAddress);
 };
