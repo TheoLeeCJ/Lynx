@@ -8,7 +8,6 @@ A quick solution for tighter integration of Android devices and Windows PCs, wit
 - 100% wireless operation
 
 ## Screenshots
----
 
 ### Android App Setup
 ![](setup.png)

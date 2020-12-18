@@ -12,7 +12,7 @@ const getLocalIpInfo = () => {
       break;
 
     case "linux":
-      interfaceNames = ["eth0", "wlan0", "wifi0", "enp1s0"];
+      interfaceNames = ["eth0", "enp1s0", "wlan0", "wifi0"];
       break;
 
     default:
