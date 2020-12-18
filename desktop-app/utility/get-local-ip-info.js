@@ -4,7 +4,7 @@ const getLocalIpInfo = () => {
   let interfaceNames;
   switch (process.platform) {
     case "win32":
-      interfaceNames = ["Ethernet", "Wi-Fi", "WiFi"];
+      interfaceNames = ["Ethernet", "Wi-Fi", "WiFi", "Wi Fi"];
       break;
 
     case "darwin":
@@ -12,7 +12,7 @@ const getLocalIpInfo = () => {
       break;
 
     case "linux":
-      interfaceNames = ["eth0", "wlan0", "wifi0"];
+      interfaceNames = ["eth0", "wlan0", "wifi0", "enp1s0"];
       break;
 
     default:
